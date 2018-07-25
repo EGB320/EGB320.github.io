@@ -1,0 +1,322 @@
+<!DOCTYPE HTML>
+<!--
+	Editorial by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>EGB320 Mechatronics Design 2</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link id="pagestyle" rel="stylesheet" href="assets/css/main.css" />
+		<link href="assets/css/main.css" media="print" rel="stylesheet" />
+	</head>
+
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+
+							<!-- Header -->
+								<header id="header">
+									<a href="index.html" class="logo">EGB320 - Mechatronics Design 2</a>
+									<a id="date" class="logo date">Date</a>
+								</header>
+
+							<!-- Content -->
+								<section>
+									<div class="page-wrapper"> 
+										<header class="main">
+											<h1>Introduction to VREP Simulator</h1>
+											<a href="#" class="button pdf-exclude icon fa-download" onclick="CreateDocumentToExportPDF('EGB320_IntroToVREP.pdf')">Download PDF Version</a>
+											<a href="#" class="button pdf-exclude icon fa-download" download>EGB320 VREP Files</a>
+										</header>							
+
+										<p>This article discusses the Virtual Robot Experimentation Platform (VREP) simulation environment. This article will discuss VREP and how it can be used within the Navigation/AI aspects of your project. However, VREP could be used for almost all aspects of your project to help refine your design.</p>
+
+										<p>VREP has been installed on QUT's computers within S901 as well as the computer labs used by EGB320 (R214 and G216). However, you can also download and install a copy to your personal computer, see <a target="_blank" href="http://www.coppeliarobotics.com/downloads.html">VREP Downloads</a>.</p>
+
+										<h2>What is VREP</h2>
+										
+										<p>VREP is a standalone environment which allows the simulation of complex dynamic behaviours, such as two complex shapes colliding. It has been tailored specifically for robotic systems. You can create scenes and robot models complete with controllable motors and sensors. You can even get an image from a virtual camera. VREP also allows you to control your robot through Python. To see more about VREP check out their website, <a href="http://www.coppeliarobotics.com/">VREP Website</a>. The video below is an example of what VREP can do and what you could use it for in this design project.</p>
+
+										<figure class="figure">
+    										<video style="display: block; margin: auto;" width="80%" controls>
+    											<source src="images/vrep/vrep_demo.ogv" type="video/ogg">
+    										</video>
+										</figure>
+									
+										<hr class="major pdf-exclude" />
+										<h2>Setting Up Your VREP Scene</h2>
+										<em>Make sure you have downloaded and extracted the EGB320 VREP files, see the top of the page for download link.</em>
+
+										<p>To setup the scene for this design project we must first launch VREP. Once VREP has launched, select File -> Open Scene. Then navigate to where you extracted the EGB320 VREP files and open up the file EGB320Scene.ttt. Aftet opening the file your VREP workspace should contain the Soccer Bot Arena, as well as 3 obstacles and the orange ball on a side table.</p>
+
+										<figure class="figure">
+    										<img src="images/vrep/EGB320_VrepScene.png" width="80%" alt="images/image-not-found.jpg" />
+										</figure>
+
+
+										<div class="html2pdf__page-break"></div>
+									</div>
+
+									<div class="page-wrapper">
+
+										<p>We now need to load our SoccerBot robot model. The teaching team have already created two robot models, one for a differential drive robot and one for an omni drive robot. To load in your desired robot model select File -> Load Model. Then navigate to where you extracted the EGB320 VREP files and either select DifferentialDrive_SoccerBot.ttm or OmniDrive_SoccerBot.ttm. Only load one of these models at a time.</p>
+
+										<p>So you do not have to load a robot model each time we are now going to save this scene under a new name. Select File -> Save Scene As. Then save the scene giving it a new name. We are now ready to start controlling our robot via Python.</p>
+
+										<p>There are plenty of tutorials online if you would like to know how to build robots and scenes within VREP. One good example is <a target="_blank" href="http://www.coppeliarobotics.com/helpFiles/en/bubbleRobTutorial.htm">The Bubble Bot Tutorial</a>. This tutorial also shows you how to write scripts within VREP to control your robot.</p>
+
+										<hr class="major pdf-exclude" />
+										<h2>Coordinate Frames</h2>
+										<p>A coordinate frame is a reference point that we use to determine how far something is in the x, y and z directions. Remember all coordinate frames should follow the right hand rule. The X axis points in the same direction as your index finger, the Y axis points in the direction of your middle finger bent at 90 degrees, and the Z axis points in the direction of your thumb.</p>
+
+										<figure class="figure">
+    										<img src="images/vrep/RightHandRule.png" width="40%" alt="images/image-not-found.jpg" />
+    										<figcaption>Image Source: <a href="https://stackoverflow.com/questions/19747082/how-does-coordinate-system-handedness-relate-to-rotation-direction-and-vertices">Stack Overflow</a></figcaption>
+										</figure>
+
+										<p>When dealing with mobile robots we typically have at least two coordinate frames, a global coordinate frame and a robot coordinate frame.</p>
+
+										<p>The global coordinate frame is static, it is our absolute origin. Within our scene the global coordinate frame is defined to be within the centre of the arena with x axis pointing towards the yellow goal, the y axis pointing up the field (if the yellow goal is on the right hand side), and the z axis pointing towards the sky.</p>
+
+										<figure class="figure">
+    										<img src="images/vrep/ArenaGlobalCoordinateFrame.png" width="50%" alt="images/image-not-found.jpg" />
+										</figure>
+										<!-- <div class="html2pdf__page-break"></div> -->
+									</div>
+
+									<div class="page-wrapper"> 
+
+										<p>The robot coordinate frame is typically located on the robot. The robot coordinate frame moves around with the robot and hence it can move within the global frame. For our SoccerBot robot the coordinate frame is located within the center of the robot, with the x axis pointing towards the front of the robot, the y axis pointing towards the left wheel and the z axis pointing skywards. This will mean that an object's position within the robot's coordinate frame can move with time, since the robot coordinate frame is moving.</p> 
+
+										<figure class="figure">
+											<img src="images/vrep/CoordinateFrameDemo.gif" width="80%" alt="images/image-not-found.jpg" />
+										</figure>
+										
+										
+										<hr class="major pdf-exclude" />
+										<h2>Controlling Your VREP Robot Using Python</h2>
+										<p>Interfacing to VREP with Python is quite trivial using VREP's Application Programming Interface (API). However, so you can concentrate on developing your navigation code we have created our own Python API which simplifies it still. If you wish to know how to use the VREP API check out <a target="_blank" href="http://www.coppeliarobotics.com/helpFiles/en/remoteApiFunctionsPython.htm">VREP Python API Documentation</a> and <a target="_blank" href="https://www.youtube.com/watch?v=Hk98gquFYuk">this tutorial</a>.</p>
+
+										<p>To open a connection to VREP using the EGB320 Python API first create a new Python Script in the EGB320 VREP Files. You need create your script in this directory as your script will be implicitly calling functions from the vrep.py, vrepConst.py and the remoteAPI files (.so for Linux, .dll for Windows, .dylib for Mac).</p>
+
+										<p>Within your new script write add the following code.</p>
+
+										<pre><code>#!/usr/bin/python
+
+# import the soccer bot API - this will include math, time, random and vrep python modules
+from SoccerBot_API import *
+
+# SET SCENE PARAMETERS
+sceneParameters = SceneParameters()
+
+# SET ROBOT PARAMETERS
+robotParameters = RobotParameters()
+
+# MAIN SCRIPT
+if __name__ == '__main__':
+
+	soccerBotSim = VREP_SoccerBot('127.0.0.1', robotParameters, sceneParameters)
+	soccerBotSim.SetTargetVelocities(0.1,0,0)</code></pre>
+
+										<p>Now run your script. You will find that it will attempt to connect to the VREP API server, but it will fail and so the script will terminate. This is because within VREP we have not said to start the simulator. To start the simulator go back into VREP and hit the Play button located on the menu bar. Then re-run your script. It should successfully connect to VREP and your robot should drive forward eventually crashing into the wall.</p>
+										<div class="html2pdf__page-break"></div>
+									</div>
+
+									<div class="page-wrapper"> 
+
+										<p>Now to explain the code.</p>
+
+										<pre><code>from SoccerBot_API import *</code></pre>
+
+										<p>This imports all the functions, classes and global variables from the SoccerBot_API.py script. This will also import the Python modules math, time, random and vrep.</p>
+
+										<pre><code>sceneParameters = SceneParameters()</code></pre>
+
+										<p>This loads up the default VREP scene parameters and stores them as a variable. The scene parameters include the starting ball position, as well as the positions of the 3 static obstacles. Later on we will discuss how to change the default scene parameters.</p>
+
+										<pre><code>robotParameters = RobotParameters()</code></pre>
+
+										<p>This loads the default robot parameters and stores them as a variable. The robot parameters include the minimum and maximum linear speed your robot can travel, the position of the robot's camera, how well your vision system can detect objects, and how well your dribbler system can "hold" onto the ball.</p>
+
+										<pre><code>if __name__ == 'main'</code></pre>
+
+										<p>This is a Python capability. Essentially this says that if this is the main script being run, then perform the following operations; if this is not the main script (i.e. it has been imported by another script) do not perform the following actions. This is a great way to write Python modules and allow them to write test code.</p>
+
+										<pre><code>soccerBotSim - VREP_SoccerBot('127.0.0.1', robotParameters, sceneParameters)</code></pre>
+
+										<p>This line of code creates an instance of the VREP_SoccerBot class and stores that instance as a variable, in this scenario we have called that variable soccerBotSim. We have passed three arguments into this function, they are in order: 
+											<ul>
+												<li>The IP address of the computer running the VREP simulation environment. The '127.0.0.1' indicates the local computer. However, you could change this to the IP address of a different computer running VREP.</li>
+												<li>The scene parameters.</li>
+												<li>The robot parameters.</li>
+											</ul>
+										 </p>
+										<div class="html2pdf__page-break"></div>
+									</div>
+
+									<div class="page-wrapper"> 
+
+										 <pre><code>soccerBotSim.SetTargetVelocities(0.1,0,0)</code></pre>
+
+										 <p>The final line of code sets the velocities of our robot. The function takes three inputs. The inputs are the robot's desired linear velocity in the x direction, the y direction, followed by the desired rotational velocity. The units of measure are m/s and rad/s for the linear and rotational velocities respectively. These velocities are also specified within the robot's coordinate frame. In simple terms the x velocity is how quickly you want the robot to move forward, the y velocity is only applicable to omni-drive robots and is how quickly you want the robot to move perpendicular to its forward direction, and the rotational velocity is how quickly you want the robot to rotate.</p>
+
+										 <hr class="major pdf-exclude" />
+										<h2>SoccerBot Python API Functions</h2>
+										<p>There are only 5 functions within the SoccerBot Python API that you will need to call, including the SetTargetVelocities function which we have already seen.</p>
+
+										<p><b>SetTargetVelocities(x_dot, y_dot, theta_dot)</b>: The SetTargetVelocities sets the robot's linear speed in the x and y direction with respect to the robot's coordinate frame and the robot's rotation velocity. The linear speeds, x_dot and y_dot, are in m/s while the rotation velocity, theta_dot, is in rad/s. Setting the y_dot velocity to a non-zero value while using a differential drive robot is impossible, and will simply be reset to 0. The maximum and minimum values you can set are based on the robot parameters, see <a href="#RobotParameters">Robot Parameters</a>. Example function usage:</p>
+
+										<pre><code># move the robot at a forward velocity of 0.1m/s with a rotational velocity of 0.5 rad/s.
+soccerBotSim.SetTargetVelocities(0.1, 0, 0.5)</code></pre>
+
+										<p><b>GetDetectedObjects()</b>: The GetDetectedObjects function takes no arguments and returns, as 4 variables in order, the range and bearing to the ball, the blue goal, the yellow goal, and any obstacles if they are within the camera's field of view (FOV). The range and bearing is returned as a 2 element array. If the object is not within the field of view that respective return variable will be set to none. How far the away the objects can be detected is based on the robot parameters, see <a href="#RobotParameters">Robot Parameters</a>. Example function usage:<p>
+
+										<pre><code>ballRB, blueRB, yellowRB, obstaclesRB = soccerSimBot.GetDetectedObjects()
+
+# Check to see if the ball is within the camera's FOV
+if ballRB != None:
+	ballRange = ballRB[0]
+	ballBearing = ballRB[1]
+
+# Check to see if any obstacles are within the camera's FOV
+if obstacles != None:
+	# loop through each obstacle detected using Pythonian way
+	for obstacle in obstaclesRB:
+		obstacleRange = obstacle[0]
+		obstacleBearing = obstacle[1]</code></pre>
+										<div class="html2pdf__page-break"></div>
+									</div>
+
+									<div class="page-wrapper"> 
+
+										<p><b>KickBall(kickSpeed)</b>: The KickBall function attempts to kick the ball with the passed kick speed. Example function usage: </p>
+
+										<pre><code># Attempt to kick the ball with a kick speed of 0.5m/s
+soccerBotSim.KickSpeed(0.5)</code></pre>
+
+										<p><b>BallInDribbler()</b>: The BallInDribbler function takes no arguments and returns true if the ball is within the robot's dribbler, false if it is not. Example Usage: </p>
+
+										<pre><code># check to see if ball is in dribbler
+if soccerBotSim.BallInDribbler() == True:
+	# attempt to kick the ball with a kick speed of 0.5 m/s
+	soccerBotSim.KickBall(0.5)</code></pre>
+
+
+										<p><b>UpdateBallPosition()</b>: The UpdateBallPosition function does two things. Firstly it resets the ball position to the center of the arena when a goal is score. Secondly, it helps emulate the quality of your dribbler by randomly "releasing" the ball. How often this random event occurs based on a passed robot parameter. This function should be called within every loop.</p>
+
+										<pre><code> while True:
+	 # Navigation/AI Code - Get detected objects, and set robot velocities etc.
+
+	# Update the ball position in each loop
+	soccerBotSim.UpdateBallPosition()</code></pre>
+
+
+										<hr class="major pdf-exclude" />
+										<h2>Scene and Robot Parameters</h2>
+
+										<h3>Scene Parameters</h3>
+										<p>The scene parameters allow you to set the starting position of the ball and the position of the 3 static obstacles. The robot will always start within the center of the arena within the VREP simulator. The following example shows how to set the starting position of the ball and the static obstacle positions.</p>
+
+										<pre><code> # SET SCENE PARAMETERS
+sceneParameters = SceneParameters()
+
+# Set the ball's starting position [x, y] (in metres)
+sceneParameters.ballStartingPosition = [0.5, 0]
+
+# Set the position of the obstacles [x, y] (in metres), or specify None if not wanted in the scene
+sceneParameters.obstacle0_StartingPosition = [0.7, 0.7] 
+sceneParameters.obstacle1_StartingPosition = None
+sceneParameters.obstacle2_StartingPosition = None
+</code></pre>
+										<div class="html2pdf__page-break"></div>
+									</div>
+
+									<div class="page-wrapper"> 
+
+										<h2 id="RobotParameters">Robot Parameters</h2>
+										<p>The robot parameters allow you to set the minimum and maximum linear (forward) speed the robot can move, how far the vision system can detect the various objects, the quality of the dribbler, and the position of the camera. We suggest you try and simulate your real robot as much as possible to eliminate as many integration bugs as possible. You will need to get these parameters from your various team members. The following example shows you how to set the various parameters.</p>
+
+										<pre><code># SET ROBOT PARAMETERS
+robotParameters = RobotParameters()
+
+# Drive Parameters
+robotParameters.minimumLinearSpeed = 0.04  		# minimum speed at which your robot can move forward in m/s
+robotParameters.maximumLinearSpeed = 0.25 		# maximum speed at which your robot can move forward in m/s
+
+# Camera Parameters
+robotParameters.cameraOrientation = 'landscape'		# specifies the orientation of the camera
+robotParameters.cameraDistanceFromRobotCenter = 0.1 	# distance between the camera and the center of the robot
+robotParameters.cameraHeightFromFloor = 0.03 		# height of the camera relative to the floor in metres
+robotParameters.cameraTilt = 0.17 			# tilt of the camera in radians
+
+# Vision Processing Parameters
+robotParameters.maxBallDetectionDistance = 1 		# the maximum distance you can detect the ball in metres
+robotParameters.maxGoalDetectionDistance = 2.5 		# the maximum distance you can detect the goals in metres
+robotParameters.maxObstacleDetectionDistance = 1.5 	# the maximum distance you can detect the obstacles in metres
+
+# Dribbler Parameters
+robotParameters.dribblerQuality = 1 			# specifies how good your dribbler is from 0 to 1.0 
+							# (with 1.0 being awesome and 0 being non-existent)</code></pre>
+
+
+										<hr class="major pdf-exclude" />
+										<h2>Hardware In The Loop</h2>
+										<p>If you are undertaking the Navigation/AI component of this design project you may wish to perform what is known as hardware in the loop. Hardware in the loop is when we test parts or all of the hardware, in our case the Raspberry Pi, but utilise simulated data or a simulated environment (e.g. VREP). By performing hardware in the loop, you will be able to test your navigation software on the Raspberry Pi without having to actually have any hardware. To perform hardware in the loop follow using VREP follow these instructions:</p>
+
+										<ol>
+											<li>First ensure the Raspberry Pi and the computer you wish to run VREP on are on the same network (i.e. the QUT network).</li>
+											<li>Get the IP address of the computer you will be running VREP on.</li>
+											<li>On the Raspberry Pi within Python script change the IP address being passed into the VREP_SoccerBot class creation function. For example:
+
+												<pre><code>soccerBotSim = VREP_SoccerBot('pc_ip_address', robotParameters, sceneParameters)</code></pre>
+
+											</li>
+											<li>Launch and start VREP on the computer as you usually would.</li>
+											<li>Start your script on the Raspberry Pi.</li>
+										</ol>
+										<div class="html2pdf__page-break"></div>
+									</div>
+									
+
+								</section>
+
+						</div>
+					</div>
+
+				<!-- Sidebar -->
+					<div id="sidebar">
+						<!-- Will be inserted with JS -->
+					</div>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+			<script src="assets/js/generatePDF.js"></script>
+			<script type="text/javascript">
+				// On Load
+				$(document).ready(function(){
+					// Load sidebar
+					$('#sidebar').load('navbar.html');
+
+					// Insert today's date
+					var d = new Date();
+					var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+					document.getElementById("date").innerHTML = d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+				});
+			</script>
+
+	</body>
+</html>

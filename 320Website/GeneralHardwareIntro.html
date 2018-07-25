@@ -1,0 +1,194 @@
+<!DOCTYPE HTML>
+<!--
+	Editorial by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>EGB320 Mechatronics Design 2</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link id="pagestyle" rel="stylesheet" href="assets/css/main.css" />
+		<link href="assets/css/main.css" media="print" rel="stylesheet" />
+	</head>
+
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+
+							<!-- Header -->
+								<header id="header">
+									<a href="index.html" class="logo">EGB320 - Mechatronics Design 2</a>
+									<a id="date" class="logo date">Date</a>
+								</header>
+
+							<!-- Content -->
+								<section>
+									<div class="page-wrapper"> 
+										<header class="main">
+											<h1>General EGB320 Hardware Introduction</h1>
+											<a href="#" class="button pdf-exclude icon fa-download" onclick="CreateDocumentToExportPDF('EGB320_GeneralHardwareIntro.pdf')">Download PDF Version</a>
+										</header>							
+
+										<p>This tutorial is to provide you with some general information regarding the hardware you will use within your design project. This guide will mainly discuss the Raspberry Pi and some crucial Do's and Dont's. Please see the <a target="_blank" href="SettingUpTheRaspberryPi.html">Setting Up Your Raspberry Pi</a> guide for help on setting up your Raspberry Pi. <b>However, we strongly suggest you read this page first as it contains important information.</b></p>
+
+										<h2>What is Linux</h2>
+
+										<p>You may be asking why are we discussing Linux. Well the Raspberry Pi, the hardware provided to you in EGB320, uses Linux. Linux is an open source operating system (OS) and there are many versions such as Ubuntu, Debian and Mint. In other words it is very similar to the various Windows (XP, 7, 10 etc.) and Mac (OS X, Sierra etc.) operating systems. The Linux OS has pros and cons, just like the Windows and Mac OSes. The main advantage of Linux, besides being open source and free, is that it allows for the easy development of virtually any software in any language.</p>
+
+										<figure class="figure">
+	    										<img src="images/setup/OperatingSystems.png" width="30%" alt = "images/image-not-found.jpg" />
+	    										<figcaption>Linux is an OS just like Windows and Mac. Source <a target="_blank" href="http://ignitermedia.blogspot.com">BlogSpot</a>.</figcaption>
+										</figure>
+									
+										<hr class="major pdf-exclude" />
+										<h2>Introducing Your EGB320 Kits</h2>
+										<p>Each team will receive an EGB320 Kit within the second week of semester. This kit contains the following items:</p>
+
+										<ul>
+											<li>1x Raspberry Pi 3B</li>
+											<li>1x Raspberry Pi Camera Version 2</li>
+											<li>1x 16GB SD Card with a Pre-Configured Raspbian Opperating System</li>
+											<li>1x 5 Inch LCD Touchscreen</li>
+											<li>1x HDMI to HDMI Adapter Board</li>
+											<li>1x Touchscreen Stylus</li>
+											<li>1x 5V 2.1A Wall Wort with Micro USB Power Connector</li>
+											<li>1x Orange Golf Ball</li>
+											<li>1x 2-Cell 3500mAh Lithium Ion Battery</li>
+											<li>1x Battery Charger</li>
+											<li>1x Edimax 5G WiFi Dongle</li>
+											<li>1x Breadboard</li>
+											<li>1x Misc Consumable Electronics (Resistors, LEDs, Switches, Prototyping wires etc)</li>
+										</ul>
+
+										<p>Remember it is up to you and your team to take care of your kit and to ensure a full kit is returned at the end of the semester. We highly recommend you label the provided Raspbbery Pi power supply, battery and charger, preferably with the same number as the number on the kit barcode. You can find information on setting up your Raspberry Pi in the <a target="_blank" href="SettingUpTheRaspberryPi.html">Setting Up Your Raspberry Pi Guide</a>. However, we recommend you finish reading this page as it contains critical information.</p>
+										
+										<div class="html2pdf__page-break"></div>
+									</div>										
+
+									<div class="page-wrapper"> 
+										<hr class="major pdf-exclude" />
+										<h2>What is a Raspberry Pi</h2>
+										<p>A Raspberry Pi is a single-board computer and was developed as an educational tool. You can think of it is as a compact low-power computer. However, this does mean it has a reduced amount of computational power when compared to a standard laptop or desktop computer. Additionally your laptop/desktop computer utilises a x86 system architecture, while the Raspberry Pi 3B utilises the ARM architecture. What this means is that any software compiled (e.g. a C software program) for your laptop/desktop that you wish to use on the Raspberry Pi needs to be recompiled for the ARM architecture. However, since the teaching team have already configured the Raspberry Pi you should not need to worry about the difference in architecture. If you are interested the specifications of the Raspberry Pi 3B are: </p>
+
+										<ul>
+											<li>Quad Core 1.2GHz Broadcom BCM2837 64bit CPU</li>
+											<li>1GB RAM</li>
+											<li>BCM43438 Wireless LAN and Bluetooth Low Energy (BLE) on Board</li>
+											<li>100 Mbit/s Ethernet</li>
+											<li>40-Pin Extended GPIO</li>
+											<li>4x USB 2.0 Ports</li>
+											<li>4 Pole Stereo Output and Composite Video Port</li>
+											<li>Full Size HDMI Port</li>
+											<li>CSI Camera Port for Connecting a Raspberry Pi Camera</li>
+											<li>DSI Display Port for Connecting a Raspberry Pi Touchscreen (the touchscreen we provided is not a Raspberry Pi specific touchscreen).</li>
+											<li>Micro SD Port for Loading your Operating System and Storing Data</li>
+											<li>Upgraded Switched Micro USB Power Source up to 2.5A</li>
+										</ul>
+
+										<p>For more information about the Raspberry Pi check out the <a target="_blank" href="https://www.raspberrypi.org/">Raspberry Pi websiste</a>.</p>
+
+										<hr class="major pdf-exclude" />
+										<h2>Capabilities of a Raspberry Pi</h2>
+										<p>A Raspberry Pi essentially has the same capabilities as your desktop computer, simply at a lower performance. You can write your own software in any of the standard languages such as Python, Javascript or C/C++. Many people actually utilise a Raspberry Pi and a Game Console Emulator (i.e. a Nintendo64 Emulator) to recreate classic consoles and play retro arcade games.</p>
+
+										<p>The Raspberry Pi  has some microcontroller-like capabilities as well. For example, it can output digital signals (i.e. turn on/off a LED), read digital signals (i.e. read a digital sensor or switch), or communicate with other devices via SPI, I2C or UART. All these capabilities are performed through the software controlled General Purpose Input/Output (GPIO) pins. Additionally, while many people believe the Raspberry Pi can perform Analogue to Digital Conversions (ADC), it cannot as it has no ADC hardware.</p>
+
+										<p>You may think of the Raspberry Pi as a more advanced microcontroller since it has microcontroller-like capabilities with greater computational power. However, the Raspberry Pi is not a microcontroller and you should not think of it as one.</p>	
+										
+										<div class="html2pdf__page-break"></div>
+									</div>
+									<div class="page-wrapper">	
+
+										<h3>Capabilities Applicable to EGB320</h3>
+										<p>The following capabilities are applicable to your EGB320 project: </p>
+
+										<ul>
+											<li>Outputting digital signals (including PWM signals) to turn on LEDs, control motors and trigger kicking mechanisms.</li>
+											<li>Reading digital signals outputted from digital sensors.</li>
+											<li>Creating Python Scripts to utilise the processing capabilities of the Raspberry Pi to perform image processing and control your robot's movements.</li>
+										</ul>
+
+									<hr class="major pdf-exclude" />
+										<h2>The Do's and Dont's</h2>
+
+										<h3>GPIO Pins Do's and Dont's</h3>
+										<p>Over the years several groups have destroyed their Raspberry Pi at critical times so read the following Do's and Dont's carefully. However, the two main things to note are that the GPIO pins are not placed on the board in numerical order (i.e. GPIO pin 3, is not pin 3 on the board), and that they operate at 3.3 volts. This means the GPIO output 3.3V and your digital signals going to the Raspberry Pi should only be 3.3V. Additionally a GPIO pin can only output at maximum 16mA and this is if you change some settings, the standard maximum is 8mA. For more information regarding the GPIO check out the official <a target="_blank" href="https://www.raspberrypi.org/documentation/usage/gpio/README.md">Raspberry Pi GPIO Page</a></p>
+
+										<figure class="figure">
+	    										<img src="images/setup/pi3_gpio.png" width="40%" alt="Image Not Found"/>
+	    										<figcaption>The GPIO pins are not placed on the board in numerical order. For example, GPIO Pin 3 is not pin 3 within the header.</figcaption>
+										</figure>										
+
+										<p>There are also 3.3V, 5V and Ground (GND) rails within the GPIO pin header. These are there to be used to power additional components, such as a touchscreen or a digital sensor. The 3.3V and 5V rail both can supply approximately 200mA at maximum. GPIO stands for General Purpose Input/Ouptut.</p>
+
+										<div class="html2pdf__page-break"></div>
+									</div>								
+									<div class="page-wrapper"> 
+
+										<h4 class="nocount">The Do's</h4>
+										<ul>
+											<li>Check that when something tells you to connect to GPIO pin-x you double check its position as the GPIO pins are not placed in numerical order.</li>
+											<li>Ensure all your signals going to the GPIO pins are no larger than 3.3V</li>
+											<li>Only use the GPIO for small current signals.</li>
+										</ul>
+										
+
+										<h4 class="nocount">The Dont's</h4>
+										<ul>
+											<li>Send more than 3.3 volts to a GPIO pin.</li>
+											<li>Do not use a GPIO pin to control a motor directly. Instead you will need to send PWM signals to a motor driver.</li>
+											<li>Do not put power into the 5V or 3.3V rails. This bypasses the Raspberry Pi's protection circuitry. The only way you should be powering your board is through the micro USB connector.</li>
+										</ul>
+
+										<h3>Raspberry Pi Camera Do's and Dont's</h3>
+										<p>The Raspberry Pi Camera is fairly robust, however the cable is not. So you need to ensure that you take care of the supplied ribbon cable and do not bend it at sharp angles. Additionally, in the past teams have had a working vision system and then altered their robot in some way (e.g. changed the camera's orientation or put a piece of clear acrylic in front of it) this can drastically reduces performance of the vision system. So be wary of late minute changes involving sensors.</p>		
+
+										<hr class="major pdf-exclude" />
+										<h2>Battery Safety</h2>
+										<p>It is paramount you take care of your battery as the battery and battery charger cost approximately $45 each. The reason they are so expensive is that they have inbuilt protection circuitry to prevent certain issues (i.e. over charging/dis-charging). Although they do have inbuilt protection circuitry <b>you must not leave your battery unattended while it is charging</b>.</p>
+
+										<div class="html2pdf__page-break"></div>
+									</div>
+									
+
+								</section>
+
+						</div>
+					</div>
+
+				<!-- Sidebar -->
+					<div id="sidebar">
+						<!-- Will be inserted with JS -->
+					</div>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+			<script src="assets/js/generatePDF.js"></script>
+			<script type="text/javascript">
+				// On Load
+				$(document).ready(function(){
+					// Load sidebar
+					$('#sidebar').load('navbar.html');
+
+					// Insert today's date
+					var d = new Date();
+					var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+					document.getElementById("date").innerHTML = d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+				});
+			</script>
+
+	</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE HTML>
+<!--
+	Editorial by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>EGB320 Mechatronics Design 2</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link id="pagestyle" rel="stylesheet" href="assets/css/main.css" />
+		<link href="assets/css/main.css" media="print" rel="stylesheet" />
+	</head>
+
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+
+							<!-- Header -->
+								<header id="header">
+									<a href="index.html" class="logo">EGB320 - Mechatronics Design 2</a>
+									<a id="date" class="logo date">Date</a>
+								</header>
+
+							<!-- Content -->
+								<section>
+									<div class="page-wrapper"> 
+										<header class="main">
+											<h1>Raspberry Pi GPIO and Python Tutorial</h1>
+											<a href="#" class="button pdf-exclude" onclick="CreateDocumentToExportPDF('EGB320_GPIO_Python_Tutorial.pdf')">Download PDF Version</a>
+										</header>							
+
+										<!-- <p>This tutorial provides an introduction to the Raspberry Pi's GPIO pins, and how to interface with them using python 3. 
+										</p> -->
+
+										<h2>Overview</h2>
+										
+										<p style="padding: 0px; margin: 0;">To complete your soccer bot project, you will need to use the Raspberry Pi general purpose input/output (GPIO) pins. The programming language you use to communicate with the GPIO pins is up to you, however this tutorial will be written using python 3. 
+
+										The GPIO pins are a physical interface between the Pi and all external connections. The Raspberry Pi has 40 pins which can be accessed. These are as follows;
+										<ul style="margin-left: 35px; padding: 10px; margin-bottom: 0px">
+											<li> 26 GPIO pins</li>
+											<li> 12 power pins (split between 5V, 3.3V and Ground)</li>
+											<li> 2 eeprom pins</li>
+										</ul>
+										Over the course of this semester, you will become quite familiar with the GPIO pin layout presented below (your RPi 3B has this same configuration).
+										<figure class="figure">
+	    										<img src="images/gpio-numbers-pi2.png" width="60%" alt="Image Not Found" />
+	    										<figcaption>Raspberry Pi Pin Descriptions. Image source: <a href="https://i.stack.imgur.com/YkgK1.png">Stack Exchange</a></figcaption>
+										</figure>
+										A more detailed representation is described here, with the pin numbers and functions listed next to each pin. The pin names according to the BCM naming convention are listed next to each pin, while the BOARD naming convention refers to the raw pin numbers presented at the far left and right of the image. For example, the bottom pin, listed as GPIO21 and pin# 40, is referred to as 21 under BCM convention, or 40 under BOARD convention.
+										<figure class="figure">
+	    										<img src="images/setup/pi3_gpio.png" width="40%" alt="Image Not Found" />
+	    										<figcaption>Raspberry Pi GPIO Pinout. Image source: <a href="https://www.element14.com/community/servlet/JiveServlet/previewBody/73950-102-12-339300/pi3_gpio.png">Element 14</a></figcaption>
+										</figure>
+
+										</p>						
+									
+										<hr class="major pdf-exclude" />
+										<h2>GPIO Activity</h2>
+										<h3 style="padding: 0px; margin-bottom: 3px; margin-top: 3px">Required Components</h3>
+										<p style="padding: 0px; margin-bottom: 0px">To help you learn how the GPIO pins work, the following example will step you through the process of controlling an LED with the Raspberry Pi. To complete this example, you will need the following
+										<ul style="margin-left: 35px; padding: 10px; margin-bottom: 0px">
+											<li> 1 LED</li>
+											<li> 1 330ohm resistor</li>
+											<li> 1 breadboard</li>
+											<li> 2 male --> female jumper cables</li>
+										</ul>
+										
+										<h3 style="padding: 0px; margin-bottom: 3px; margin-top: 3px">Connecting the Hardware</h3>
+										First, we must connect the LED to the raspberry pi. If you are currently using the provided screen, you will need to disconnect the screen to access the pins. For this example we will be using pin 21 and the ground pin located directly next it. 
+										<figure class="figure">
+	    										<img src="images/RPi-LED-Plugs.png" width="60%" alt="Image Not Found" />
+	    										<figcaption>Raspberry Pi Pin Setup for LED Activity</figcaption>
+										</figure>
+										Using your breadboard, wire up the LED and resistor as shown below. The red cable shown below should connect your GPIO pin (the white cable in the previous image) to your LED. The black cable should connect the ground pin to the unattached end of your resistor.
+										<figure class="figure">
+	    										<img src="images/breadboard.png" width="50%" alt="Image Not Found" />
+	    										<figcaption>Breadboard Setup for LED Activity</figcaption>
+										</figure>
+										Now reattach your HDMI screen, and connect your Raspberry Pi to the power supply. Attach a USB keyboard and mouse to the Raspberry Pi. 
+										<h3 style="padding: 0px; margin-bottom: 3px; margin-top: 10px">Programming Using GPIO</h3>
+										Now that you have connected an LED to your Raspberry Pi, the next step is to write some software to control the input and output signals sent from the Pi to the LED circuit. In this example, we will write our script using Spyder, however you may use any text editor and terminal emulator you like to write and run your scripts.
+
+										Open Spyder by either entering the command line input;
+
+										<pre style="margin-top: 10px; margin-bottom: 10px"><code>spyder</code></pre>
+										or through the user interface under menu -> programming -> spyder.
+										
+										The following example code should get you started with interfacing between the Raspberry Pi and an LED connected to pin 21;
+
+										<pre style="margin-top: 5px; margin-bottom: 0px"><code>import RPi.GPIO as GPIO			# Import the GPIO module
+import time 				# Import the time module
+GPIO.setmode(GPIO.BCM)			# Set the GPIO pin naming convention to BCM
+GPIO.setup(21,GPIO.OUT)			# Set up GPIO pin 21 as an output
+GPIO.output(21,GPIO.HIGH) 		# Set GPIO pin 21 to digital high (on)
+time.sleep(5)				# Wait for 5 seconds
+GPIO.output(21,GPIO.LOW)		# Set GPIO pin 21 to digital low (off)</code></pre>
+										Run your script by clicking the green arrow "play" button at the top of the Spyder UI. The expected output from the program is an LED which turns on for 5 seconds, then turns off.
+
+										</p>
+										<div class="html2pdf__page-break"></div>
+									</div>							
+
+								</section>
+
+						</div>
+					</div>
+
+				<!-- Sidebar -->
+					<div id="sidebar">
+						<!-- Will be inserted with JS -->
+					</div>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+			<script src="assets/js/generatePDF.js"></script>
+			<script type="text/javascript">
+				// On Load
+				$(document).ready(function(){
+					// Load sidebar
+					$('#sidebar').load('navbar.html');
+
+					// Insert today's date
+					var d = new Date();
+					var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+					document.getElementById("date").innerHTML = d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+				});
+			</script>
+
+	</body>
+</html>

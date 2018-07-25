@@ -1,0 +1,208 @@
+<!DOCTYPE HTML>
+<!--
+	Editorial by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>EGB320 Mechatronics Design 2</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link id="pagestyle" rel="stylesheet" href="assets/css/main.css" />
+		<link href="assets/css/main.css" media="print" rel="stylesheet" />
+	</head>
+
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+
+							<!-- Header -->
+								<header id="header">
+									<a href="index.html" class="logo">EGB320 - Mechatronics Design 2</a>
+									<a id="date" class="logo date">Date</a>
+								</header>
+
+							<!-- Content -->
+								<section>
+									<div class="page-wrapper"> 
+										<header class="main">
+											<h1>Vision Tutorial</h1>
+											<a href="#" class="button pdf-exclude icon fa-download" onclick="CreateDocumentToExportPDF('EGB320_VisionTutorial.pdf')">Download PDF Version</a>
+										</header>							
+
+										<p>This tutorial will help you get started with computer vision on the raspberry pi. First we will get you up and running by learning to take images using OpenCV and python, then we will go through some image processing methods which you may find useful for your final project.</p>
+
+										<h2>OpenCV Python Basics</h2>
+										
+										<p>This part of the tutorial is designed to help you get started with capturing images and using OpenCV on the raspberry pi. Throughout this tutorial, we will be using python 3 and a raspberry pi camera however for your project you may use any programming language or camera you like.</p>
+
+										<h3>Importing Libraries</h3>
+										
+										<p>The main libraries which you need to be familiar with for the vision component of your task are the OpenCV (open source computer vision) and numpy (numerical python) libraries. Both libraries have been pre-installed on your raspberry pi’s for you (OpenCV takes hours to install), however if for any reason you do need assistance installing these at any stage, we are happy to guide you through it.</p>
+
+										<p>To import these libraries, you should have the following at the top of each script:</p>
+
+										<pre><code>import cv2
+import numpy as np</code></pre>
+
+										<h3>The Camera Object</h3>
+										
+										<p>The next step is to create your camera object. There are 2 modules which you can use for this; the picamera module, or OpenCV’s inbuilt cv2.VideoCapture() module. There are advantages for use of either method, so it is up to you to decide which module you would like to use for your project. Since cv2.VideoCapture() will work with any camera, we will use this for demonstration.</p>
+
+										<pre><code>cap = cv2.VideoCapture(0)  		# Connect to camera 0 (or the only camera)
+cap.set(3, 320)                     	# Set the width to 320
+cap.set(4, 240)                     	# Set the height to 240
+ret, frame = cap.read()	     		# Get a frame from the camera </code></pre>
+
+										<h3>Displaying Frames Using OpenCV and Python</h3>
+										
+										<p>Now you have called the function to read a frame in from the camera, and stored the data in your ‘frame’ variable, you may wish to display your image. The ‘ret’ variable you just created will tell you whether or not the frame was successfully obtained, so first you must ensure the read was a success. Then, you can use the OpenCV cv2.imshow() function to display your frame!</p>
+
+										<pre><code>If ret == True:				     # Check if data was obtained successfully
+	cv2.imshow(“CameraImage”, frame)     # Display the obtained frame in a window called “CameraImage”
+	cv2.waitKey(0)			     # Make the program wait until you press a key before continuing</code></pre>
+										
+										<p>If we wanted to save this image, we could add a save step after obtaining the image.</p>
+
+										<pre><code>imwrite(“frame0001.png”, frame)		# Save the frame as frame0001.png</code></pre>
+
+										<div class="html2pdf__page-break"></div>
+									</div>
+
+									<div class="page-wrapper"> 
+										<h3>The Clean Up Step</h3>
+										
+										<p>To ensure a clean exit of your program, there are a couple of things you should do at the end of your script. Since we have opened an instance of the camera object and some pop-up windows using OpenCV, we need to close these prior to termination of the program. The following functions should be at the end of each vision script you run.</p>
+
+										<pre><code>cap.release()			# Release the camera object
+cv2.destroyAllWindows()		# Close all opencv pop-up windows</code></pre>
+									
+										<hr class="major pdf-exclude" />
+										<h2>OpenCV Image Processing</h2>
+										<p>Now you have had the change to read in an image using python and opencv on your raspberry pi, you can start looking at the image processing steps you may want to use in your project. This part of the tutorial will present a range of different image processing methods which you may find helpful. </p>
+										
+										<h3>Changing Colour Spaces</h3>
+										
+										<p>Typically, images are captured using a derivative of the RGB colourspace, however there are many other colourspaces available for you to test as well. The default frame input will be read as BGR (blue, green, red) using the cv2.VideoCapture or picamera modules. Changing colourspaces after obtaining an image is quite simple using OpenCV, and examples of this are presented below.</p>
+
+										<pre><code>hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) 		# Convert to HSV colourspace
+lab_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2Lab) 		# Convert to Lab colourspace</code></pre>
+
+										<p>For other colour spaces, such as YUV etc., refer to the following guide to obtain the code to pass into the cv2.cvtColor() function, <a href="https://docs.opencv.org/3.2.0/d7/d1b/group__imgproc__misc.html#ga4e0972be5de079fed4e3a10e24ef5ef0">OpenCV cvtColor docs</a>.</p>
+
+										<h3>Splitting Colour Channels and Creating Regions of Interest</h3>
+										
+										<p>It may be useful to operate independently with single-colour channels, or regions of interest within images. For example, we can set all the blue pixels in an image to zero using the OpenCV functions cv2.split() and cv2.merge().</p>
+
+										<pre><code>b, g, r = cv2.split(frame)		# Split the frame into its 3 colour channels
+b = b*0					# Set the blue pixels to zero
+frame = cv2.merge((b, g, r))		# Merge the channels back into one image</code></pre>
+
+
+
+										<p>Be aware of the computational cost of merging channels – this should be avoided if possible. An alternative to the OpenCV process can be achieved using numpy arrays, as shown below. Note: OpenCV reads images into python as numpy arrays. Images stored in numpy arrays are represented with 3 elements, being [rows, columns, colourchannels].</p>
+
+										<pre><code>frame[:, :, 0] = 0				# Set colour channel 0 (blue) to 0</code></pre>
+
+										<p>If you wish to extract a region of interest from an image, you can also do this by indexing the numpy array. </p>
+
+										<pre><code>sub_frame = frame[200:300, 200:300, 0]		# Extract blue colour channel of a 100 pixel region
+sub_ frame = sub_image * 2			# Double the pixel blue channel values
+frame[200:300, 200:300, 0] = sub_frame		# Replace the region in the original image with our sub frame</code></pre>
+										<div class="html2pdf__page-break"></div>
+									</div>
+
+									<div class="page-wrapper"> 
+										<h3>Image Segmentation</h3>
+										
+										<p>Image segmentation is the division of an image into regions or segments which correspond to different objects within the image and is a critical step in most image analyses. In OpenCV there are many approaches to image segmentation. <br/> Simple thresholding can be completed using the cv2.threshold() function, which takes the following format;</p>
+
+										<pre><code>ret, dst = cv2.threshold(src, thresh, maxValue, type)</code></pre>
+
+										<p>In this function, the parameters have the following meanings:</p>
+
+										<pre><code>dst 		→ 		The output image
+src 		→ 		The input image (this should be a grayscale image)
+thresh 		→ 		The threshold value
+maxValue 	→ 		A maximum value, used for binary thresholding
+type 		→ 		The thresholding method being used (see <a href="https://docs.opencv.org/3.4.1/d7/d1b/group__imgproc__misc.html#gaa9e58d2860d4afa658ef70a9b1115576">here</a> for parameter options)</code></pre>
+
+										<p>For more details regarding the threshold function, see the documentation at <a href="https://docs.opencv.org/3.4.1/d7/d1b/group__imgproc__misc.html#gae8a4a146d1ca78c626a53577199e9c57">OpenCV cv2.threshold() docs</a>. An overview of the mathematics behind various thresholding methods is provided here <a href="https://docs.opencv.org/3.4.1/d7/d1b/group__imgproc__misc.html#gaa9e58d2860d4afa658ef70a9b1115576">OpenCV thresholding methods docs</a>.</p>
+
+										<p>For example, we may wish to threshold an image such that
+											<ul style="margin-left: 15px;">												
+													<li>all pixels > 127 are set to 255</li>
+													<li>all pixels < 127 are set to 0</li>
+											</ul>
+										</p>
+
+										<p>We would first convert our input frame to grayscale, then threshold the grayscale image using the binary thresholding method with a threshold of 127;</p>
+
+
+										<pre><code>gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+ret, thresholded_frame = cv2.threshold(gray_frame, 127, 255, cv2.THRESH_BINARY)</code></pre>
+										
+										<p>A full example of a colour thresholding and image segmentation process can be completed as per the following script;</p>
+
+										<pre><code>import numpy as np
+import cv2
+
+cap = cv2.VideoCapture(0)								# Create the camera object
+cap.set(3, 640)										# Set the frame width
+cap.set(4, 480)										# Set the frame height
+
+ret, frame = cap.read()									# Import the raw frame
+frame_blue = frame[:,:,0];								# Extract the blue colour channel
+gray_frame = cv2.cvtColor(frame_blue, cv2.COLOR_BGR2GRAY)				# Convert the frame to grayscale
+ret, thresholded_frame = cv2.threshold(gray_frame, 127, 255, cv2.THRESH_BINARY)		# Threshold the grayscale image
+
+cv2.imshow("Binary Thresholded Frame", thresholded_frame)				# Display the thresholded frame
+cv2.waitKey(0)										# Wait for a keypress before exiting
+
+cap.release()
+cv2.destroyAllWindows()</code></pre>
+										<div class="html2pdf__page-break"></div>
+									</div>
+
+									<a href="dlc/scripts/python/ImageRecorderClass.py" class="button pdf-exclude icon fa-download" download>Download Image Stream Recording Script</a>									
+
+								</section>
+
+						</div>
+					</div>
+
+				<!-- Sidebar -->
+					<div id="sidebar">
+						<!-- Will be inserted with JS -->
+					</div>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+			<script src="assets/js/generatePDF.js"></script>
+			<script type="text/javascript">
+				// On Load
+				$(document).ready(function(){
+					// Load sidebar
+					$('#sidebar').load('navbar.html');
+
+					// Insert today's date
+					var d = new Date();
+					var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+					document.getElementById("date").innerHTML = d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+				});
+			</script>
+
+	</body>
+</html>

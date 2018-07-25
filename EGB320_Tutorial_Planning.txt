@@ -1,0 +1,58 @@
+ACTIONS:
+- Put Sublime Text on RPi image
+
+
+RESOURCES:
+- https://blog.withcode.uk/2016/10/rpi-gpio-python-simulator/
+- https://roderickvella.wordpress.com/2016/06/28/raspberry-pi-gpio-emulator/
+- Sparkfun EagleCAD tutorials
+
+Raspberry Pi:
+- What is Linux
+- GPIO Dos and Don'ts
+- Camera Dos and Don'ts
+- Screen Command
+- Raspi Config
+	- Enabling Camera, Keyboard, HDMI etc
+- Powering, Battery Safety
+- Everything RPi capable of and what is applicable to EGB320
+- Advanced:
+	- SSH
+	- WiFi, WPA Supplicant
+	- AD-HOC Network
+
+
+Python:
+- USB with Ubuntu Boot
+- If main
+- Classes, or at least a very good resource on OOP in Python
+- GitHub
+- Unit Testing
+
+
+VREP:
+- How to run VREP
+- How to connect to VREP
+- Our functions
+- Essentially everything to operate simulator
+- Unit Testing
+
+
+Elec:
+- Boost Circuit Design
+	- http://www.simonbramble.co.uk/dc_dc_converter_design/dc_dc_converter_design.htm
+- Motor Driver Design, includes some calcs/specs
+- Connector Choices
+- What not to do, Blu-Tak
+- Sparkfun EagleCAD Tutorials
+- Unit Testing
+
+
+Mech:
+- Movement Motor Calcs
+- Kicker Calcs
+- Dribbler Calcs
+- What not to do, acrylic
+- SolidWorks Resources
+- Unit Testing
+

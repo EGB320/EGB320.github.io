@@ -1,0 +1,111 @@
+<!DOCTYPE HTML>
+<!--
+	Editorial by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>EGB320 Mechatronics Design 2</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link id="pagestyle" rel="stylesheet" href="assets/css/main.css" />
+		<link href="assets/css/main.css" media="print" rel="stylesheet" />
+	</head>
+
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+
+							<!-- Header -->
+								<header id="header">
+									<a href="index.html" class="logo">EGB320 - Mechatronics Design 2</a>
+									<a id="date" class="logo date">Date</a>
+								</header>
+
+							<!-- Content -->
+								<section>
+									<div class="page-wrapper"> 
+										<header class="main">
+											<h1>Change Log</h1>
+											<!-- <a href="#" class="button pdf-exclude icon fa-download" onclick="CreateDocumentToExportPDF('ChangeLog.pdf')">Download PDF Version</a> -->
+										</header>							
+
+										<p>Simply shows the various changes made to the website throughout the semester.</p>
+
+										<div class="table-wrapper">
+											<table>
+												<thead>
+													<tr>
+														<th>Change Date</th>
+														<th>Change Description</th>
+													</tr>
+												</thead>
+												<tbody>
+													<!-- <tr>
+														<td>Item1</td>
+														<td>Ante turpis integer aliquet porttitor.</td>
+													</tr>
+													<tr>
+														<td>Item2</td>
+														<td>Vis ac commodo adipiscing arcu aliquet.</td>
+													</tr>
+													<tr>
+														<td>Item3</td>
+														<td> Morbi faucibus arcu accumsan lorem.</td>
+													</tr>
+													<tr>
+														<td>Item4</td>
+														<td>Vitae integer tempus condimentum.</td>
+													</tr>
+													<tr>
+														<td>Item5</td>
+														<td>Ante turpis integer aliquet porttitor.</td>
+													</tr> -->
+												</tbody>
+											</table>
+										</div>
+										
+										<div class="html2pdf__page-break"></div>
+									</div>
+									
+
+								</section>
+
+						</div>
+					</div>
+
+				<!-- Sidebar -->
+					<div id="sidebar">
+						<!-- Will be inserted with JS -->
+					</div>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+			<script src="assets/js/generatePDF.js"></script>
+			<script type="text/javascript">
+				// On Load
+				$(document).ready(function(){
+					// Load sidebar
+					$('#sidebar').load('navbar.html');
+
+					// Insert today's date
+					var d = new Date();
+					var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+					document.getElementById("date").innerHTML = d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+				});
+			</script>
+
+	</body>
+</html>
