@@ -74,6 +74,28 @@ class VREP_SoccerBot(object):
 	# THESE ARE THE FUNCTIONS YOU SHOULD CALL.
 	# ALL OTHER FUNCTIONS ARE HELPER FUNCTIONS.
 
+	# Starts the VREP Simulator. 
+	# The VREP Simulator can also be started manually by pressing the Play Button in VREP.
+	def StartSimulator(self):
+		print('Attempting to Start the Simulator')
+		if vrep.simxStartSimulation(self.clientID, vrep.simx_opmode_oneshot_wait) != 0:
+			print('An error occurred while trying to start the simulator via the Python API. Terminating Program!')
+			print('Comment out calls to StartSimulator() and start the simulator manully by pressing the Play button in VREP.')
+			exit(-1)
+		else:
+			print('Successfully started the VREP Simulator.')
+
+
+	# Stops the VREP Simulator. 
+	# The VREP Simulator can also be stopped manually by pressing the Stop Button in VREP.
+	def StopSimulator(self):
+		print('Attempting to Stop the Simulator')
+		if vrep.simxStopSimulation(self.clientID, vrep.simx_opmode_oneshot_wait) != 0:
+			print('Could not stop the simulator. You can stop the simulator manually by pressing the Stop button in VREP.')
+		else:
+			print('Successfully stoped the VREP Simulator.')
+
+
 	# Gets the Range and Bearing to All Detected Objects.
 	# returns:
 	#	ballRangeBearing - range and bearing to the ball with respect to the camera, will return None if the object is not detected
@@ -129,12 +151,10 @@ class VREP_SoccerBot(object):
 		leftWheelSpeed = (x_dot - 0.5*theta_dot*self.robotParameters.wheelBase) / self.robotParameters.wheelRadius + self.leftWheelBias
 		rightWheelSpeed = (x_dot + 0.5*theta_dot*self.robotParameters.wheelBase) / self.robotParameters.wheelRadius + self.rightWheelBias
 
-
+		# add gaussian noise to the wheel speed
 		if self.robotParameters.driveSystemQuality != 1:
 			leftWheelSpeed = np.random.normal(leftWheelSpeed, (1-self.robotParameters.driveSystemQuality)*1, 1)
 			rightWheelSpeed = np.random.normal(rightWheelSpeed, (1-self.robotParameters.driveSystemQuality)*1, 1)
-
-
 
 		# ensure wheel speeds are not greater than maximum wheel speed
 		leftWheelSpeed = min(leftWheelSpeed, maxWheelSpeed)
@@ -162,7 +182,8 @@ class VREP_SoccerBot(object):
 
 		return False
 
-	# Will attempt to kick the ball
+	# Will attempt to fire the kicker plate. The kick plate will not be fired if the kicker plate
+	# has not reset itself (will reset automatically with time, takes approximately 1 second).
 	# inputs:
 	#	kickSpeed - the velocity of the kicker
 	def KickBall(self, kickSpeed):

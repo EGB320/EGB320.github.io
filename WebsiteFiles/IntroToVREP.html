@@ -34,7 +34,7 @@
 										<header class="main">
 											<h1>Introduction to VREP Simulator</h1>
 											<a href="#" class="button pdf-exclude icon fa-download" onclick="CreateDocumentToExportPDF('EGB320_IntroToVREP.pdf')">Download PDF Version</a>
-											<a href="#" class="button pdf-exclude icon fa-download" download>EGB320 VREP Files</a>
+											<a href="dlc/EGB320_VREP_Files.zip" class="button pdf-exclude icon fa-download" download>EGB320 VREP Files</a>
 										</header>							
 
 										<p>This article discusses the Virtual Robot Experimentation Platform (VREP) simulation environment. This article will discuss VREP and how it can be used within the Navigation/AI aspects of your project. However, VREP could be used for almost all aspects of your project to help refine your design.</p>
@@ -53,7 +53,7 @@
 									
 										<hr class="major pdf-exclude" />
 										<h2>Setting Up Your VREP Scene</h2>
-										<em>Make sure you have downloaded and extracted the EGB320 VREP files, see the top of the page for download link.</em>
+										<p><em>Make sure you have downloaded and extracted the EGB320 VREP files, see the top of the page for download link.</em></p>
 
 										<p>To setup the scene for this design project we must first launch VREP. Once VREP has launched, select File -> Open Scene. Then navigate to where you extracted the EGB320 VREP files and open up the file EGB320Scene.ttt. Aftet opening the file your VREP workspace should contain the Soccer Bot Arena, as well as 3 obstacles and the orange ball on a side table.</p>
 
@@ -105,13 +105,13 @@
 										<h2>Controlling Your VREP Robot Using Python</h2>
 										<p>Interfacing to VREP with Python is quite trivial using VREP's Application Programming Interface (API). However, so you can concentrate on developing your navigation code we have created our own Python Module which simplifies it still. If you wish to know how to use the VREP API check out <a target="_blank" href="http://www.coppeliarobotics.com/helpFiles/en/remoteApiFunctionsPython.htm">VREP Python API Documentation</a> and <a target="_blank" href="https://www.youtube.com/watch?v=Hk98gquFYuk">this tutorial</a>.</p>
 
-										<p>To open a connection to VREP using the EGB320 Python API first create a new Python Script in the EGB320 VREP Files. You need create your script in this directory as your script will be implicitly calling functions from the vrep.py, vrepConst.py and the remoteAPI files (.so for Linux, .dll for Windows, .dylib for Mac).</p>
+										<p>To open a connection to VREP using the EGB320 SoccerBot Python Module first create a new Python Script in the EGB320 VREP Python Code Folder. You need create your script in this directory as your script will be implicitly calling functions from the vrep.py, vrepConst.py and the remoteAPI files (.so for Linux, .dll for Windows, .dylib for Mac).</p>
 
 										<p>Within your new script write add the following code.</p>
 
 										<pre><code>#!/usr/bin/python
 
-# import the soccer bot API - this will include math, time, random and vrep python modules
+# import the soccer bot module - this will include math, time, numpy (as np) and vrep python modules
 from soccerbot_lib import *
 
 # SET SCENE PARAMETERS
@@ -124,7 +124,11 @@ robotParameters = RobotParameters()
 if __name__ == '__main__':
 
 	soccerBotSim = VREP_SoccerBot('127.0.0.1', robotParameters, sceneParameters)
-	soccerBotSim.SetTargetVelocities(0.1,0,0)</code></pre>
+	soccerBotSim.StartSimulator()
+
+	while True:
+		soccerBotSim.SetTargetVelocities(0.1, 0, 0)
+		soccerBotSim.UpdateBallPosition()</code></pre>
 
 										<p>Now run your script. You will find that it will attempt to connect to the VREP API server, but it will fail and so the script will terminate. This is because within VREP we have not said to start the simulator. To start the simulator go back into VREP and hit the Play button located on the menu bar. Then re-run your script. It should successfully connect to VREP and your robot should drive forward eventually crashing into the wall.</p>
 										<div class="html2pdf__page-break"></div>
@@ -136,7 +140,7 @@ if __name__ == '__main__':
 
 										<pre><code>from soccerbot_lib import *</code></pre>
 
-										<p>This imports all the functions, classes and global variables from the soccerbot_lib.py script. This will also import the Python modules math, time, random and vrep.</p>
+										<p>This imports all the functions, classes and global variables from the soccerbot_lib.py script. This will also import the Python modules math, time, numpy (as np) and vrep.</p>
 
 										<pre><code>sceneParameters = SceneParameters()</code></pre>
 
@@ -159,20 +163,30 @@ if __name__ == '__main__':
 												<li>The robot parameters.</li>
 											</ul>
 										 </p>
+
+										 <pre><code>soccerBotSim.StartSimulator()</code></pre>
+
+										 <p>This will start the VREP simulator, which can also be done manually by pressing the Play button in VREP.</p>
 										<div class="html2pdf__page-break"></div>
 									</div>
 
 									<div class="page-wrapper"> 
 
-										 <pre><code>soccerBotSim.SetTargetVelocities(0.1,0,0)</code></pre>
+										 <pre><code>while True:
+	soccerBotSim.SetTargetVelocities(0.1, 0, 0)
+	soccerBotSim.UpdateBallPosition()</code></pre>
 
-										 <p>The final line of code sets the velocities of our robot. The function takes three inputs. The inputs are the robot's desired linear velocity in the x direction, the y direction, followed by the desired rotational velocity. The units of measure are m/s and rad/s for the linear and rotational velocities respectively. These velocities are also specified within the robot's coordinate frame. In simple terms the x velocity is how quickly you want the robot to move forward, the y velocity is only applicable to omni-drive robots and is how quickly you want the robot to move perpendicular to its forward direction, and the rotational velocity is how quickly you want the robot to rotate.</p>
+										 <p>The final lines above consist of an infinite while loop which constantly calls the SetTargetVelocities and UpdateBallPosition Functions. The second line of code sets the velocities of our robot using the SetTargetVelocities function which takes three inputs. The inputs are the robot's desired linear velocity in the x direction, the y direction, followed by the desired rotational velocity. The units of measure are m/s and rad/s for the linear and rotational velocities respectively. These velocities are also specified within the robot's coordinate frame. In simple terms the x velocity is how quickly you want the robot to move forward, the y velocity is only applicable to omni-drive robots and is how quickly you want the robot to move perpendicular to its forward direction, and the rotational velocity is how quickly you want the robot to rotate. The third line calling the UpdateBallPosition function is used to reset the ball position to the center of the arena when it goes into a goal.</p>
 
 										 <hr class="major pdf-exclude" />
-										<h2>SoccerBot Python API Functions</h2>
-										<p>There are only 5 functions within the SoccerBot Python API that you will need to call, including the SetTargetVelocities function which we have already seen.</p>
+										<h2>SoccerBot Python Module Functions</h2>
+										<p>There are only 7 functions within the SoccerBot Python Module that you will need to call, including the StartSimulator, SetTargetVelocities and UpdateBallPosition functions which we have already seen.</p>
 
-										<p><b>SetTargetVelocities(x_dot, y_dot, theta_dot)</b>: The SetTargetVelocities sets the robot's linear speed in the x and y direction with respect to the robot's coordinate frame and the robot's rotation velocity. The linear speeds, x_dot and y_dot, are in m/s while the rotation velocity, theta_dot, is in rad/s. Setting the y_dot velocity to a non-zero value while using a differential drive robot is impossible, and will simply be reset to 0. The maximum and minimum values you can set are based on the robot parameters, see <a href="#RobotParameters">Robot Parameters</a>. Example function usage:</p>
+										<p><b>StartSimulator()</b>: The StartSimulator function starts the VREP simulator. This is the same as manually pressing the Play button within VREP.</p>
+
+										<p><b>StopSimulator()</b>: The StopSimulator function stops the VREP simulator. This is the same as manually pressing the Stop button within VREP.</p>
+
+										<p><b>SetTargetVelocities(x_dot, y_dot, theta_dot)</b>: The SetTargetVelocities function sets the robot's linear speed in the x and y direction with respect to the robot's coordinate frame and the robot's rotation velocity. The linear speeds, x_dot and y_dot, are in m/s while the rotation velocity, theta_dot, is in rad/s. Setting the y_dot velocity to a non-zero value while using a differential drive robot is impossible, and will simply be reset to 0. The maximum and minimum values you can set are based on the robot parameters, see <a href="#RobotParameters">Robot Parameters</a>. Example function usage:</p>
 
 										<pre><code># move the robot at a forward velocity of 0.1m/s with a rotational velocity of 0.5 rad/s.
 soccerBotSim.SetTargetVelocities(0.1, 0, 0.5)</code></pre>
@@ -197,7 +211,7 @@ if obstacles != None:
 
 									<div class="page-wrapper"> 
 
-										<p><b>KickBall(kickSpeed)</b>: The KickBall function attempts to kick the ball with the passed kick speed. Example function usage: </p>
+										<p><b>KickBall(kickSpeed)</b>: The KickBall function attempts to fire the kicker plate with the passed kick speed. The kicker plate will not be fired if it has not reset. The kicker plate will reset itself over time automatically, it takes approximately 1 second to reset. Example function usage: </p>
 
 										<pre><code># Attempt to kick the ball with a kick speed of 0.5m/s
 soccerBotSim.KickSpeed(0.5)</code></pre>

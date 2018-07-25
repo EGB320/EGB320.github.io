@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 
-# import the soccer bot API - this will include math, time, random and vrep python modules
+# import the soccer bot module - this will include math, time, numpy (as np) and vrep python modules
 from SoccerBot_API import *
 
 #import any other required python modules
@@ -42,31 +42,40 @@ robotParameters.dribblerQuality = 1 # specifies how good your dribbler is from 0
 # MAIN SCRIPT
 if __name__ == '__main__':
 
-	# Create VREP SoccerBot object - this will attempt to open a connection to VREP. Make sure the VREP simulator is running.
-	soccerBotSim = VREP_SoccerBot('127.0.0.1', robotParameters, sceneParameters)
+	# Wrap everything in a try except case that catches KeyboardInterrupts and SystemExits. 
+	# In the exception catch code attempt to Stop the VREP Simulator so don't have to Stop it manually
+	try:
+
+		# Create VREP SoccerBot object - this will attempt to open a connection to VREP. Make sure the VREP simulator is running.
+		soccerBotSim = VREP_SoccerBot('127.0.0.1', robotParameters, sceneParameters)
+		soccerBotSim.StartSimulator()
 
 
-	while True:
-		# move the robot at a forward velocity of 0.1m/s with a rotational velocity of 0.5 rad/s.
-		soccerBotSim.SetTargetVelocities(0.1, 0, 0.5)
+		while True:
+			# move the robot at a forward velocity of 0.1m/s with a rotational velocity of 0.5 rad/s.
+			soccerBotSim.SetTargetVelocities(0.1, 0, 0.5)
 
-		# Get Detected Objects
-		ballRB, blueRB, yellowRB, obstaclesRB = soccerSimBot.GetDetectedObjects()
+			# Get Detected Objects
+			ballRB, blueRB, yellowRB, obstaclesRB = soccerSimBot.GetDetectedObjects()
 
-		# Check to see if the ball is within the camera's FOV
-		if ballRB != None:
-			ballRange = ballRB[0]
-			ballBearing = ballRB[1]
+			# Check to see if the ball is within the camera's FOV
+			if ballRB != None:
+				ballRange = ballRB[0]
+				ballBearing = ballRB[1]
 
-		# Check to see if any obstacles are within the camera's FOV
-		if obstacles != None:
-			# loop through each obstacle detected using Pythonian way
-			for obstacle in obstaclesRB:
-				obstacleRange = obstacle[0]
-				obstacleBearing = obstacle[1]
+			# Check to see if any obstacles are within the camera's FOV
+			if obstacles != None:
+				# loop through each obstacle detected using Pythonian way
+				for obstacle in obstaclesRB:
+					obstacleRange = obstacle[0]
+					obstacleBearing = obstacle[1]
 
-		# Update Ball Position
-		soccerBotSim.UpdateBallPosition()
+			# Update Ball Position
+			soccerBotSim.UpdateBallPosition()
+
+	except (KeyboardInterrupt, SystemExit) as e:
+		# attempt to stop simulator so it restarts and don't have to manually press the Stop button in VREP 
+		soccerBotSim.StopSimulator()
 
 
 
