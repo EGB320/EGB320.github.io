@@ -103,7 +103,7 @@
 										
 										<hr class="major pdf-exclude" />
 										<h2>Controlling Your VREP Robot Using Python</h2>
-										<p>Interfacing to VREP with Python is quite trivial using VREP's Application Programming Interface (API). However, so you can concentrate on developing your navigation code we have created our own Python API which simplifies it still. If you wish to know how to use the VREP API check out <a target="_blank" href="http://www.coppeliarobotics.com/helpFiles/en/remoteApiFunctionsPython.htm">VREP Python API Documentation</a> and <a target="_blank" href="https://www.youtube.com/watch?v=Hk98gquFYuk">this tutorial</a>.</p>
+										<p>Interfacing to VREP with Python is quite trivial using VREP's Application Programming Interface (API). However, so you can concentrate on developing your navigation code we have created our own Python Module which simplifies it still. If you wish to know how to use the VREP API check out <a target="_blank" href="http://www.coppeliarobotics.com/helpFiles/en/remoteApiFunctionsPython.htm">VREP Python API Documentation</a> and <a target="_blank" href="https://www.youtube.com/watch?v=Hk98gquFYuk">this tutorial</a>.</p>
 
 										<p>To open a connection to VREP using the EGB320 Python API first create a new Python Script in the EGB320 VREP Files. You need create your script in this directory as your script will be implicitly calling functions from the vrep.py, vrepConst.py and the remoteAPI files (.so for Linux, .dll for Windows, .dylib for Mac).</p>
 
@@ -112,7 +112,7 @@
 										<pre><code>#!/usr/bin/python
 
 # import the soccer bot API - this will include math, time, random and vrep python modules
-from SoccerBot_API import *
+from soccerbot_lib import *
 
 # SET SCENE PARAMETERS
 sceneParameters = SceneParameters()
@@ -134,9 +134,9 @@ if __name__ == '__main__':
 
 										<p>Now to explain the code.</p>
 
-										<pre><code>from SoccerBot_API import *</code></pre>
+										<pre><code>from soccerbot_lib import *</code></pre>
 
-										<p>This imports all the functions, classes and global variables from the SoccerBot_API.py script. This will also import the Python modules math, time, random and vrep.</p>
+										<p>This imports all the functions, classes and global variables from the soccerbot_lib.py script. This will also import the Python modules math, time, random and vrep.</p>
 
 										<pre><code>sceneParameters = SceneParameters()</code></pre>
 
@@ -150,7 +150,7 @@ if __name__ == '__main__':
 
 										<p>This is a Python capability. Essentially this says that if this is the main script being run, then perform the following operations; if this is not the main script (i.e. it has been imported by another script) do not perform the following actions. This is a great way to write Python modules and allow them to write test code.</p>
 
-										<pre><code>soccerBotSim - VREP_SoccerBot('127.0.0.1', robotParameters, sceneParameters)</code></pre>
+										<pre><code>soccerBotSim = VREP_SoccerBot('127.0.0.1', robotParameters, sceneParameters)</code></pre>
 
 										<p>This line of code creates an instance of the VREP_SoccerBot class and stores that instance as a variable, in this scenario we have called that variable soccerBotSim. We have passed three arguments into this function, they are in order: 
 											<ul>
@@ -250,6 +250,8 @@ robotParameters = RobotParameters()
 # Drive Parameters
 robotParameters.minimumLinearSpeed = 0.04  		# minimum speed at which your robot can move forward in m/s
 robotParameters.maximumLinearSpeed = 0.25 		# maximum speed at which your robot can move forward in m/s
+robotParameters.driveSystemQuality = 1			# specifies how good your drive system is from 0 to 1 
+							# (with 1 being able to drive in a perfectly straight line)
 
 # Camera Parameters
 robotParameters.cameraOrientation = 'landscape'		# specifies the orientation of the camera

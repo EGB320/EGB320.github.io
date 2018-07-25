@@ -6,7 +6,7 @@ sys.path.insert(0, 'EGB320_VREP_Files/VREP_PythonCode')
 
 
 # import the soccer bot API - this will include math, time, random and vrep python modules
-from SoccerBot_API import *
+from soccerbot_lib import *
 
 #import any other required python modules
 
@@ -24,7 +24,7 @@ robotParameters = RobotParameters()
 # Drive Parameters
 robotParameters.minimumLinearSpeed = 0.04  	# minimum speed at which your robot can move forward in m/s
 robotParameters.maximumLinearSpeed = 0.25 	# maximum speed at which your robot can move forward in m/s
-robotParameters.driveSystemQuality = 0	# specifies how good your drive system is from 0 to 1 (with 1 being able to drive in a perfectly straight line when a told to do so)
+robotParameters.driveSystemQuality = 0.8	# specifies how good your drive system is from 0 to 1 (with 1 being able to drive in a perfectly straight line when a told to do so)
 
 # Camera Parameters
 robotParameters.cameraOrientation = 'landscape' # specifies the orientation of the camera, either landscape or portrait
