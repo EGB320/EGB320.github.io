@@ -2,7 +2,7 @@
 
 
 # import the soccer bot module - this will include math, time, numpy (as np) and vrep python modules
-from SoccerBot_API import *
+from soccerbot_lib import *
 
 #import any other required python modules
 
