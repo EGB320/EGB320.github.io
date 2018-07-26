@@ -3056,7 +3056,7 @@ input, select, textarea {
 		#main > .inner {
 			padding: 0 4em 0.1em 4em ;
 			margin: 0 auto;
-			max-width: 93%;
+			max-width: 100%;
 		}
 
 			#main > .inner > section {
