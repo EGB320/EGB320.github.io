@@ -3653,3 +3653,8 @@ input, select, textarea {
 			margin-top: 0;
 			padding-top: 0;
 		}
+
+/* PDF EXCLUDE */
+.pdf-exclude{
+	display: none;
+}
