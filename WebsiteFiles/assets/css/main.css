@@ -3095,7 +3095,7 @@ input, select, textarea {
 		@media screen and (max-width: 736px) {
 
 			#main > .inner {
-				max-width: 80%;
+				max-width: 90%;
 				padding: 2em 0.1em 2em ;
 			}
 
