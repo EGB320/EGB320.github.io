@@ -41,45 +41,64 @@ function GeneratePDF(filename){
 
 
 function CreateDocumentToExportPDF(filename){
+    let pdfWindow = window.open('', 'PRINT', 'height=650,width=900,top=100,left=150');
+
+    pdfWindow.document.write(`<html><head><title>EGB320 Mechatronics Design 2</title>`);
+    pdfWindow.document.write('<link rel="stylesheet" href="assets/css/print.css" type="text/css" />');
+    pdfWindow.document.write('</head><body >');
+    pdfWindow.document.write(document.getElementById("main").innerHTML);
+    pdfWindow.document.write('</body></html>');
+
+    pdfWindow.document.close(); // necessary for IE >= 10
+
+    setTimeout(function(){
+        pdfWindow.focus();
+        pdfWindow.print();
+    }, 500)
+
+    // pdfWindow.onload = function(){
+    
+    // }
+
                     
-    // get handle to pdf iFrame
-    var pdf_iFrame = document.getElementById("pdf_iframe");
-    if(pdf_iFrame == null){
-        // create pdf iframe 
-        var pdf_iFrame = document.createElement('iframe');
-        pdf_iFrame.id = "pdf_iframe";
+    // // get handle to pdf iFrame
+    // var pdf_iFrame = document.getElementById("pdf_iframe");
+    // if(pdf_iFrame == null){
+    //     // create pdf iframe 
+    //     var pdf_iFrame = document.createElement('iframe');
+    //     pdf_iFrame.id = "pdf_iframe";
 
-        // used to hide the iframe
-        pdf_iFrame.style.position = "absolute";
-        pdf_iFrame.style.top = "-1000000px";
+    //     // used to hide the iframe
+    //     pdf_iFrame.style.position = "absolute";
+    //     pdf_iFrame.style.top = "-1000000px";
 
-        // append to document body
-        document.body.appendChild(pdf_iFrame);
-    }
+    //     // append to document body
+    //     document.body.appendChild(pdf_iFrame);
+    // }
 
-    // get the contents of this page to be inserted into the iFrame
-    var contents = document.getElementById("main").innerHTML;
+    // // get the contents of this page to be inserted into the iFrame
+    // var contents = document.getElementById("main").innerHTML;
 
-    // get handle to document within the pdf iFrame
-    pdf_iFrame_doc = pdf_iFrame.contentWindow.document;
+    // // get handle to document within the pdf iFrame
+    // pdf_iFrame_doc = pdf_iFrame.contentWindow.document;
 
-    // open pdf iframe doc
-    // include print style sheet css and required javascript 
-    // write content want to export to pdf
-    pdf_iFrame_doc.open();
-    pdf_iFrame_doc.write('<html><head><title>PDF Document</title>');
-    pdf_iFrame_doc.write('<link rel="stylesheet" href="assets/css/print.css" type="text/css"/>');
-    pdf_iFrame_doc.write('<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.js"><\/script>');
-    pdf_iFrame_doc.write('<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.debug.js"><\/script>');
-    pdf_iFrame_doc.write('<script type="text/javascript" src="assets/js/html2canvas.min.js"><\/script>');
-    pdf_iFrame_doc.write('<script type="text/javascript" src="assets/js/html2pdf.min.js"><\/script>');
-    pdf_iFrame_doc.write('<script type="text/javascript" src="assets/js/generatePDF.js"><\/script>');
-    pdf_iFrame_doc.write('<script type="text/javascript">');
-    pdf_iFrame_doc.write('window.onload = function(){GeneratePDF(\''+filename+'\');}')
-    pdf_iFrame_doc.write('<\/script>');
-    pdf_iFrame_doc.write('</head><body>');
-    pdf_iFrame_doc.write(contents);
-    pdf_iFrame_doc.write('</body></html>');
-    pdf_iFrame_doc.close();
+    // // open pdf iframe doc
+    // // include print style sheet css and required javascript 
+    // // write content want to export to pdf
+    // pdf_iFrame_doc.open();
+    // pdf_iFrame_doc.write('<html><head><title>PDF Document</title>');
+    // pdf_iFrame_doc.write('<link rel="stylesheet" href="assets/css/print.css" type="text/css"/>');
+    // pdf_iFrame_doc.write('<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.js"><\/script>');
+    // pdf_iFrame_doc.write('<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.debug.js"><\/script>');
+    // pdf_iFrame_doc.write('<script type="text/javascript" src="assets/js/html2canvas.min.js"><\/script>');
+    // pdf_iFrame_doc.write('<script type="text/javascript" src="assets/js/html2pdf.min.js"><\/script>');
+    // pdf_iFrame_doc.write('<script type="text/javascript" src="assets/js/generatePDF.js"><\/script>');
+    // pdf_iFrame_doc.write('<script type="text/javascript">');
+    // pdf_iFrame_doc.write('window.onload = function(){GeneratePDF(\''+filename+'\');}')
+    // pdf_iFrame_doc.write('<\/script>');
+    // pdf_iFrame_doc.write('</head><body>');
+    // pdf_iFrame_doc.write(contents);
+    // pdf_iFrame_doc.write('</body></html>');
+    // pdf_iFrame_doc.close();
     
 }
