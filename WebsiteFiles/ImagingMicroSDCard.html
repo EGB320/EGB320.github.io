@@ -32,8 +32,8 @@
 								<section>
 									<div class="page-wrapper"> 
 										<header class="main">
-											<h1>IMAGING YOUR MICROSD CARD</h1>
-											<a href="#" class="button pdf-exclude icon fa-download" onclick="CreateDocumentToExportPDF('filename.pdf')">Download PDF Version</a>
+											<h1>Imaging Your MicroSD Card</h1>
+											<a href="#" class="button pdf-exclude icon fa-download" onclick="CreateDocumentToExportPDF('ImagingYourPi_Instructions.pdf')">Download PDF Version</a>
 										</header>							
 
 										<p>Your EGB320 kits contain a microSD card, and a microSD to SD adapter. The microSD card will be used to host your Raspberry Pi operating system, as well as any data you choose to store on the Pi throughout the course of this semester. Currently, the micro SD card is blank, and will require you to write an image of a suitable Linux based operating system to it prior to using your Raspberry Pi. There are a number of operating systems which can be used on the Raspberry Pi, particularly Raspbian (debian for Raspberry Pi), and Ubuntu Mate.</p>
@@ -47,10 +47,14 @@
 
 											<li>To install OpenCV3 on a Raspberry Pi 3 (assumes Raspbian Jessie OS), click <a href="https://www.pyimagesearch.com/2016/04/18/install-guide-raspberry-pi-3-raspbian-jessie-opencv-3/">here</a></li></ul>
 
+										<hr class="major pdf-exclude" />
 										<h2>Download the Raspberry Pi Image</h2>
 										
-										<p>The EGB320 Raspbian Jessie image is provided on QUT Blackboard, under INSERT_LOCATION_HERE. Downloading this file will require approximately 16GB of space on your harddrive. Due to the size of the file, we recommend you download the image while connected to QUT or eduroam WiFi. The file we provide will have a ‘.img’ file extension, and is ready to use immediately after download (do not try to extract or uncompress the EGB320 image file, it has not been compressed).</p>
+										<p>The EGB320 Raspbian Jessie image is provided on QUT Blackboard, under Learning Resources. Downloading this file will require approximately 16GB of space on your harddrive. Due to the size of the file, we recommend you download the image while connected to QUT or eduroam WiFi. The file we provide will have a ‘.img’ file extension, and is ready to use immediately after download (do not try to extract or uncompress the EGB320 image file, it has not been compressed).</p>
 
+
+
+										<hr class="major pdf-exclude" />
 										<h2>Download an Image Writing Application</h2>
 										<h4 class="nocount">Windows</h4>
 										
@@ -62,23 +66,60 @@
 										<h4 class="nocount">Linux or Mac OS</h4>
 										To install the Raspberry Pi image on your micro SD card using Linux or Mac OS, there are a variety of tools available for use. One of the simplest to use is a program called Etcher, which is available on all platforms (however is a much larger download than Win32 so not recommended for Windows). Download Etcher by clicking <a href="https://etcher.io/">here</a>. This is an 80MB download, so be wary of this if you are not using QUT WiFi. The file will require extraction after download, but can then be immediately launched. </p>
 
-										<!-- <figure class="figure">
-	    										<img src="images/image-not-found.jpg" width="50%" alt="images/image-not-found.jpg" />
-	    										<figcaption>Caption goes here</figcaption>
-										</figure> -->
+											<div class="html2pdf__page-break"></div>
+									</div>										
+
+									<div class="page-wrapper"> 
 
 										<hr class="major pdf-exclude" />
-										<h2>Interdum sed dapibus</h2>
-										<p>Donec eget ex magna. Interdum et malesuada fames ac ante ipsum primis in faucibus. Pellentesque venenatis dolor imperdiet dolor mattis sagittis. Praesent rutrum sem diam, vitae egestas enim auctor sit amet. Pellentesque leo mauris, consectetur id ipsum sit amet, fergiat. Pellentesque in mi eu massa lacinia malesuada et a elit. Donec urna ex, lacinia in purus ac, pretium pulvinar mauris. Curabitur sapien risus, commodo eget turpis at, elementum convallis elit. Pellentesque enim turpis, hendrerit.</p>
-										<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis dapibus rutrum facilisis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Etiam tristique libero eu nibh porttitor fermentum. Nullam venenatis erat id vehicula viverra. Nunc ultrices eros ut ultricies condimentum. Mauris risus lacus, blandit sit amet venenatis non, bibendum vitae dolor. Nunc lorem mauris, fringilla in aliquam at, euismod in lectus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. In non lorem sit amet elit placerat maximus. Pellentesque aliquam maximus risus, vel sed vehicula. Interdum et malesuada fames ac ante ipsum primis in faucibus. Pellentesque venenatis dolor imperdiet dolor mattis sagittis. Praesent rutrum sem diam, vitae egestas enim auctor sit amet. Pellentesque leo mauris, consectetur id ipsum sit amet, fersapien risus, commodo eget turpis at, elementum convallis elit. Pellentesque enim turpis, hendrerit tristique lorem ipsum dolor.</p>
+										<h2>Write the Image to the MicroSD Card</h2>
+										<h3>Connect the MicroSD Card to Your Computer</h3>
+										<p>To write the image to your micro SD card, simply insert the micro SD card into the SD card adapter, and insert into your computer’s SD card slot. If you do not have an SD card slot, you will need to insert the SD card into an SD to USB adapter.</p>
+
+										<h4 class="nocount">MicroSD to SD to Computer</h4>
+										<div class="row">
+										  <div class="col-6">
+										    <figure class="figure">
+		    										<img src="images/microtosd.png" width="50%" alt="Image Not Found" />
+		    										<figcaption>Image source: <a href="http://hobbyflip.com/content/images/thumbs/0257828_gopro-hero-2-32gb-micro-sd-card-portable-storage-chip-usb-card-reader-combo.jpeg">Hobby Flip</a></figcaption>
+											</figure>
+										  </div>
+										  <div class="col-6">
+										    <figure class="figure">
+		    										<img src="images/SDtocomp_crop.png" width="80%" alt="Image Not Found" />
+		    										<figcaption>Image source: <a href="https://32414320wji53mwwch1u68ce-wpengine.netdna-ssl.com/wp-content/uploads/2015/02/Insert_the_SD-Card_into_your_PC.jpg">Dexter Industries</a></figcaption>
+											</figure>
+										  </div>
+										</div>
+										
+										<h4 class="nocount">MicroSD to USB Adapter (For Those Without an SD Card Port)</h4>
+										<figure class="figure">
+		    										<img src="images/sdusb.png" width="40%" alt="Image Not Found" />
+		    										<figcaption>Image source: <a href="https://images-na.ssl-images-amazon.com/images/I/71xt6L9T8PL._SL1417_.jpg">Amazon</a></figcaption>
+										</figure>
+											<div class="html2pdf__page-break"></div>
+										</div>										
+
+									<div class="page-wrapper"> 
+
+										<h3>Write the Image to the MicroSD Card</h3>
+										<p style="padding: 0px; margin: 0px; margin-bottom: 10px;">To write the image file to your microSD card, complete the following steps;</p>
+											<ol style="margin-left: 15px;">
+												<li>Open your image writer program, which will be either Win32 Disk Imager or Etcher if you followed the previous steps. </li>
+												<li>Select the Raspberry Pi image file from your computers file system.</li>
+												<li>Select the device which you want to write the image to – be very careful to select the correct drive (that of your micro SD card). If you choose the wrong drive, you may wipe and/or damage the device.</li>
+
+												<li>Review your selections, ensure you have chosen the correct image file and drive.</li>
+												<li> Click the ‘Flash’ or ‘Write’ button in your imaging program.</li>
+												<li>Wait for the flash to complete. This can typically take about 20 minutes.</li>
+												<li>Upon completion, eject your devices and insert the micro SD card into your Raspberry Pi.</li>
+												<li>You should now have a working operating system on your Pi!</li>
+											</ol>
+										
 										
 										<div class="html2pdf__page-break"></div>
-									</div>
 
-										
-
-									
-									
+									</div>						
 
 								</section>
 
