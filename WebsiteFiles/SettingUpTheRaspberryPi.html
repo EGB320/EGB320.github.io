@@ -24,16 +24,22 @@
 
 							<!-- Header -->
 								<header id="header">
-									<a href="index.html" class="logo">EGB320 - Mechatronics Design 2</a>
-									<a id="date" class="logo date">Date</a>
+									<div id="col-12">
+								        <div class="row" style="position: relative; top: 0.75em;">
+								        	<a href="#" class="button pdf-exclude icon fa-print" style="position: absolute; right: 1em; bottom: 2.5em;" onclick="CreateDocumentToExportPDF('EGB320_SettingUpTheRaspberryPi.pdf')"></a>
+								        </div>
+								        <div class="row" style="position: relative;">
+								        	<a href="index.html" class="logo">EGB320 - Mechatronics Design 2</a>
+											<a id="date" class="logo date" style="position: absolute; right: 1em;">Date</a>
+										</div>
+								    </div>
 								</header>
-
 							<!-- Content -->
 								<section>
 									<div class="page-wrapper"> 
 										<header class="main">
 											<h1>Setting Up The Raspberry Pi</h1>
-											<a href="#" class="button pdf-exclude icon fa-download" onclick="CreateDocumentToExportPDF('EGB320_SettingUpTheRaspberryPi.pdf')">Download PDF Version</a>
+											
 										</header>							
 
 										<p>This article discusses how you setup the Raspberry Pi hardware for the EGB320 design project. We recommend you read the <a href="GeneralHardwareIntro.html">general introductory guide</a> before setting up your Raspberry Pi.</p>

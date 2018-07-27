@@ -24,8 +24,15 @@
 
 							<!-- Header -->
 								<header id="header">
-									<a href="index.html" class="logo">EGB320 - Mechatronics Design 2</a>
-									<a id="date" class="logo date">Date</a>
+									<div id="col-12">
+								        <div class="row" style="position: relative; top: 0.75em;">
+								        	<a href="#" class="button pdf-exclude icon fa-print" style="position: absolute; right: 1em; bottom: 2.5em;" onclick="CreateDocumentToExportPDF('EGB320_GPIO_Python_Tutorial.pdf')"></a>
+								        </div>
+								        <div class="row" style="position: relative;">
+								        	<a href="index.html" class="logo">EGB320 - Mechatronics Design 2</a>
+											<a id="date" class="logo date" style="position: absolute; right: 1em;">Date</a>
+										</div>
+								    </div>
 								</header>
 
 							<!-- Content -->
@@ -33,7 +40,6 @@
 									<div class="page-wrapper"> 
 										<header class="main">
 											<h1>Raspberry Pi GPIO and Python Tutorial</h1>
-											<a href="#" class="button pdf-exclude" onclick="CreateDocumentToExportPDF('EGB320_GPIO_Python_Tutorial.pdf')">Download PDF Version</a>
 										</header>							
 
 										<!-- <p>This tutorial provides an introduction to the Raspberry Pi's GPIO pins, and how to interface with them using python 3. 
@@ -71,17 +77,18 @@
 											<li> 1 330ohm resistor</li>
 											<li> 1 breadboard</li>
 											<li> 2 male --> female jumper cables</li>
+											<li> 1 right-angled header</li>
 										</ul>
 										
 										<h3 style="padding: 0px; margin-bottom: 3px; margin-top: 3px">Connecting the Hardware</h3>
-										First, we must connect the LED to the raspberry pi. If you are currently using the provided screen, you will need to disconnect the screen to access the pins. For this example we will be using pin 21 and the ground pin located directly next it. 
+										First, we must connect the LED to the raspberry pi. If you are currently using the provided screen, you will need to disconnect the screen and connect your right-angled header in order to access the required pins. The right-angled header needs to be aligned to cover pins 29-40, inclusive. In this example, we will be using pin 21 and the ground pin located directly next it, so you will need to plug a jumper cable into each of the corresponding pins in the right-angled header.
 										<figure class="figure">
-	    										<img src="images/RPi-LED-Plugs.png" width="60%" alt="Image Not Found" />
+	    										<img src="" width="60%" alt="Need To Take Photo On Monday" />
 	    										<figcaption>Raspberry Pi Pin Setup for LED Activity</figcaption>
 										</figure>
-										Using your breadboard, wire up the LED and resistor as shown below. The red cable shown below should connect your GPIO pin (the white cable in the previous image) to your LED. The black cable should connect the ground pin to the unattached end of your resistor.
+										Using your breadboard, wire up the LED and resistor as shown below. THE FOLLOWING NEEDS TO BE UPDATED!!!!!!!! The red cable shown below should connect your GPIO pin to your LED. The black cable should connect the ground pin to the unattached end of your resistor.
 										<figure class="figure">
-	    										<img src="images/breadboard.png" width="50%" alt="Image Not Found" />
+	    										<img src="" width="50%" alt="Need To Take Photo On Monday" />
 	    										<figcaption>Breadboard Setup for LED Activity</figcaption>
 										</figure>
 										Now reattach your HDMI screen, and connect your Raspberry Pi to the power supply. Attach a USB keyboard and mouse to the Raspberry Pi. 
@@ -91,7 +98,7 @@
 										Open Spyder by either entering the command line input;
 
 										<pre style="margin-top: 10px; margin-bottom: 10px"><code>spyder</code></pre>
-										or through the user interface under menu -> programming -> spyder.
+										or by clicking the shortcut on your desktop.
 										
 										The following example code should get you started with interfacing between the Raspberry Pi and an LED connected to pin 21;
 

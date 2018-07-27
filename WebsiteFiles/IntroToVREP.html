@@ -24,8 +24,15 @@
 
 							<!-- Header -->
 								<header id="header">
-									<a href="index.html" class="logo">EGB320 - Mechatronics Design 2</a>
-									<a id="date" class="logo date">Date</a>
+									<div id="col-12">
+								        <div class="row" style="position: relative; top: 0.75em;">
+								        	<a href="#" class="button pdf-exclude icon fa-print" style="position: absolute; right: 1em; bottom: 2.5em;" onclick="CreateDocumentToExportPDF('EGB320_IntroToVREP.pdf')"></a>
+								        </div>
+								        <div class="row" style="position: relative;">
+								        	<a href="index.html" class="logo">EGB320 - Mechatronics Design 2</a>
+											<a id="date" class="logo date" style="position: absolute; right: 1em;">Date</a>
+										</div>
+								    </div>
 								</header>
 
 							<!-- Content -->
@@ -33,8 +40,7 @@
 									<div class="page-wrapper"> 
 										<header class="main">
 											<h1>Introduction to VREP Simulator</h1>
-											<a href="#" class="button pdf-exclude icon fa-download" onclick="CreateDocumentToExportPDF('EGB320_IntroToVREP.pdf')">Download PDF Version</a>
-											<a href="dlc/EGB320_VREP_Files.zip" class="button pdf-exclude icon fa-download" download>EGB320 VREP Files</a>
+											<a href="dlc/EGB320_VREP_Files.zip" class="button pdf-exclude icon fa-download" download> EGB320 VREP Files</a>
 										</header>							
 
 										<p>This article discusses the Virtual Robot Experimentation Platform (VREP) simulation environment. This article will discuss VREP and how it can be used within the Navigation/AI aspects of your project. However, VREP could be used for almost all aspects of your project to help refine your design.</p>

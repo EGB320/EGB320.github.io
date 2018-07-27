@@ -60,7 +60,7 @@ table {
 
 body {
 	-webkit-text-size-adjust: none;
-	/*counter-reset: h2counter h3counter h4counter;*/
+	counter-reset: h2counter h3counter h4counter;
 }
 
 mark {
@@ -202,19 +202,19 @@ input, select, textarea {
 		}
 
 	h1 {
-		font-size: 4em;
+		font-size: 2.25em;
 		margin: 0 0 0.5em 0;
 		line-height: 1.3;
 		counter-reset: h2counter;
 	}
 
 	h2 {
-		font-size: 1.75em;
+		font-size: 1.5em;
 		counter-reset: h3counter;
 	}
 
 	h3 {
-		font-size: 1.25em;
+		font-size: 1.2em;
 		counter-reset: h4counter;
 	}
 
@@ -230,7 +230,7 @@ input, select, textarea {
 		font-size: 0.7em;
 	}
 
-	/*h2:before{
+	h2:before{
 		content: counter(h2counter) ".\0000a0\0000a0";
 		counter-increment: h2counter;
 	}
@@ -243,7 +243,7 @@ input, select, textarea {
 	h4:before{
 		content: counter(h2counter) "." counter(h3counter) "." counter(h4counter) ".\0000a0\0000a0";
 		counter-increment: h4counter;
-	}*/
+	}
 
 	h2.nocount:before{
 		content: none;
@@ -313,7 +313,7 @@ input, select, textarea {
 		border-radius: 0.375em;
 		border: solid 1px rgba(210, 215, 217, 0.75);
 		font-family: "Courier New", monospace;
-		font-size: 0.9em;
+		font-size: 1.8vw;
 		margin: 0 0.25em;
 		padding: 0.25em 0.65em;
 	}
@@ -449,7 +449,7 @@ input, select, textarea {
 		}
 
 		.row > .col-6 {
-			width: 50%;
+			width: 45%;
 		}
 
 		.row > .off-6 {

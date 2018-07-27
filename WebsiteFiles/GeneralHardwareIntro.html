@@ -24,8 +24,15 @@
 
 							<!-- Header -->
 								<header id="header">
-									<a href="index.html" class="logo">EGB320 - Mechatronics Design 2</a>
-									<a id="date" class="logo date">Date</a>
+									<div id="col-12">
+								        <div class="row" style="position: relative; top: 0.75em;">
+								        	<a href="#" class="button pdf-exclude icon fa-print" style="position: absolute; right: 1em; bottom: 2.5em;" onclick="CreateDocumentToExportPDF('EGB320_GeneralHardwareIntro.pdf')"></a>
+								        </div>
+								        <div class="row" style="position: relative;">
+								        	<a href="index.html" class="logo">EGB320 - Mechatronics Design 2</a>
+											<a id="date" class="logo date" style="position: absolute; right: 1em;">Date</a>
+										</div>
+								    </div>
 								</header>
 
 							<!-- Content -->
@@ -33,7 +40,7 @@
 									<div class="page-wrapper"> 
 										<header class="main">
 											<h1>General EGB320 Hardware Introduction</h1>
-											<a href="#" class="button pdf-exclude icon fa-download" onclick="CreateDocumentToExportPDF('EGB320_GeneralHardwareIntro.pdf')">Download PDF Version</a>
+											
 										</header>							
 
 										<p>This tutorial is to provide you with some general information regarding the hardware you will use within your design project. This guide will mainly discuss the Raspberry Pi and some crucial Do's and Dont's. Please see the <a target="_blank" href="SettingUpTheRaspberryPi.html">Setting Up Your Raspberry Pi</a> guide for help on setting up your Raspberry Pi. <b>However, we strongly suggest you read this page first as it contains important information.</b></p>
