@@ -124,14 +124,14 @@
 										<h2>The Do's and Dont's</h2>
 
 										<h3>GPIO Pins Do's and Dont's</h3>
-										<p>Over the years several groups have destroyed their Raspberry Pi at critical times, so we ask you please read the following Do's and Dont's carefully. The two main things to note are that the GPIO pins are not placed on the board in numerical order (i.e. GPIO pin 3, is not pin 3 on the board), and that they operate at 3.3 volts. This means the GPIO pins can only output 3.3V, and your digital signals being input to the Raspberry Pi should only be 3.3V. Additionally, the standard maximum output of the Raspberry Pi is 8mA, which can be altered to an absolute maximum of 16mA by changing some settings. For more information regarding the GPIO check out the official <a target="_blank" href="https://www.raspberrypi.org/documentation/usage/gpio/README.md">Raspberry Pi GPIO Page</a></p>
+										<p>Over the years several groups have destroyed their Raspberry Pi at critical times, so we ask you please read the following Do's and Dont's carefully. The two main things to note are that the GPIO pins are not placed on the board in numerical order (i.e. GPIO pin 3, is not pin 3 on the board), and that they operate at 3.3 volts. This means the GPIO pins can only output 3.3V, and your digital signals being input to the Raspberry Pi should only be 3.3V. Additionally, the standard maximum output of the Raspberry Pi is 8mA, which can be altered to an absolute maximum of 16mA by changing some settings. For more information regarding the GPIO check out the official <a target="_blank" href="https://www.raspberrypi.org/documentation/usage/gpio/README.md">Raspberry Pi GPIO Documentation</a>.</p>
 
 										<figure class="figure">
 	    										<img src="images/setup/pi3_gpio.png" width="40%" alt="Image Not Found"/>
-	    										<figcaption>The GPIO pins are not placed on the board in numerical order. For example, GPIO Pin 3 is not pin 3 within the header.</figcaption>
+
 										</figure>										
 
-										<p>There are also 3.3V, 5V and Ground (GND) rails within the GPIO pin header. These are there to be used to power additional components, such as a touchscreen or a digital sensor. The 3.3V and 5V rail can both supply approximately 200mA at maximum.</p>
+										<p>Please note, the GPIO pins can be referred to by two separate naming schemes. See the <a href="GPIOpython.html">GPIO Python Introductory Guide</a> for more details regarding pin naming conventions. There are also 3.3V, 5V and Ground (GND) rails within the GPIO pin header. These can be used to power additional components, such as a touchscreen or a digital sensor. The 3.3V and 5V rail can both supply a maximum current of approximately 200mA.</p>
 
 										<div class="html2pdf__page-break"></div>
 									</div>								
@@ -139,8 +139,8 @@
 
 										<h4 class="nocount">The Do's</h4>
 										<ul>
-											<li>Check you are connecting to the correct GPIO pin. Remember to double check the pin's position, as the GPIO pins are not placed in numerical order.</li>
-											<li>Ensure all your signals going to the GPIO pins are no larger than 3.3V</li>
+											<li>Check you are connecting to the correct GPIO pin. Remember to double check the pin's position, and which naming convention you are using (BCM vs. BOARD).</li>
+											<li>Ensure any signals going to the GPIO pins are no larger than 3.3V</li>
 											<li>Only use the GPIO pins for small current signals.</li>
 										</ul>
 										
@@ -149,15 +149,15 @@
 										<ul>
 											<li>Send more than 3.3 volts to a GPIO pin.</li>
 											<li>Do not use a GPIO pin to control a motor directly. Instead you will need to send PWM signals to a motor driver.</li>
-											<li>Do not put power into the 5V or 3.3V rails. This bypasses the Raspberry Pi's protection circuitry. The only way you should be powering your board is through the micro USB connector.</li>
+											<li>Do not put power into the 5V or 3.3V rails. This bypasses the Raspberry Pi's protection circuitry. The only way you should be powering your board is through the micro USB connector, plugged in with the supplied wall power adapter or through a 5V regulated battery circuit.</li>
 										</ul>
 
 										<h3>Raspberry Pi Camera Do's and Dont's</h3>
-										<p>The Raspberry Pi Camera is fairly robust, however the cable is not. So you need to ensure that you take care of the supplied ribbon cable and do not bend it at sharp angles. Additionally, in the past teams have had a working vision system and then altered their robot in some way (e.g. changed the camera's orientation or put a piece of clear acrylic in front of it) this can drastically reduces performance of the vision system. So be wary of late minute changes involving sensors.</p>		
+										<p>The Raspberry Pi Camera is fairly robust, however the cable is not. So you need to ensure that you take care of the supplied ribbon cable and do not bend it at sharp angles. Additionally, past teams have had a working vision system and then altered their robot in some way (e.g. changed the camera's orientation or put a piece of clear acrylic in front of it), which has drastically reduced the performance of their vision system. Be wary of late minute changes involving sensors, as you will also need to factor in time to modify your software systems.</p>		
 
 										<hr class="major pdf-exclude" />
 										<h2>Battery Safety</h2>
-										<p>It is paramount you take care of your battery as the battery and battery charger cost approximately $45 each. The reason they are so expensive is that they have inbuilt protection circuitry to prevent certain issues (i.e. over charging/dis-charging). Although they do have inbuilt protection circuitry <b>you must not leave your battery unattended while it is charging</b>.</p>
+										<p>It is paramount you take care of your battery and the provided charger. Purchasing a replacement for either of these components costs $45 per item. The reason these components are so expensive is because they have inbuilt protection circuitry to prevent certain issues (i.e. over charging/dis-charging). However, despite the inbuilt protection circuitry, <b>you must not leave your battery unattended while it is charging</b>.</p>
 
 										<div class="html2pdf__page-break"></div>
 									</div>
