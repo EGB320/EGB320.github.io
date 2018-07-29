@@ -45,22 +45,21 @@
 										<p>This article discusses how you setup the Raspberry Pi hardware for the EGB320 design project. We recommend you read the <a href="GeneralHardwareIntro.html">general introductory guide</a> before setting up your Raspberry Pi.</p>
 
 										<h2>Imaging your MicroSD Card</h2>
-										<p>The MicroSD card included in your EGB320 kits comes blank; a clean platform for you to build upon. It is up to you how you wish to set this up, however some installation processes can be very time consuming! To minimise your setup time, we have created an EGB320 Raspbian Jessie image for you to use, if you so choose. Instructions regarding how to image your MicroSD card can be found in the <a href="ImagingMicroSDCard.html">Imaging Your MicroSD Card</a> document.</p>
+										<p>The operating system for your Raspberry Pi will be hosted on a microSD card inserted into the bottom of the Pi. The MicroSD card included in your EGB320 kits comes blank; a clean platform for you to build upon. <b>You must image this microSD card prior to attempting to use your Pi.</b> It is up to you how you wish to set this up, however some installation processes can be very time consuming! To minimise your setup time, we have created an EGB320 Raspbian Jessie image for you to use, if you so choose. Instructions regarding how to image your MicroSD card can be found in the <a href="ImagingMicroSDCard.html">Imaging Your MicroSD Card</a> document.</p>
 
 										<h2>Installing Your MicroSD Card</h2>
-										<p>The pre-configured EGB320 Raspbian Jessie image you installed in the previous step contains:</p>
+										<p>The pre-configured EGB320 Raspbian Jessie image you installed in the previous step contains;</p>
 										
 										<ul>
-											<li>NEED TO COMPLETE THIS LIST</li>
 											<li>OpenCV 3,</li>
 											<li>Python 2.7,</li>
 											<li>Python code editing and compiling environments,</li>
 											<li>The LCD touchscreen drivers,</li>
-											<li>A QUT WiFi configuration script,</li>
-											<li>A demonstration script for the camera,</li>
+											<li>A QUT WiFi configuration script, and</li>
+											<li>A demonstration python script for the camera</li>
 										</ul>
 
-										<p>Since you should have already installed the Raspbian image, if you have not already inserted your microSD card, all you need to do now is simply put the microSD card into the microSD slot located on the right hand side of the Raspberry Pi in the following image.</p>
+										<p>You should have already installed the Raspbian image in the previous step. If you have not already inserted your microSD card, simply insert it into the microSD slot located on the right hand side of the Raspberry Pi in the following image.</p>
 
 										<figure class="figure">
 	    										<img src="images/setup/RPi_SDCard.png" width="50%" alt = "Image Not Found" />
@@ -69,7 +68,7 @@
 										<hr class="major pdf-exclude" />
 										<h2>Attaching The Raspberry Pi Camera</h2>
 
-										<p>To install the camera module, first locate the camera cable slot which is situated next to the HDMI port. Next lift the small black clip of the cable slot, you may need to remove a piece of brown-ish plastic tape. Insert the ribbon cable into the slot with the blue strip facing the USB/Ethernet ports. Push the clip back into place ensuring the cable is firmly locked in place. If you plan on attaching the screen we recommend that you place the camera so the ribbon cable extends over the USB/Ethernet ports.</p>
+										<p>To install the camera module, first locate the camera cable slot which is situated next to the HDMI port. Next lift the small black clip of the cable slot; you may need to remove a piece of brown-ish plastic tape. Insert the ribbon cable into the slot with the blue strip facing the USB/Ethernet ports. Push the clip back into place ensuring the cable is firmly locked in place. If you plan on attaching the touchscreen, we recommend that you place the camera so the ribbon cable extends over the USB/Ethernet ports.</p>
 
 										<figure class="figure">
     										<img src="images/setup/pi_ribbon.png" width="50%" alt="" />
@@ -86,7 +85,7 @@
     										<img src="images/setup/RPi_AttachStandOffs.png" class="left" width="50%" alt = "Image Not Found"/>
 										</figure>
 										
-										<p>Next attach the screen's female header to the Raspberry Pi GPIO pins. The HDMI ports on the screen and Raspberry Pi should align. With the stand-offs in place the screen should only fit to the Raspberry Pi in one configuration. Now using the HDMI to HDMI adapter board connect the two HDMI ports. <b>Important</b> if you do not align the pins correctly while attaching the screen and then power on the Raspberry Pi you can cause damage to the touch capabilities of the LCD screen. We will not be replacing any damaged touch screens.</p>
+										<p>Next attach the screen's female header to the Raspberry Pi GPIO pins. The HDMI ports on the screen and Raspberry Pi should align. With the stand-offs in place the screen should only fit to the Raspberry Pi in one configuration. Now using the HDMI to HDMI adapter board connect the two HDMI ports. <b>Important:</b> if you do not align the pins correctly while attaching the screen, and proceed to power the Raspberry Pi, you can cause damage to the touch capabilities of the LCD screen. We will not be replacing any damaged touch screens.</p>
 
 										<figure class="figure">
 											<img src="images/setup/RPi_TouchScreen1.jpg" alt="Image Not Found" width="50%"/>
@@ -99,11 +98,11 @@
 
 										<hr class="major pdf-exclude" />
 										<h2>Powering the Raspberry Pi</h2>
-										<p>Before powering the Raspberry Pi connect the supplied Edimax WiFi dongle as well as a USB mouse and keyboard.</p>
+										<p>Before powering the Raspberry Pi connect the supplied Edimax WiFi dongle as well as a USB mouse and keyboard, and a HDMI screen if you wish.</p>
 
-										<p>To power the Raspberry Pi simply use the 5V Wall Power Supply and plug it into the micro USB connector onboard. A red LED near the micro USB port will light up and if you have a screen attached it should show some activity. It may take a moment to boot up, especially when booting it for the first time.</p>
+										<p>To power the Raspberry Pi simply use the 5V Wall Power Supply and plug it into the micro USB connector onboard. A red LED near the micro USB port will light up, and if you have a screen attached it should show some activity. It may take a moment to boot up, especially when booting it for the first time.</p>
 
-										<p><b>Important:</b> the Raspberry Pi 3B requires a 5V power supply that can supply 2.5A and you should only ever supply power via the micro USB connector. Supplying power via the 3.3V and 5V rails within the GPIO pin header is risky, as it bypasses the protection circuitry. Additionally, you should always try and power down the Raspberry Pi properly (i.e. main menu -> shutdown). Only pull the power plug if the Raspberry Pi is not responding and you have no remaining options.</p>
+										<p><b>Important:</b> the Raspberry Pi 3B requires a 5V power supply that can supply 2.5A and you should only ever supply power via the micro USB connector. Supplying power via the 3.3V and 5V rails within the GPIO pin header is risky, as it bypasses the protection circuitry. Additionally, you should always try to power down the Raspberry Pi properly (i.e. main menu -> shutdown). Only pull the power plug if the Raspberry Pi is not responding and you have no remaining options.</p>
 										
 
 										<hr class="major pdf-exclude" />
@@ -124,7 +123,7 @@
 
 										<hr class="major pdf-exclude" />
 										<h2>Configuring and Testing The Raspberry Pi Camera</h2>
-										<p>To be able to use the Rasberry Pi Camera you will need to ensure the camera module is enabled. To do this click on the Raspberry Pi Icon which can be found in the top left corner. Then in the menu select Preferences > Raspberry Pi Configuration. Within the Raspberry Pi Configuration Display, go to the Interfaces tab and ensure that the Camera is enabled.</p>
+										<p>To be able to use the Rasberry Pi Camera, you will need to ensure the camera module is enabled. To do this click on the Raspberry Pi Icon which can be found in the top left corner. Then in the menu select Preferences -> Raspberry Pi Configuration. Within the Raspberry Pi Configuration Display, go to the Interfaces tab and ensure that the Camera is enabled.</p>
 										
 										<p>To test your camera is working open up a terminal (CTRL+ALT+T) and run the following command. This will run a Python script that should show you a live feed of the camera.</p>
 
@@ -160,8 +159,8 @@
 										<p>To connect to any other WiFi network simply attach the Raspberry Pi to a display and connect to your desired network as you would on a standard computer. The network interfaces icon can be found on the top right of the screen.</p>
 
 										<hr class="major pdf-exclude" />
-										<h2>Reducing the Number of Touch Screen Pins - NEEDS TO BE TESTED</h2>
-										<p>The 5 inch touch screen you have been provided comes with a 26-pin female connector. However, it does not actually require all 26 pins to operate correctly, in fact it only needs 9 pins in total. The touch screen requires power, ground, and the SPI serial communication pins. So if you require access to more GPIO pins or do want the touch screen and Raspberry Pi to be orientated differently relative to each other you can do so. The following figures and table shows the pin numbers for the touch screen, Raspberry Pi and the required connections for the touch screen to operate correctly.</p>
+										<h2>Reducing the Number of Touch Screen Pins</h2>
+										<p>The provided 5 inch touch screen comes with a 26-pin female connector. However, it does not actually require all 26 pins to operate correctly; in fact it only needs 9 pins in total. The touch screen requires power, ground, and the SPI serial communication pins. So if you require access to more GPIO pins, or want flexibility with the placement and orientation of the touch screen and Raspberry Pi, you can do so. The following figures and table display the required pin connections for the touch screen, and indicate the positioning of these pins on the Raspberry Pi. The BOARD numbering convention has been used, but you can convert to BCM if you wish using the provided Raspberry Pi pinout.</p>
 
 										<figure class="figure">
 											<div class="box alt">
@@ -203,7 +202,7 @@
 																	</tr>
 																	<tr>
 																		<td>22</td>
-																		<td>GPIO25</td>
+																		<td>GPIO</td>
 																	</tr>
 																	<tr>
 																		<td>23</td>
