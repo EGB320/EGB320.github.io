@@ -1,0 +1,275 @@
+<!DOCTYPE HTML>
+<!--
+	Editorial by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>EGB320 Mechatronics Design 2</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link id="pagestyle" rel="stylesheet" href="assets/css/main.css" />
+		<link href="assets/css/main.css" media="print" rel="stylesheet" />
+	</head>
+
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+
+							<!-- Header -->
+								<header id="header">
+									<div id="col-12">
+								        <div class="row" style="position: relative; top: 0.75em;">
+								        	<a href="#" class="button pdf-exclude icon fa-print" style="position: absolute; right: 1em; bottom: 2.5em;" onclick="CreateDocumentToExportPDF('EGB320_SettingUpTheRaspberryPi.pdf')"></a>
+								        </div>
+								        <div class="row" style="position: relative;">
+								        	<a href="index.html" class="logo">EGB320 - Mechatronics Design 2</a>
+											<a id="date" class="logo date" style="position: absolute; right: 1em;">Date</a>
+										</div>
+								    </div>
+								</header>
+							<!-- Content -->
+								<section>
+									<div class="page-wrapper"> 
+										<header class="main">
+											<h1>Setting Up The Raspberry Pi</h1>
+											
+										</header>							
+
+										<p>This article discusses how you setup the Raspberry Pi hardware for the EGB320 design project. We recommend you read the <a href="GeneralHardwareIntro.html">general introductory guide</a> before setting up your Raspberry Pi.</p>
+
+										<h2>Imaging your MicroSD Card</h2>
+										<p>The operating system for your Raspberry Pi will be hosted on a microSD card inserted into the bottom of the Pi. The MicroSD card included in your EGB320 kits comes blank; a clean platform for you to build upon. <b>You must image this microSD card prior to attempting to use your Pi.</b> It is up to you how you wish to set this up, however some installation processes can be very time consuming! To minimise your setup time, we have created an EGB320 Raspbian Jessie image for you to use, if you so choose. Instructions regarding how to image your MicroSD card can be found in the <a href="ImagingMicroSDCard.html">Imaging Your MicroSD Card</a> document.</p>
+
+										<h2>Installing Your MicroSD Card</h2>
+										<p>The pre-configured EGB320 Raspbian Jessie image you installed in the previous step contains;</p>
+										
+										<ul>
+											<li>OpenCV 3,</li>
+											<li>Python 2.7,</li>
+											<li>Python code editing and compiling environments,</li>
+											<li>The LCD touchscreen drivers,</li>
+											<li>A QUT WiFi configuration script, and</li>
+											<li>A demonstration python script for the camera</li>
+										</ul>
+
+
+										<p>You should have already installed the Raspbian image in the previous step. If you have not already inserted your microSD card, simply insert it into the microSD slot located on the right hand side of the Raspberry Pi in the following image.</p>
+
+
+										<figure class="figure">
+	    										<img src="images/setup/RPi_SDCard.png" width="50%" alt = "Image Not Found" />
+	    										<figcaption>The Raspberry Pi with the MicroSD Card Inserted</figcaption>
+										</figure>
+
+										<hr class="major pdf-exclude" />
+										<h2>Attaching The Raspberry Pi Camera</h2>
+
+										<p>To install the camera module, first locate the camera cable slot which is situated next to the HDMI port. Next lift the small black clip of the cable slot; you may need to remove a piece of brown-ish plastic tape. Insert the ribbon cable into the slot with the blue strip facing the USB/Ethernet ports. Push the clip back into place ensuring the cable is firmly locked in place. If you plan on attaching the touchscreen, we recommend that you place the camera so the ribbon cable extends over the USB/Ethernet ports.</p>
+
+										<figure class="figure">
+    										<img src="images/setup/pi_ribbon.png" width="50%" alt="" />
+    										<figcaption>Before and After Raspberry Pi Camera Attachment</figcaption>
+										</figure>
+										<div class="html2pdf__page-break"></div>
+									</div>
+									<div class="page-wrapper"> 
+									
+										<hr class="major pdf-exclude" />
+										<h2>Attaching The Screen</h2>
+										<p>First attach the four supplied stand-offs to the four screws which can be found on the back of the screen.</p>
+
+										<figure class="figure">
+    										<img src="images/setup/RPi_AttachStandOffs.png" class="left" width="50%" alt = "Image Not Found"/>
+    										<figcaption>The HDMI Touchscreen with Stand Offs Attached</figcaption>
+										</figure>
+										
+										<p>Next attach the screen's female header to the Raspberry Pi GPIO pins. The HDMI ports on the screen and Raspberry Pi should align. With the stand-offs in place the screen should only fit to the Raspberry Pi in one configuration. Now using the HDMI to HDMI adapter board connect the two HDMI ports. <b>Important:</b> if you do not align the pins correctly while attaching the screen, and proceed to power the Raspberry Pi, you can cause damage to the touch capabilities of the LCD screen. We will not be replacing any damaged touch screens.</p>
+
+										<figure class="figure">
+											<img src="images/setup/RPi_TouchScreen1.jpg" alt="Image Not Found" width="50%"/>
+											<figcaption>The Rear View of the Pi with the HDMI Touchscreen Attached</figcaption>
+											<br/>
+											<img src="images/setup/RPi_TouchScreen2.jpg" alt="Image Not Found" width="50%"/>
+											<figcaption>The Front View of the Pi with the HDMI Touchscreen Attached</figcaption>
+										</figure>
+										<div class="html2pdf__page-break"></div>
+									</div>
+									<div class="page-wrapper"> 
+
+										<hr class="major pdf-exclude" />
+										<h2>Powering the Raspberry Pi</h2>
+										<p>Before powering the Raspberry Pi connect the supplied Edimax WiFi dongle as well as a USB mouse and keyboard, and a HDMI screen if you wish.</p>
+
+										<p>To power the Raspberry Pi simply use the 5V Wall Power Supply and plug it into the micro USB connector onboard. A red LED near the micro USB port will light up, and if you have a screen attached it should show some activity. It may take a moment to boot up, especially when booting it for the first time.</p>
+
+										<p><b>Important:</b> the Raspberry Pi 3B requires a 5V power supply that can supply 2.5A and you should only ever supply power via the micro USB connector. Supplying power via the 3.3V and 5V rails within the GPIO pin header is risky, as it bypasses the protection circuitry. Additionally, you should always try to power down the Raspberry Pi properly (i.e. main menu -> shutdown). Only pull the power plug if the Raspberry Pi is not responding and you have no remaining options.</p>
+										
+
+										<hr class="major pdf-exclude" />
+										<h2>Setting Up The Screen</h2>
+										<p>If you are using the LCD screen it should boot up and display correctly. However, at times you may find your Raspberry Pi displays poorly either on the LCD screen or on a standard HDMI desktop monitor. To get your Raspberry Pi to display correctly you will need to run a command within a terminal. To open a terminal you can either select the terminal icon within the menu bar on the top left of the screen, or press CTRL+ALT+T on the keyboard.</p>
+
+										<p>To get the Raspberry Pi to display correctly on the LCD screen, run the following command in a terminal. This command will cause the Raspberry Pi to reboot.</p>
+
+										<pre><code>sudo ./LCD-show/LCD5-show</code></pre>
+
+										<p>To get the Raspberry Pi to display correctly on a standard HDMI desktop monitor run the following command within a terminal.</p>
+
+										<pre><code>sudo ./LCD-show/LCD-hdmi</code></pre>
+										<div class="html2pdf__page-break"></div>
+									</div>
+									
+									<div class="page-wrapper">
+
+										<hr class="major pdf-exclude" />
+										<h2>Configuring and Testing The Raspberry Pi Camera</h2>
+										<p>To be able to use the Rasberry Pi Camera, you will need to ensure the camera module is enabled. To do this click on the Raspberry Pi Icon which can be found in the top left corner. Then in the menu select Preferences -> Raspberry Pi Configuration. Within the Raspberry Pi Configuration Display, go to the Interfaces tab and ensure that the Camera is enabled.</p>
+										
+										<p>To test your camera is working open up a terminal (CTRL+ALT+T) and run the following command. This will run a Python script that should show you a live feed of the camera.</p>
+
+										<pre><code>python Desktop/camera_test.py</code></pre>
+
+										<figure class="figure">
+											<div class="row gtr-50 gtr-uniform">
+												<div class="col-5" style="margin-left: 5%;">
+													<span class="image fit"><img src="images/setup/RPi_ConfigSetup.png" alt="Image Not Found" width="50%"/><figcaption>Navigating to the Configuration Settings</figcaption></span>
+													
+												</div>
+												<div class="col-5" style="margin-left: 5%;">
+													<span class="image fit"><img src="images/setup/RPi_ConfigEnableCamera.png" alt="Image Not Found" width="50%"/><figcaption>The Desired Configuration Settings</figcaption></span>
+
+												</div>
+											</div>
+										</figure>
+
+										
+
+										<figure class="figure">
+											<img src="images/image-not-found.jpg" alt="Image Not Found" width="70%"/>
+										</figure>
+										<div class="html2pdf__page-break"></div>
+									</div>
+									
+									<div class="page-wrapper">
+
+										<hr class="major pdf-exclude" />
+										<h2>Connecting the Raspberry Pi to the QUT WiFi</h2>
+										<p>To connect your Raspberry Pi to the QUT Wifi open a terminal (CTRL+ALT+T), run the following command and enter your QUT username and password when prompted. It may take a few moments to connect.</p>
+
+										<pre><code>sudo ./Desktop/ConnectToQUTWifi.sh</code></pre>
+
+										<p>To connect to any other WiFi network simply attach the Raspberry Pi to a display and connect to your desired network as you would on a standard computer. The network interfaces icon can be found on the top right of the screen.</p>
+
+										<hr class="major pdf-exclude" />
+										<h2>Reducing the Number of Touch Screen Pins</h2>
+
+										<p>The provided 5 inch touch screen comes with a 26-pin female connector. However, it does not actually require all 26 pins to operate correctly; in fact it only needs 9 pins in total. The touch screen requires power, ground, and the SPI serial communication pins. So if you require access to more GPIO pins, or want flexibility with the placement and orientation of the touch screen and Raspberry Pi, you can do so. The following figures and table display the required pin connections for the touch screen, and indicate the positioning of these pins on the Raspberry Pi. The BOARD numbering convention has been used, but you can convert to BCM if you wish using the provided Raspberry Pi pinout.</p>
+
+
+										<figure class="figure">
+											<div class="box alt">
+												<div class="row gtr-50 gtr-uniform">
+													<div class="col-4" style="margin-left: 5%;">
+														<span class="image fit"><img src="images/setup/TouchScreenPinout.png" alt="Image Not Found"/></span>
+														<span class="image fit"><img src="images/setup/pi3_gpio.png" alt="Image Not Found"/></span>
+													</div>
+
+													<div class="col-6" style="margin-left: 5%;">
+														<div class="table-wrapper"style="margin-top: 12%;">
+															<table>
+																<thead>
+																	<tr>
+																		<th>Touch Screen and Pi Pin Number</th>
+																		<th>Pi Pin Description</th>
+																	</tr>
+																</thead>
+																<tbody>
+																	<tr>
+																		<td>2</td>
+																		<td>5V</td>
+																	</tr>
+																	<tr>
+																		<td>4</td>
+																		<td>5V</td>
+																	</tr>
+																	<tr>
+																		<td>6</td>
+																		<td>Ground</td>
+																	</tr>
+																	<tr>
+																		<td>19</td>
+																		<td>SPI - MOSI</td>
+																	</tr>
+																	<tr>
+																		<td>21</td>
+																		<td>SPI - MISO</td>
+																	</tr>
+																	<tr>
+																		<td>22</td>
+																		<td>GPIO</td>
+																	</tr>
+																	<tr>
+																		<td>23</td>
+																		<td>SPI - Clock</td>
+																	</tr>
+																	<tr>
+																		<td>25</td>
+																		<td>Ground</td>
+																	</tr>
+																	<tr>
+																		<td>26</td>
+																		<td>SPI - CE1 (Chip Select)</td>
+																	</tr>
+																</tbody>
+															</table>
+														</div>
+													</div>
+												</div>
+											</div>	
+											<figcaption>The pinout for the Raspberry Pi, Touch Screen and the Required Connections. GPIO pinout image sourced from <a href="http://au.element14.com/">Element14</a></figcaption>
+										</figure>									
+
+										
+										<div class="html2pdf__page-break"></div>
+									</div>
+								</section>
+
+						</div>
+					</div>
+
+				<!-- Sidebar -->
+					<div id="sidebar">
+						<!-- Will be inserted with JS -->
+					</div>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+			<script src="assets/js/generatePDF.js"></script>
+			<script type="text/javascript">
+				// On Load
+				$(document).ready(function(){
+					// Load sidebar
+					$('#sidebar').load('navbar.html');
+
+					// Insert today's date
+					var d = new Date();
+					var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+					document.getElementById("date").innerHTML = d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+				});
+			</script>
+
+	</body>
+</html>
