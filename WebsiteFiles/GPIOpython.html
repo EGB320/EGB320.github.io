@@ -174,7 +174,36 @@ if __name__ == "__main__":
 
 	GPIO.cleanup()						# Exit the GPIO session cleanly
 	</code></pre>
-										
+										<h2>Extra Information: Python Basics</h2>
+										<h3 style="padding: 0px; margin-bottom: 3px; margin-top: 3px">If Statements</h3>
+										You may be familiar with 'if statements' from their use in the C language. In python, the syntax for an if statement is slightly different, as you may have noticed from the previous activities. 
+
+										<pre><code>
+num = 10
+if num==10:
+	print 'statement triggered true'
+else:
+	print 'statement triggered false'</code></pre>
+										<h3 style="padding: 0px; margin-bottom: 3px; margin-top: 3px">For Loops</h3>
+										Another element of python coding that is quite different to C is the 'for loop'. There are multiple ways to do this, as demonstrated by the examples below. The first takes a more C based approach, while the second is a more 'pythonic' version. Both are correct and suitable for use when appropriate in your EGB320 project.
+
+										<pre><code>
+a = [1, 2, 3, 4, 5]					# Define a list filled with numbers
+for x in range(len(a)):					# Print each number individually
+    print a[x]</code></pre>
+<pre><code>
+numbers = [1, 2, 3, 4, 5]				# Define a list filled with numbers
+for number in numbers:					# Print each number individually
+    print number</code></pre>
+
+    <h3 style="padding: 0px; margin-bottom: 3px; margin-top: 3px">Boolean Operators</h3>
+										Unlike in C, where you need to use symbolic operators such as '&&' and '||', you can simply write 'and' and 'or'.
+
+										<pre><code>
+var1 = True
+var2 = False
+if var1 and var2:					# Print 'true' if both variables are set to True
+    print 'true'</code></pre>
 										</p>
 										<div class="html2pdf__page-break"></div>
 									</div>							
