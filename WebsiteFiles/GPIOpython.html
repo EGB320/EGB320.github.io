@@ -83,15 +83,21 @@
 										<h3 style="padding: 0px; margin-bottom: 3px; margin-top: 3px">Connecting the Hardware</h3>
 										First, we must connect the LED to the raspberry pi. If you are currently using the provided screen, you will need to disconnect the screen and connect your right-angled header in order to access the required pins. The right-angled header needs to be aligned to cover pins 29-40, inclusive. In this example, we will be using GPIO21 (BCM or pin 40 BOARD) and the ground pin located directly next it, so you will need to plug a jumper cable into each of the corresponding pins in the right-angled header.
 										<figure class="figure">
-	    										<img src="" width="60%" alt="Need To Take Photo On Monday" />
+	    										<img src="images/WiringLEDToPi.JPG" width="30%" alt="Image Not Found" />
 	    										<figcaption>Raspberry Pi Pin Setup for LED Activity</figcaption>
 										</figure>
 										Using your breadboard, wire up the LED and resistor as shown below.
 										<figure class="figure">
-	    										<img src="" width="50%" alt="Need To Take Photo On Monday" />
+	    										<img src="images/LEDOff.JPG" width="30%" alt="Image Not Found" />
 	    										<figcaption>Breadboard Setup for LED Activity</figcaption>
 										</figure>
+										Your entire setup should look like this.
+										<figure class="figure">
+	    										<img src="images/LEDSetup1.JPG" width="40%" alt="Image Not Found" />
+	    										<figcaption>Entire Setup for LED Activity</figcaption>
+										</figure>
 										Now reattach your HDMI screen, and connect your Raspberry Pi to the power supply. Attach a USB keyboard and mouse to the Raspberry Pi. 
+										Run your script by clicking run within the Spyder window. 
 										
 										<h3 style="padding: 0px; margin-bottom: 3px; margin-top: 10px">Programming Using GPIO</h3>
 										Now that you have connected an LED to your Raspberry Pi, the next step is to write some software to control the input and output signals sent from the Pi to the LED circuit. In this example, we will write our script using Spyder, however you may use any text editor and terminal emulator you like to write and run your scripts.
