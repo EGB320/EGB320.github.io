@@ -92,6 +92,7 @@
 	    										<figcaption>Breadboard Setup for LED Activity</figcaption>
 										</figure>
 										Now reattach your HDMI screen, and connect your Raspberry Pi to the power supply. Attach a USB keyboard and mouse to the Raspberry Pi. 
+										
 										<h3 style="padding: 0px; margin-bottom: 3px; margin-top: 10px">Programming Using GPIO</h3>
 										Now that you have connected an LED to your Raspberry Pi, the next step is to write some software to control the input and output signals sent from the Pi to the LED circuit. In this example, we will write our script using Spyder, however you may use any text editor and terminal emulator you like to write and run your scripts.
 
@@ -110,6 +111,32 @@ GPIO.output(21,GPIO.HIGH) 		# Set GPIO pin 21 to digital high (on)
 time.sleep(5)				# Wait for 5 seconds
 GPIO.output(21,GPIO.LOW)		# Set GPIO pin 21 to digital low (off)</code></pre>
 										Run your script by clicking the green arrow "play" button at the top of the Spyder UI. The expected output from the program is an LED which turns on for 5 seconds, then turns off.
+
+
+										<h3 style="padding: 0px; margin-bottom: 3px; margin-top: 10px">Switch Example</h3>
+
+										<pre><code># Import Modules
+import RPi.GPIO as GPIO
+
+
+# Main Function
+if __name__ == "__main__":
+	
+	# Setup Pins - using BCM naming convention
+	GPIO.setmode(GPIO.BCM)
+	GPIO.setup(21, GPIO.OUT) 	# setup GPIO21 as output (LED)
+	GPIO.setup(20, GPIO.IN)		# setup GPIO20 as input (switch)
+
+	# Forever Loop - turns on LED while switch is pressed
+	while True:
+		# Check to see if switch is pressed
+		if GPIO.input(20) == GPIO.HIGH:
+			# turn on LED
+			GPIO.output(21, HIGH)
+		else:
+			# turn off LED
+			GPIO.input(20, LOW)
+	</code></pre>
 
 										</p>
 										<div class="html2pdf__page-break"></div>
