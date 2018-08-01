@@ -465,6 +465,9 @@ class VREP_SoccerBot(object):
 		if _range > maxViewDistance:
 			return False, 0, 0
 
+		# UNTESTED CODE
+		
+
 		# check to see if in field of view
 		if abs(horizontalAngle) > (self.horizontalViewAngle/2.0):
 			# return False to indicate object could not be found
