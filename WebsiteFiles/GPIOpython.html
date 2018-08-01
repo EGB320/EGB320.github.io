@@ -11,6 +11,16 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link id="pagestyle" rel="stylesheet" href="assets/css/main.css" />
 		<link href="assets/css/main.css" media="print" rel="stylesheet" />
+
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=UA-123133357-1"></script>
+		<script>
+		  window.dataLayer = window.dataLayer || [];
+		  function gtag(){dataLayer.push(arguments);}
+		  gtag('js', new Date());
+
+		  gtag('config', 'UA-123133357-1');
+		</script>
 	</head>
 
 	<body class="is-preload">
@@ -47,7 +57,7 @@
 
 										<h2>Overview</h2>
 										
-										<p style="padding: 0px; margin: 0;">To complete your soccer bot project, you will need to use the Raspberry Pi general purpose input/output (GPIO) pins. The programming language you use to communicate with the GPIO pins is up to you, however this tutorial will be written using python 3. 
+										<p style="padding: 0px; margin: 0;">To complete your soccer bot project, you may need to use the Raspberry Pi general purpose input/output (GPIO) pins. The programming language you use to communicate with the GPIO pins is up to you, however this tutorial will be written using python 3. 
 
 										The GPIO pins are a physical interface between the Pi and all external connections. The Raspberry Pi has 40 pins which can be accessed. These are as follows;
 										<ul style="margin-left: 35px; padding: 10px; margin-bottom: 0px">
@@ -80,18 +90,31 @@
 											<li> 1 right-angled header</li>
 										</ul>
 										
-										<h3 style="padding: 0px; margin-bottom: 3px; margin-top: 3px">Connecting the Hardware</h3>
-										First, we must connect the LED to the raspberry pi. If you are currently using the provided screen, you will need to disconnect the screen and connect your right-angled header in order to access the required pins. The right-angled header needs to be aligned to cover pins 29-40, inclusive. In this example, we will be using pin 21 and the ground pin located directly next it, so you will need to plug a jumper cable into each of the corresponding pins in the right-angled header.
+										<h3 style="padding: 0px; margin-bottom: 3px; margin-top: 3px">The LED Circuit Setup</h3>
+										The circuit which you will be connecting is presented in schematic form below.
 										<figure class="figure">
-	    										<img src="" width="60%" alt="Need To Take Photo On Monday" />
+	    										<img src="images/gpio_python/LEDSchematic.png" width="15%" alt="Image Not Found" />
+	    										<figcaption>The LED Circuit Schematic</figcaption>
+										</figure>
+
+										<h3 style="padding: 0px; margin-bottom: 3px; margin-top: 3px">Connecting the Hardware</h3>
+										First, we must connect the LED to the Raspberry Pi. If you are currently using the provided screen, you will need to disconnect the screen and connect your right-angled header in order to access the required pins. The right-angled header needs to be aligned to cover pins 29-40, inclusive. In this example, we will be using GPIO21 (BCM or pin 40 BOARD) and the ground pin located directly next it, so you will need to plug a jumper cable into each of the corresponding pins in the right-angled header. After connecting the jumper cables, you may plug your HDML screen back in.
+										<figure class="figure">
+	    										<img src="images/WiringLEDToPi.JPG" width="30%" alt="Image Not Found" />
 	    										<figcaption>Raspberry Pi Pin Setup for LED Activity</figcaption>
 										</figure>
-										Using your breadboard, wire up the LED and resistor as shown below. THE FOLLOWING NEEDS TO BE UPDATED!!!!!!!! The red cable shown below should connect your GPIO pin to your LED. The black cable should connect the ground pin to the unattached end of your resistor.
+										Using your breadboard, wire up the LED and resistor as shown below;
 										<figure class="figure">
-	    										<img src="" width="50%" alt="Need To Take Photo On Monday" />
+	    										<img src="images/LEDOff.JPG" width="30%" alt="Image Not Found" />
 	    										<figcaption>Breadboard Setup for LED Activity</figcaption>
 										</figure>
-										Now reattach your HDMI screen, and connect your Raspberry Pi to the power supply. Attach a USB keyboard and mouse to the Raspberry Pi. 
+										Your entire setup should look like this;
+										<figure class="figure">
+	    										<img src="images/LEDSetup1.JPG" width="40%" alt="Image Not Found" />
+	    										<figcaption>Entire Setup for LED Activity</figcaption>
+										</figure>
+										Now connect your Raspberry Pi to the power supply, and attach a USB keyboard and mouse. 
+
 										<h3 style="padding: 0px; margin-bottom: 3px; margin-top: 10px">Programming Using GPIO</h3>
 										Now that you have connected an LED to your Raspberry Pi, the next step is to write some software to control the input and output signals sent from the Pi to the LED circuit. In this example, we will write our script using Spyder, however you may use any text editor and terminal emulator you like to write and run your scripts.
 
@@ -108,9 +131,89 @@ GPIO.setmode(GPIO.BCM)			# Set the GPIO pin naming convention to BCM
 GPIO.setup(21,GPIO.OUT)			# Set up GPIO pin 21 as an output
 GPIO.output(21,GPIO.HIGH) 		# Set GPIO pin 21 to digital high (on)
 time.sleep(5)				# Wait for 5 seconds
-GPIO.output(21,GPIO.LOW)		# Set GPIO pin 21 to digital low (off)</code></pre>
+GPIO.output(21,GPIO.LOW)		# Set GPIO pin 21 to digital low (off)
+GPIO.cleanup()				# Exit the GPIO session cleanly</code></pre>
 										Run your script by clicking the green arrow "play" button at the top of the Spyder UI. The expected output from the program is an LED which turns on for 5 seconds, then turns off.
 
+										<figure class="figure">
+	    										<img src="images/LEDOn.JPG" width="40%" alt="Image Not Found" />
+	    										<figcaption>The Result of the GPIO LED Control Code</figcaption>
+										</figure>
+
+										<h3 style="padding: 0px; margin-bottom: 3px; margin-top: 10px">Other Examples</h3>
+										<h4>Software PWM</h4>
+										This example demonstrates how to perform software PWM to flash an LED. To complete this example, may keep the same LED circuit design as constructed in the previous activity.
+										<pre><code>import RPi.GPIO as GPIO 			# Import GPIO module
+ 
+GPIO.setmode(GPIO.BCM)				# Set the GPIO pin naming convention
+GPIO.setup(21, GPIO.OUT)			# Set our GPIO pin to output
+
+pwm21 = GPIO.PWM(21, 0.5)			# Initiate the PWM signal
+pwm21.start(50)					# Start a PWM signal with duty cycle at 50%
+
+raw_input('Press a key to stop:')		# Kill on keypress
+
+pwm21.stop()					# Stop the PWM signal
+GPIO.cleanup()					# Exit the GPIO session cleanly</code></pre>
+
+										<h4>Using a Switch</h4>
+										This example demonstrates how to turn your LED on while a button is held down.
+										You will first need to connect the circuit as presented in the schematic below.
+										<figure class="figure">
+	    										<img src="images/gpio_python/LED_ButtonSchematic.png" width="25%" alt="Image Not Found" />
+	    										<figcaption>The Button to LED Circuit Schematic</figcaption>
+										</figure>
+										<pre><code># Import Modules
+import RPi.GPIO as GPIO
+
+
+# Main Function
+if __name__ == "__main__":
+	
+	# Setup Pins - using BCM naming convention
+	GPIO.setmode(GPIO.BCM)
+	GPIO.setup(21, GPIO.OUT) 				# Setup GPIO21 as output (LED)
+	GPIO.setup(20, GPIO.IN)					# Setup GPIO20 as input (switch)
+
+	# Forever Loop - turns on LED while switch is pressed
+	while True:
+		if GPIO.input(20) == GPIO.HIGH:			# Check to see if switch is pressed
+			GPIO.output(21, HIGH)			# Turn on LED
+		else:
+			GPIO.input(20, LOW)			# Turn off LED
+
+	GPIO.cleanup()						# Exit the GPIO session cleanly
+	</code></pre>
+										<h2>Extra Information: Python Basics</h2>
+										<h3 style="padding: 0px; margin-bottom: 3px; margin-top: 3px">If Statements</h3>
+										You may be familiar with 'if statements' from their use in the C language. In python, the syntax for an if statement is slightly different, as you may have noticed from the previous activities. 
+
+										<pre><code>
+num = 10
+if num==10:
+	print 'statement triggered true'
+else:
+	print 'statement triggered false'</code></pre>
+										<h3 style="padding: 0px; margin-bottom: 3px; margin-top: 3px">For Loops</h3>
+										Another element of python coding that is quite different to C is the 'for loop'. There are multiple ways to do this, as demonstrated by the examples below. The first takes a more C based approach, while the second is a more 'pythonic' version. Both are correct and suitable for use when appropriate in your EGB320 project.
+
+										<pre><code>
+a = [1, 2, 3, 4, 5]					# Define a list filled with numbers
+for x in range(len(a)):					# Print each number individually
+    print a[x]</code></pre>
+<pre><code>
+numbers = [1, 2, 3, 4, 5]				# Define a list filled with numbers
+for number in numbers:					# Print each number individually
+    print number</code></pre>
+
+    <h3 style="padding: 0px; margin-bottom: 3px; margin-top: 3px">Boolean Operators</h3>
+										Unlike in C, where you need to use symbolic operators such as '&&' and '||', you can simply write 'and' and 'or'.
+
+										<pre><code>
+var1 = True
+var2 = False
+if var1 and var2:					# Print 'true' if both variables are set to True
+    print 'true'</code></pre>
 										</p>
 										<div class="html2pdf__page-break"></div>
 									</div>							
