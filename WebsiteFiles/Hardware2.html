@@ -1,0 +1,265 @@
+<!DOCTYPE HTML>
+<!--
+	Editorial by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>EGB320 Mechatronics Design 2</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link id="pagestyle" rel="stylesheet" href="assets/css/main.css" />
+		<link href="assets/css/main.css" media="print" rel="stylesheet" />
+
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=UA-123133357-1"></script>
+		<script>
+		  window.dataLayer = window.dataLayer || [];
+		  function gtag(){dataLayer.push(arguments);}
+		  gtag('js', new Date());
+
+		  gtag('config', 'UA-123133357-1');
+		</script>
+	</head>
+
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+
+							<!-- Header -->
+								<header id="header">
+									<div id="col-12">
+								        <div class="row" style="position: relative; top: 0.75em;">
+								        	<a href="#" class="button pdf-exclude icon fa-print" style="position: absolute; right: 1em; bottom: 2.5em;" onclick="CreateDocumentToExportPDF('filename.pdf')"></a>
+								        </div>
+								        <div class="row" style="position: relative;">
+								        	<a href="index.html" class="logo">EGB320 - Mechatronics Design 2</a>
+											<a id="date" class="logo date" style="position: absolute; right: 1em;">Date</a>
+										</div>
+								    </div>
+								</header>
+
+							<!-- Content -->
+								<section>
+									<div class="page-wrapper"> 
+										<header class="main">
+											<h1>Hardware 2</h1>
+										</header>							
+
+										<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis dapibus rutrum facilisis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Etiam tristique libero eu nibh porttitor fermentum. Nullam venenatis erat id vehicula viverra. Nunc ultrices eros ut ultricies condimentum. Mauris risus lacus, blandit sit amet venenatis non, bibendum vitae dolor. Nunc lorem mauris, fringilla in aliquam at, euismod in lectus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. In non lorem sit amet elit placerat maximus. Pellentesque aliquam maximus risus, vel sed vehicula.</p>
+
+
+										<hr class="major pdf-exclude" />
+										<h2>Designing a Drive System</h2>
+										<h3>Motor Specifications and Motor Curves</h3>
+										<p>Before we go and look at designing a drive system and selecting a motor, we need to discuss motor specifications and motor curves. We need to understand the basic motor specifications and how we can use them to draw motor curves. These motor curves will then be very useful in helping us to select an appropriate motor for our application. The first motor specifications we are going to look at are the nominal voltage, the no load speed and the stall torque;</p>
+
+										<ul>
+											<li>The nominal voltage is the recommend voltage the motor should operate at. </li>
+											<li>The no load speed is the maximum speed however no torque is applied to the output shaft. This is the no load speed for the given nominal voltage.</li>
+											<li>The stall torque is the maximum torque that can be outputtted by the motor however the output shaft will no longer be rotation.</li>
+										</ul> 
+
+										<p>A motor's no load speed and the stall torque are typically given based on the specified nominal voltage. What these three specifications allow us to do is draw a torque vs speed graph, as can be seen in the following figure. We typically assume the relationship between torque and speed is linear.</p>
+
+
+										<figure class="figure">
+    										<img src="images/Hardware2/TorqueVsSpeed_1.png" width="50%" alt="Image Not Found" />
+    										<figcaption>An Example of a Motor Torque vs. Speed Graph and how to use one</figcaption>
+										</figure>
+
+										<p>So how do you use this graph? Well first if we know the required motor torque to move our robot (which we calculate later), we can read off this graph to determine then what speed the motor would be operating. However, a motor does not have to operate at its nominal voltage, we can supply it a voltage that is higher or lower. However, if we supply a voltage that is lower than the specified nominal voltage we must be aware of what is known as the dead zone. As you may know the speed of a motor is directly proportional to the voltage applied to it, apply twice the voltage double the speed, and for most cases this is correct. However, a motor does not necessarily start to spin the moment even the slightest voltage is applied. You probably have seen this in action, you need to apply above a certain voltage before the motor even starts to turn. This is because the motor needs to overcome its own internal forces before it will start rotating the output shaft. This idea that a motor will only start to spin after a certain voltage is what is known as the dead zone of the motor, the following figure represents this idea graphically.</p>
+
+										<figure class="figure">
+    										<img src="images/Hardware2/SpeedVsVoltage.png" width="50%" alt="Image Not Found" />
+    										<figcaption>All Motors Have a Dead Zone.</figcaption>
+										</figure>
+
+
+										<p>On high quality motors with good datasheets they may specify the deadzone, however for less expensive motors they will typically not give you this value and so you will need to assume a threshold voltage, which may be anywhere between 20-50% of the nominal voltage.</p>
+
+										<p>Now we can actually translate this deadzone threshold voltage onto the motor torque vs. speed graph. We can do this by making the assumption that the speed and torque are proportional to the voltage. As in if we halve the operating voltage then we will get half the torque and half the speed. So we can draw a line on our motor torque vs speed graph to represent the threshold voltage. What this allows us to do is visualize the motor operating zone, as can be seen in the figure below.</p>
+
+										<figure class="figure">
+    										<img src="images/Hardware2/TorqueVsSpeed_2.png" width="50%" alt="Image Not Found" />
+    										<figcaption>Adding the Threshold Voltage onto the Motor Torque vs. Speed Graph.</figcaption>
+										</figure>
+
+										<p>We can use this graph in the same way as before. If our required motor torque is plotted as a horizontal line we can visually see what the motor's speed will be at various voltages (as we move from the nominal voltage to towards the y-axis the voltage is decreasing). On the graph below we show two different required motor torque examples; you should notice one of our horizontal torque lines ends up in the dead zone and so we could not acheive low speeds.</p>
+
+										<figure class="figure">
+    										<img src="images/Hardware2/TorqueVsSpeed_3.png" width="50%" alt="Image Not Found" />
+    										<figcaption>Two Examples of how to use a Motor Torque vs. Speed Graph to Determine the Possible Speed Range.</figcaption>
+										</figure>
+
+										<p>A motor can also operate above its nominal voltage and we could add this to the motor torque vs. speed graph as well. However, you must be careful when operating at voltages significantly higher than the nonimal voltage or extremely close to the threshold voltage. Operating near these points can drastically reduce the lifetime of your motor as well as potentially destroy electronic circuits if they have not been designed to withstand these voltage levels and the high current induced by operating in these zones.</p>
+
+										<p>Now that we understand the basic motor curves and how we can generate them we can start to look at designing our drive system.</p>
+										
+										<h3>Design Requirements</h3>
+										<p>Typically when designing a drive system we are trying achieve certain velocities and minimum acceleration. To achieve these velocities and acceleration profiles we need to select motors that are well suited to our application as well as choose a suitable wheel size and maximum robot mass. For this example we are going to be designing a medium size differential drive robot that will be used by researchers to perform outdoor place recognition experiments. The terrain will be mainly flat and the researchers want the robot to be able to achieve a speed that is equal or greater than human walking speed (5km/hr). You should also remember that the velocities and acceleration you need to design for are dependent on the application.</p>
+
+										<p>So first we need to define our operating velocities as well as our minimum acceleration. The researchers have provided us with the the minimum top speed which is approximately 1.5m/s. From this minimum top speed we can also reason a suitable minimum acceleration. We can do this by deciding how quickly do we want our robot to be able to achieve this top speed. For this example let's say it needs to reach 1.5m/s in 2 seconds; so we have a minimum acceleration of 0.75m/s^2. The final piece of the puzzle is, which depending on your application is not always required, is the maximum low speed. We want the robot to be able to move at speeds lower than this maximum low speed. For this application we want our robot to be able to move at speeds less than 0.2m/s.</p>
+
+										<p>To recap we have decided on 3 engineering design requirements:</p>
+
+										<ul>
+											<li>Minimum Acceleration: 0.75 m/s^2</li>
+											<li>Minimum Top Speed: 1.5m/s</li>
+											<li>Maximum Low Speed: 0.2m/s</li>
+										</ul>
+
+										<h3>Drawing a Free Body Diagram</h3>
+										<p>The next step in our process is to draw a free body diagram. We are going to draw the side view of our differential drive robot and we are going to make the assumption the centre of mass of the robot is directly above the center of the wheel axle. From the free body diagram below, you can see that in our very simple model we only have two forces acting on the robot's wheels, the torque from the motor and the force due to friction.</p>
+
+										<figure class="figure">
+    										<img src="images/Hardware2/FBD.png" width="50%" alt="Image Not Found" />
+    										<figcaption>A Simple Free Body Diagram for a Differential Drive Robot</figcaption>
+										</figure>
+
+										<h3>Developing a Mathematical Model</h3>
+										<p>We now need develop a mathematical model of our drive system. This will involve using physics knowledge to somehow relate the forces in our free body diagram with our design requirements in order to select a motor. To start we need to remember Newton's second law which is that the forces exterted on an object is equal to its mass multipled by its acceleration, or mathematically &Sigma;F = ma. From our free body diagram we can mathematically determine the required output torque for a desired acceleration: </p>
+
+										<pre><code>&Sigma;F = m<sub>r</sub> * a
+&tau;<sub>o</sub>&frasl;r<sub>w</sub> - F<sub>f</sub> = m<sub>r</sub> * a
+&tau;<sub>o</sub> = (m<sub>r</sub> * a + F<sub>f</sub>) * r<sub>w</sub></code></pre>
+
+										<p>Using our knowledge of physics we can determine the frictional force. The force due to friction is a product of the normal force multipled by a coefficient of friction. If we assume the robot is operating on flat surface parallel to the ground we can state that the normal force is equal to half the robot's mass times gravity. Why half the robot's mass? Well remember we have two drive wheels and we assumed the center of mass is directly above the wheels and halfway between them, so each wheel will "support" half the mass. Hence, we can say that the required output torque for a given acceleration is given by the following equation:</p>
+
+										<pre><code>&tau;<sub>o</sub> = (m<sub>r</sub> * a + F<sub>f</sub>) * r<sub>w</sub>
+&tau;<sub>o</sub> = (m<sub>r</sub> * a + &mu; * N<sub>f</sub>) * r<sub>w</sub>
+&tau;<sub>o</sub> = (m<sub>r</sub> * a + &mu; * m<sub>r</sub> * 9.81&frasl;2) * r<sub>w</sub>
+&tau;<sub>o</sub> = (m<sub>r</sub> * a + 4.905 * &mu; * m<sub>r</sub>) * r<sub>w</sub></code></pre>
+
+										<p>Now because we are scientists we are also aware of a little thing called loss. Throughout the drive system there are going to be losses. For example, these losses could be due to heat or noise, which are caused by friction in the gears or if the shaft spins within the wheel hub. Simply put, the power that we put in is not going to be the power we get out and so we can model this as an efficiency factor. If the required output torque is the torque at the wheel itself, well it will only be a percentage of the torque supplied by the motor. Hence, mathematically:</p>
+
+										<pre><code>&tau;<sub>output</sub> = &eta; * &tau;<sub>motor</sub></code></pre>
+
+										<p>Subsituting this into our required output torque equation and rearranging we get the the final equation. This final equation specifies the required motor torque given a desired acceleration as well as some design paramters such as wheel radius for a two wheel drive differential robot.</p>
+
+										<pre><code>&tau;<sub>m</sub> = (1&frasl;&eta;) * ((m<sub>r</sub> * a + 4.905 * &mu; * m<sub>r</sub>) * r<sub>w</sub>)		# Equation 1.1</code></pre>
+
+										<p>From the formulas above you can also see we require the mass of the robot, the radius of the robot's drive wheels, a coefficient of friction and an efficiency. Obviously, you do not have these but these are what are sometimes referred to as design parameters. These design parameters are values that you may be able to change in order to allow your design to achieve the design requirements. For example, we could change the wheel radius which would affect the acceleration and top speed of our robot. Additionally, some of these design parameters may become design requirements. For example, after performing all our calculations and selecting a motor we may consider the mass of the robot to be a design requirement; as in we must ensure the mass of robot does not exceed this value.</p>
+
+										<p>We need to relate our velocity design requirements with our robot design parameters. Well for this we do not need a free body diagram, we only need to know that linear velocity is equal to angular velocity multipled by the radius (v = &omega;r). So our minimum top speed and maximum top speed in terms of our design parameters are given by:</p>
+
+										<pre><code>&omega;<sub>min</sub> = v<sub>min</sub> &frasl; r<sub>w</sub>						# Equation 1.2
+&omega;<sub>max</sub> = v<sub>max</sub> &frasl; r<sub>w</sub>						# Equation 1.3</code></pre>
+<!-- 
+										<p>We should also add in a efficiency factor here because simply because the wheel is spinning does not mean the robot will move, this could be caused by something known as wheel slip.</p>
+
+										<pre><code>&omega;<sub>min</sub> = (1&frasl;&eta;) * v<sub>min</sub> * r<sub>w</sub>					# Equation 1.2
+&omega;<sub>max</sub> = (1&frasl;&eta;) * v<sub>max</sub> * r<sub>w</sub>					# Equation 1.3</code></pre> -->
+
+										<h3>Choosing Initial Design Parameters and Calculating Motor Values</h3>
+										<p>We will now work out 4 values, using Equations 1.1, 1.2 and 1.3, that will help us select a motor. These values are:</p>
+
+										<ul>
+											<li>The motor torque required to overcome friction (i.e. acceleration equals 0). This is the required torque to maintain a given speed. We will call this the Friction Torque.</li>
+											<li>The motor torque required to accelerate given our acceleration design requirement. We will denote this as the Acceleration Torque.</li>
+											<li>The top motor speed. We will denote this as the Top Motor Speed.</li>
+											<li>The low motor speed. We will call this the Low Motor Speed</li>
+										</ul>
+
+
+										<p>However, first we will need to choose some initial values for our design parameters. For this example we have selected the following:</p>
+
+										<ul>
+											<li>Robot Mass: 10kg</li>
+											<li>Wheel Radius: 0.04m</li>
+											<li>Coefficient of Friction: 0.9</li>
+											<li>Efficiency: 0.8</li>
+										</ul>
+
+										<p>Using these values alongside our design requirements we calculate the 4 values to be:</p>
+
+										<ul>
+											<li>Friction Torque = 2.207 N</li>
+											<li>Acceleration Torque = 3.13 N</li>
+											<li>High Motor Speed = 37.5 rad/s</li>
+											<li>Low Motor Speed = 5 rad/s</li>
+										</ul>
+
+										<h3>Selecting a Motor</h3>
+										<p>We can now use the 4 values calculated in the previous section to help us select a motor. To start off with we are going to draw these as 2 horizontal and 2 vertical lines on a torque vs speed graph.</p>
+
+										<figure class="figure">
+    										<img src="images/Hardware2/DesignRequirementsGraph.png" width="70%" alt="Image Not Found" />
+    										<figcaption>Calculated Design Values on Torque vs. Speed Graph.</figcaption>
+										</figure>
+
+										<p>So now we need to go traverse our favourite motor suppliers and attempt to find a suitable motor. In this example we went and found a DC brushed motor with the following characteristics:</p>
+
+										<ul>
+											<li>Nominal Voltage: 24 V</li>
+											<li>Motor Stall Torque: 3 Nm</li>
+											<li>Motor No Load Speed: 450 RPM</li>
+											<li>Stall Current: 5.8 A</li>
+										</ul>
+
+										<p>Using these values we can plot the nominal and threshold voltage torque vs. speed curves on the same graph as our calculated design values, see the figure below. Unfortunately, the motor datasheet did not state the threshold voltage or give us any information that allows us to approximate it, so we are going to set the threshold voltage to be approximately 40% of the nominal voltage.</p>
+
+										<figure class="figure">
+    										<img src="images/Hardware2/PoorMotorGraph.png" width="70%" alt="Image Not Found" />
+    										<figcaption>Motor 1 Torque vs. Speed Graph with Overlaid Design Values.</figcaption>
+										</figure>
+
+										<p>From this graph the two critical points we first need to investigate are the intersection of the Friction Torque line with the Low and High Motor Speed lines. We need to ensure that these intersection points are within our operating zone. As we can see only our low motor speed intersection point is within our operating zone and this motor probably is not suitable for our application. While we could run the motors at a higher voltage to try and achieve the high motor speed; we would need to run them at approximately double the nominal voltage which would drastically reduce the motor's lifetime. However, from this graph we can intuitively see that well if we could get a motor with a bit more torque and a higher RPM we should be able to meet our design requirements. So we do some more searching and find the following motor:</p>
+
+										<ul>
+											<li>Nominal Voltage: 24 V</li>
+											<li>Motor Stall Torque: 6 Nm</li>
+											<li>Motor No Load Speed: 650 RPM</li>
+											<li>Stall Current: 16.7 A</li>
+										</ul>
+
+										<p>Plotting this motor's torque vs. speed graph and overlaying the calculated design values we can see that this motor could be suitable, the figure is below. The first thing we notice is that our friction torque line intersects with our high and low motor speed lines within the operating zone. This means that the motor should be able to achieve our desired minimum and maximum forward velocities. The next thing we shoud take note of is that our acceleration torque line is well below the stall torque, so we should be able to achieve our desired minimum acceleration. While this motor appears to be suitable for our application our low motor speed and friction torque intersection point is quite close our threshold voltage. This means that if our models and assumptions are slightly off then we may not be able to achieve our desired low forward velocity.</p>
+
+										<figure class="figure">
+    										<img src="images/Hardware2/SuitableMotorGraph.png" width="70%" alt="Image Not Found" />
+    										<figcaption>Motor 2 Torque vs. Speed Graph with Overlaid Design Values.</figcaption>
+										</figure>
+
+										<p>Okay so we have now selected our motors, what next? Well next we would need to ensure that the weight of the motor and its stall current are suitable for our system. If they are, we would then need to go design the motor driver circuitry in order to control this motor. A tip for when you go select a H-Bridge IC, make sure you get a H-Bridge with in-built under voltage, over current and over temparature protection it may cost you a little bit more but it will save you a lot of issues. Additionally, make sure the H-Bridge can handle more than the stall current specified by the motor.</p>
+									
+
+								</section>
+
+						</div>
+					</div>
+
+				<!-- Sidebar -->
+					<div id="sidebar">
+						<!-- Will be inserted with JS -->
+					</div>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+			<script src="assets/js/generatePDF.js"></script>
+			<script type="text/javascript">
+				// On Load
+				$(document).ready(function(){
+					// Load sidebar
+					$('#sidebar').load('navbar.html');
+
+					// Insert today's date
+					var d = new Date();
+					var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+					document.getElementById("date").innerHTML = d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+				});
+			</script>
+
+	</body>
+</html>
