@@ -52,13 +52,12 @@
 											<h1>Hardware 2</h1>
 										</header>							
 
-										<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis dapibus rutrum facilisis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Etiam tristique libero eu nibh porttitor fermentum. Nullam venenatis erat id vehicula viverra. Nunc ultrices eros ut ultricies condimentum. Mauris risus lacus, blandit sit amet venenatis non, bibendum vitae dolor. Nunc lorem mauris, fringilla in aliquam at, euismod in lectus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. In non lorem sit amet elit placerat maximus. Pellentesque aliquam maximus risus, vel sed vehicula.</p>
+										<p>In this worksheet we are going to look at how to design a drive system and a kicker system given some design requirements. We will also discuss important principles of DC motors. As part of designing a system we will develop mathematical models (I DONT LIKE THIS SENTENCE). The ability to develop sound mathematical models is one of the aspects that underpins quality engineering design. If you understand how to model a system mathematically and how to make reasonable assumptions about your system then you use it to help guide you towards a physical system that will meet your design requirements. However, before we design a kicker or drive system we need to understand the basics of DC motor curves as we can use them to help us design our systems.</p>
 
 
 										<hr class="major pdf-exclude" />
-										<h2>Designing a Drive System</h2>
-										<h3>Motor Specifications and Motor Curves</h3>
-										<p>Before we go and look at designing a drive system and selecting a motor, we need to discuss motor specifications and motor curves. We need to understand the basic motor specifications and how we can use them to draw motor curves. These motor curves will then be very useful in helping us to select an appropriate motor for our application. The first motor specifications we are going to look at are the nominal voltage, the no load speed and the stall torque;</p>
+										<h2>Understanding Motors</h2>
+										<p>In this section we are going to to discuss motor specifications and motor curves. We need to understand the basic motor specifications and how we can use them to draw motor curves. These motor curves will then be very useful in helping you select an appropriate motor for your application. The first motor specifications we are going to look at are the nominal voltage, the no load speed and the stall torque;</p>
 
 										<ul>
 											<li>The nominal voltage is the recommend voltage the motor should operate at. </li>
@@ -100,8 +99,10 @@
 
 										<p>A motor can also operate above its nominal voltage and we could add this to the motor torque vs. speed graph as well. However, you must be careful when operating at voltages significantly higher than the nonimal voltage or extremely close to the threshold voltage. Operating near these points can drastically reduce the lifetime of your motor as well as potentially destroy electronic circuits if they have not been designed to withstand these voltage levels and the high current induced by operating in these zones.</p>
 
-										<p>Now that we understand the basic motor curves and how we can generate them we can start to look at designing our drive system.</p>
+										<p>Now that we understand the basic motor curves and how we can generate them we can start to look at designing our various systems.</p>
 										
+										<hr class="major pdf-exclude" />
+										<h2>Designing a Drive System</h2>
 										<h3>Design Requirements</h3>
 										<p>Typically when designing a drive system we are trying achieve certain velocities and minimum acceleration. To achieve these velocities and acceleration profiles we need to select motors that are well suited to our application as well as choose a suitable wheel size and maximum robot mass. For this example we are going to be designing a medium size differential drive robot that will be used by researchers to perform outdoor place recognition experiments. The terrain will be mainly flat and the researchers want the robot to be able to achieve a speed that is equal or greater than human walking speed (5km/hr). You should also remember that the velocities and acceleration you need to design for are dependent on the application.</p>
 
@@ -143,14 +144,14 @@
 
 										<p>Subsituting this into our required output torque equation and rearranging we get the the final equation. This final equation specifies the required motor torque given a desired acceleration as well as some design paramters such as wheel radius for a two wheel drive differential robot.</p>
 
-										<pre><code>&tau;<sub>m</sub> = (1&frasl;&eta;) * ((m<sub>r</sub> * a + 4.905 * &mu; * m<sub>r</sub>) * r<sub>w</sub>)		# Equation 1.1</code></pre>
+										<pre><code>&tau;<sub>m</sub> = (1&frasl;&eta;) * ((m<sub>r</sub> * a + 4.905 * &mu; * m<sub>r</sub>) * r<sub>w</sub>)		# Equation 2.1</code></pre>
 
 										<p>From the formulas above you can also see we require the mass of the robot, the radius of the robot's drive wheels, a coefficient of friction and an efficiency. Obviously, you do not have these but these are what are sometimes referred to as design parameters. These design parameters are values that you may be able to change in order to allow your design to achieve the design requirements. For example, we could change the wheel radius which would affect the acceleration and top speed of our robot. Additionally, some of these design parameters may become design requirements. For example, after performing all our calculations and selecting a motor we may consider the mass of the robot to be a design requirement; as in we must ensure the mass of robot does not exceed this value.</p>
 
 										<p>We need to relate our velocity design requirements with our robot design parameters. Well for this we do not need a free body diagram, we only need to know that linear velocity is equal to angular velocity multipled by the radius (v = &omega;r). So our minimum top speed and maximum top speed in terms of our design parameters are given by:</p>
 
-										<pre><code>&omega;<sub>min</sub> = v<sub>min</sub> &frasl; r<sub>w</sub>						# Equation 1.2
-&omega;<sub>max</sub> = v<sub>max</sub> &frasl; r<sub>w</sub>						# Equation 1.3</code></pre>
+										<pre><code>&omega;<sub>min</sub> = v<sub>min</sub> &frasl; r<sub>w</sub>						# Equation 2.2
+&omega;<sub>max</sub> = v<sub>max</sub> &frasl; r<sub>w</sub>						# Equation 2.3</code></pre>
 <!-- 
 										<p>We should also add in a efficiency factor here because simply because the wheel is spinning does not mean the robot will move, this could be caused by something known as wheel slip.</p>
 
@@ -227,7 +228,71 @@
 										</figure>
 
 										<p>Okay so we have now selected our motors, what next? Well next we would need to ensure that the weight of the motor and its stall current are suitable for our system. If they are, we would then need to go design the motor driver circuitry in order to control this motor. A tip for when you go select a H-Bridge IC, make sure you get a H-Bridge with in-built under voltage, over current and over temparature protection it may cost you a little bit more but it will save you a lot of issues. Additionally, make sure the H-Bridge can handle more than the stall current specified by the motor.</p>
-									
+
+
+										<h3>What About Omnidirectional Drive Systems</h3>
+										<p>Designing for a omnidirectional drive system uses the same process as a differential drive system. However, we need to account for the fact the wheels are angled when determining the high and low motor speeds. The simplest way to do this is to use the kinematic equations for your omnidirectional drive system and substitute your desired forward velocity. By doing this we can get the required wheel speeds to achieve this desired forward velocity. For example, the kinematic equations for 3 omnidirectional drive system wheeled system are:</p>
+
+										<figure class="figure">
+    										<img src="images/Hardware2/OmniKinematics.png" width="70%" alt="Image Not Found" />
+    										<figcaption>Kinematic Equations for a 3 Omnidirectional Drive System.</figcaption>
+										</figure>
+
+										<p>If we wanted to be able to move with a forward velocity of 1m/s (i.e. |V| = 1, &theta; = 0 and &alpha; = 0) then we calculate the wheel velocities to be -0.866, 0, and 0.866 m/s for the 60&deg;, 180&deg; and 300&deg; wheel respectively. You may be wondering hold up how can my robot move faster than my angled wheel. SOMETHING HERE WITH DIAGRAM TO EXPLAIN WHY</p>
+
+										<p>However, this means that we need an additional amount of torque. How much extra torque do we need? Well it will be equal to approximately 15%. So you would compute your friction and acceleration torques as you would for a differential drive and then add on an extra 15%. Remember this is only for a 3 wheel omnidirectional system, for a 4 wheel system it is different.</p>
+
+
+										<hr class="major pdf-exclude" />
+										<h2>Kicker Design</h2>
+										<p>To design a kicker we need to develop a mathematical model. We can then use this mathematical model to help us select certain components and properties of the kicker system. Before we start developing a mathematical model we need to understand what quantity are we trying to model and what quantities we know or we can choose. For a soccer bot kicker system we are trying to design for a required ball velocity, and our known quantites, or ones that we can choose, are the mass of the ball, the mass of the kicker plate, and the force that we can apply to the kicker. So we need develop a mathematical model that represents the ball velocity in terms of these quantites; there may be some others that appear while we develop the equation.</p>
+
+										<p>To start designing our mathematical model we need to assume that the collision between the kicker plate and the ball is elastic. You could assume that it is an inellastic collision but that makes it much harder. In an elastic collision both momemtum and energy are conserved. Furthermore if we assume that only kinetic energy is transferred during the collision and that there are no other forms of energy present, such as heat or noise, then we can write the following equations:</p>
+
+										<pre><code># Conservation of Momentum
+m<sub>k</sub>v<sub>ki</sub> = m<sub>k</sub>v<sub>ki</sub> + m<sub>k</sub>v<sub>b</sub>				# The initial velocity of the ball is 0,  that is why it is removed from the LHS 
+
+# Conservation of Enery
+E<sub>ki</sub> = E<sub>kf</sub> + E<sub>b</sub>				
+0.5*m<sub>k</sub>v<sub>ki</sub><sup>2</sup> = 0.5*m<sub>k</sub>v<sub>kf</sub><sup>2</sup> + 0.5*m<sub>k</sub>v<sub>f</sub><sup>2</sup> 		# Remember that kinetic energy = 0.5*m*v<sup>2</sup>
+
+# Where
+v<sub>ki</sub> = the velocity of the kicker right before impact
+v<sub>kf</sub> = the velocity of the kicker after the impact
+v<sub>b </sub> = the velocity of the ball after the impact
+m<sub>k </sub> = the mass of the kicker
+m<sub>b </sub> = the mass of the ball
+</code></pre>
+
+										<p>We can then perform simultaneous equations to remove the unknown and unwanted term of v<sub>kf</sub>. We can leave the v<sub>ki</sub> in for now as we can change this into known quantities later on. The result of performing simultaneous equations leads to the following equation (we are not going to show the derivation):</p>
+
+										<pre><code>v<sub>b</sub> = (2m<sub>k</sub> * v<sub>ki</sub>) / (m<sub>k</sub> + m<sub>b</sub>)		# Equation 3.1</code></pre>
+
+										<p>The final step in developing our mathematical model is to substitute the velocity of the kicker right before the collision (v<sub>ki</sub>) into known quantities. Well using one of the equations of motion we can find the v<sub>ki</sub> in terms of its mass, the force applied to the kicker plate and the distance the kicker plate travels.</p>
+
+										<pre><code># Equation of Motion
+v<sub>ki</sub><sup>2</sup> = v<sub>0</sub><sup>2</sup> + 2ad
+
+# Newton's Second Law
+F = m<sub>k</sub>a<sub>k</sub>
+
+# Assuming the kicker plate starts at rest then v<sub>0</sub> and subsituting we find
+&radic;(v<sub>ki</sub>) = &radic;(2Fd &frasl; m<sub>k</sub>)
+</code></pre>
+
+										<p>We can then substitute this into equation 2.1 to find the velocity of the ball after the kick given the mass of the kicker plate, the mass of the ball, the force applied to the kicker and the distance the kicker plate travels prior to kicking the ball.</p>
+
+										<pre><code>v<sub>b</sub> = (2m<sub>k</sub> * &radic;(2Fd &frasl; m<sub>k</sub>)) / (m<sub>k</sub> + m<sub>b</sub>)</code></pre>
+
+										<p>This is a starting point to a mathematical model for a kicker system. Depending on the style of kicker system you wish to design the mathematical model of the force applied will change. This is something you are going to have to investigate yourself but the teaching team are here to help. However, one of the most important things when designing a kicker is to perform impedance matching. 
+
+										<p>Impedance matching is when you match the impedance of your output with the impedance of your input to maximum power transfer. For a kicker system matching impedances means ensuring that the mass of the kicker plate equals the mass of the golf ball. To demonstrate this we can use the mathematical model developed and plot a graph of ball velocity vs kicker mass assuming a constant force is applied. If you do this you will get a graph like the figure below. As you can it as a distinctive peak. This peak occurs when the mass of the kicker matches the mass of the ball.</p>
+
+										<figure class="figure">
+    										<img src="images/Hardware2/ImpedanceMatching.png" width="70%" alt="Image Not Found" />
+    										<figcaption>We need to Match the Impedance to Achieve Maximum Kicking Velocity.</figcaption>
+										</figure>
+
 
 								</section>
 
