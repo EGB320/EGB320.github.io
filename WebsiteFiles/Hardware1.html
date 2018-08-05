@@ -61,7 +61,21 @@
 										
 										<p>Voltage regulators are a critical part of any electrical circuit and are used to convert an input voltage into a desired output voltage. There are various types of voltage regulators. You all have probably used a linear voltage regulator, like the LM7805, in the past to regulate an input voltage to 5 volts. However, linear regulators have two disadvantages. First off, they can only step-down voltages, and two they can be very inefficient (depending on the input and output voltages). Switching regulators are far more useful when compared to linear regulators. Switching regulators can reach efficiencies up to 90% as well as have the ability to step-down and step-up voltages. Unfortunately, switching regulators require a few more extra components and are slightly more complex.</p>
 
-										<p>SIDE BY SIDE FIGURE OF LINEAR AND SWITCHING REGULATOR</p>
+										
+
+										<figure class="figure">
+											<div class="row gtr-50 gtr-uniform">
+												<div class="col-5" style="margin-left: 5%;">
+													<span class="image fit"><img src="images/Hardware1/LinearRegulator.png" alt="Image Not Found" width="40%"/><figcaption>Linear Regulator</figcaption></span>
+													
+												</div>
+												<div class="col-5" style="margin-left: 5%;">
+													<span class="image fit"><img src="images/Hardware1/RichTek_CircuitDiagram.png" alt="Image Not Found" width="70%"/><figcaption>Switching Regulator</figcaption></span>
+
+												</div>
+											</div>
+											<figcaption>The Number of Components and Complexity is Greather for a Switching Regulator Compared to a Linear Regulator.</figcaption>
+										</figure>
 
 										<p>There are several types of switching regulators that allow you to do various voltage conversions. These differenty types are known as topologies. The topologies of a switching regulator include:</p>
 
@@ -93,8 +107,6 @@ dt = the change in time in seconds</code></pre>
 										<hr class="major pdf-exclude" />
 										<h2>Designing a Switching Regulator</h2>
 										<p>Now you do not need to design a switching regulator from scratch. Like a linear regulator you will choose an IC that applies to your application and then add in surrounding components to suit. However, there is a bit more work involved in selecting the surrounding components within a switching regulator. The main component we need to select is the inductor.</p>
-
-										<p>FIGURE OF SWITCHING REGULATOR</p>	
 
 										<p>For this example we are going to design buck (step-down) converter that regulates a 2 cell LiPo battery (6.4-8.4 volts) down to 5 volts with a 2.5 Amp maximum output. The first thing we need to check is that the required duty cycle for our application is indeed possible (i.e. between 0 and 100%). The equation to calculate the duty cycle is dependent on the topology you choose, but it only depends on the input and output voltages. The formulas to determine the duty cycle for a boost or buck converter are below. It should also be noted that most switching regulators cannot have duty cycles below or above a given threshold. This threshold is typically outlined in the switching regulator's datasheet, but typically if your duty cycle is anywhere between 10-90% it should be fine.</p>
 
