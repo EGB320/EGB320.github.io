@@ -96,10 +96,13 @@ dt = the change in time in seconds</code></pre>
 
 										<p>FIGURE OF SWITCHING REGULATOR</p>	
 
-										<p>For this example we are going to design buck (step-down) converter that regulates a 2 cell LiPo battery (6.4-8.4 volts) down to 5 volts with a 2.5 Amp maximum output.</p>
+										<p>For this example we are going to design buck (step-down) converter that regulates a 2 cell LiPo battery (6.4-8.4 volts) down to 5 volts with a 2.5 Amp maximum output. The first thing we need to check is that the required duty cycle for our application is indeed possible (i.e. between 0 and 100%). The equation to calculate the duty cycle is dependent on the topology you choose, but it only depends on the input and output voltages. The formulas to determine the duty cycle for a boost or buck converter are below. It should also be noted that most switching regulators cannot have duty cycles below or above a given threshold. This threshold is typically outlined in the switching regulator's datasheet, but typically if your duty cycle is anywhere between 10-90% it should be fine.</p>
+
+										<pre><code>DC<sub>buck</sub> = V<sub>out</sub> &frasl; V<sub>input</sub>
+DC<sub>boost</sub> = (V<sub>out</sub> - V<sub>input</sub>) &frasl; V<sub>out</sub></code></pre>
 
 										<h3>Choosing a Switching IC</h3>
-										<p>The first step is choosing an IC to use. There are many manufacturers and they all have different properties. You will need to ensure that the input and output voltages are within the range of your required application and that the maximum current is applicable. Additionally, we recommend you find one with voltage, thermal and short-circuit protection ciruitry. Furthermore, ensure that the IC package is something that you will be able to solder. For this guide we have selected the RichTek RT6254A switching converter, the datasheet can be found <a target="_blank" href="https://www.richtek.com/assets/product_file/RT6254A=RT6254B/DS6254AB-02.pdf">here</a>.</p> 
+										<p>The first step is choosing an IC to use. There are many manufacturers and they all have different properties. You will need to ensure that the input and output voltages are within the range and that the maximum current is suitable for your application. Additionally, we recommend you find one with voltage, thermal and short-circuit protection ciruitry. Furthermore, ensure that the IC package is something that you will be able to solder. For this guide we have selected the <a target="_blank" href="https://www.digikey.com.au/product-detail/en/richtek-usa-inc/RT6254BHGJ8F/RT6254BHGJ8FCT-ND/6238434">RichTek RT6254A</a> buck converter, the datasheet can be found <a target="_blank" href="https://www.richtek.com/assets/product_file/RT6254A=RT6254B/DS6254AB-02.pdf">here</a>.</p> 
 
 										<p>Make sure when you select your IC you read through the datasheet before committing to that one. Why? Well it is critical you understand the datasheet, if you do not it will make it extremely difficult to design your switching regulator. The main thing to understand is the section about component selection. If this section is hard to follow for you do not select this IC. Another good thing to look out for is if the datasheet already includes some suggested component values for different situations, for an example of what we mean see page 7 on the RichTek datasheet. You should not necessarily use these values, you should calculate your own, but they are nice thing to check to see if your values are in the right ball park.</p>
 
@@ -164,12 +167,12 @@ dt = the change in time in seconds</code></pre>
 										</p>First we calculate the maximum duty cycle (D<sub>max</sub>) to be 0.871. The value for t<sub>off(min)</sub> can be found in the electrical characteristics table. This then leads us to determine the value for V<sub>sag</sub> and V<sub>soar</sub> to be 495mV and 56.8V respectively. These 3 values were determined using the following formulas with a value of 2.5A used for &Delta;I<sub>out</sub>. We used 2.5A as this is the maximum current draw for the Raspberry Pi 3, and this would be the worst case load change for our system. V<sub>sag</sub> and V<sub>soar</sub> represent the how much the voltage would change when the load changes. V<sub>sag</sub> is how much the ouput voltage would change when the load is increased, and V<sub>soar</sub> is how much it would change when the load is decreased. The values we computed are within spec and should not harm the Raspberry Pi during the worst case scenario.</p>
 
 										<figure class="figure">
-	    										<img src="images/Hardware1/RichTek_DmaxCalculation.png" width="50%" alt="Image Not Found" />
+	    										<img src="images/Hardware1/RichTek_DmaxCalculation.png" width="40%" alt="Image Not Found" />
 	    										<figcaption>Formula to Determine Maximum Duty Cycle</figcaption>
 										</figure>
 
 										<figure class="figure">
-	    										<img src="images/Hardware1/RichTek_VsagCalculation.png" width="50%" alt="Image Not Found" />
+	    										<img src="images/Hardware1/RichTek_VsagCalculation.png" width="40%" alt="Image Not Found" />
 	    										<figcaption>Formula to Determine V<sub>sag</sub> of the Converter</figcaption>
 										</figure>
 
@@ -177,30 +180,62 @@ dt = the change in time in seconds</code></pre>
 	    										<img src="images/Hardware1/RichTek_VsoarCalculation.png" width="30%" alt="Image Not Found" />
 	    										<figcaption>Formula to Determine V<sub>soar</sub> of the Converter</figcaption>
 										</figure>
+
+										<h3>Feed Forward Capacitor</h3>
+										<p>The feed forward capacitor can help in high voltage applications by speeding up the transient response without affecting the circuit's stability. We probably do not need this for our application, and as stated by the datasheet we will simply use a capacitor with a value between 47-82pF. Not all switching regulators will have this component.</p>
+
+										<h3>The Enable and Power Good Pin</h3>
+										<p>Most switching regulators have an enable pin. The enable pin typically needs to be pulled high to allow the regulator to actually turn-on and regulate the voltage. In this application we simply want the regulator to start regulating as soon as the power is turned on. For automatic start-up we simply tie the enable (EN) pin to the VIN pin via a 100kOhm resistor, as suggested in the datasheet.</p>
+
+										<p>Many switching regulators also have a power good pin. This power good pin goes high when the output voltage has settled. This can be useful for turning on electronics once the output voltage has stabilised. If you have read the datasheet correctly you will have noticed one version of the switching regulator we have chosen does have a power good pin, while the other does not. In this example we have chosen the one with the power good pin. Typically, you tie this power good pin to the enable pin of the IC you are regulating power for, or you tie it to a reset pin so the IC only "starts-up" after the voltage has settled. In our case the Raspberry Pi does not have any of these, so what we are going to do is ignore it. However, one thing you could do is put a mosfet between the output side of the switching regulator and the Raspberry Pi and use the power good pin to switch the mosfet on/off.</p>
+
+										<h3>Setting the Output Voltage</h3>
+										<p>If you have chosen a switching regulator IC that has an adjustable output voltage like we have. Then you will need to "tell" the regulator what voltage in needs to output. To "tell" a switching regulator IC what output voltage to try and generate typically two resistors creating a voltage divider are used with the voltage divider output being sent a feedback (FB) pin. For the buck regulator we have selected the datasheet provides us with the following formula. The datasheet states that we should use a value of 10k-100kOhm resistor for R2 and that V<sub>ref</sub> equals 0.6V. Therefore, for our application if we choose R2 to equal 100kOhm then R1 would need to be 733kOhm. Additionally, the datasheet also states that we should ensure that the tolerance for R1 and R2 to be 1% or better and that they should be no more than 5mm away from the feedback pin.</p>
+
+										<figure class="figure">
+	    										<img src="images/Hardware1/RichTek_OutputVoltageSelection.png" width="30%" alt="Image Not Found" />
+	    										<figcaption>Formula to Determine the Resistor Values to Set the Output Voltage</figcaption>
+										</figure>
+
+										<h3>External Bootstrap Diode</h3>
+										<p>We could also add in a diode between the BOOT and VIN pin. However, as stated by the datasheet this is only required when the input voltage is lower than 5.5V, which in our application it is not.</p>
+
+
+										<h3>Final Notes</h3>
+										<p>So we have now selected all the components that should allow the RichTek buck converter to generate a 5V output from our 2 cell LiPo with enough amperage to power the Raspberry Pi. However, there are some other components you may wish to include in the design. Such as a switch to turn on the system, you do not want to have to keep plugging/unplugging the battery. You probably should also include a polarity protection diode after the switch as to ensure if the battery, or another power supply, is plugged in incorrectly then you will not accidentally blow anything up. Remember that a diode has a forward voltage drop and so this will change the input voltage going into the IC and so will change the values we have calculated here. You may wish to add LEDs on both the input and output side of the voltage regulator to indicate that the regulator is working correctly. Finally, you could use the fixed 5V output voltage from the buck converter in conjunction with a comparator circuit to turn on a LED if your battery is below a certain voltage.</p>
+
+										<p>The other thing that the teaching team would recommend is adding some standard pitch (0.1") 2 pin headers that have one pin connected to ground and the other either connected to your 5V output voltage or the input voltage, after the switch and polarity protection diode. This will make it easier to power any other components that you decide to add on later. You may also wish to add a 3.3V regulator to your power board and have a few 2 pin headers with 3.3V because remember the Raspberry Pi GPIO pins operate at 3.3V.</p>
+
 									
 										<hr class="major pdf-exclude" />
-										<h2>Interdum sed dapibus</h2>
-										<p>Donec eget ex magna. Interdum et malesuada fames ac ante ipsum primis in faucibus. Pellentesque venenatis dolor imperdiet dolor mattis sagittis. Praesent rutrum sem diam, vitae egestas enim auctor sit amet. Pellentesque leo mauris, consectetur id ipsum sit amet, fergiat. Pellentesque in mi eu massa lacinia malesuada et a elit. Donec urna ex, lacinia in purus ac, pretium pulvinar mauris. Curabitur sapien risus, commodo eget turpis at, elementum convallis elit. Pellentesque enim turpis, hendrerit.</p>
-										<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis dapibus rutrum facilisis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Etiam tristique libero eu nibh porttitor fermentum. Nullam venenatis erat id vehicula viverra. Nunc ultrices eros ut ultricies condimentum. Mauris risus lacus, blandit sit amet venenatis non, bibendum vitae dolor. Nunc lorem mauris, fringilla in aliquam at, euismod in lectus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. In non lorem sit amet elit placerat maximus. Pellentesque aliquam maximus risus, vel sed vehicula. Interdum et malesuada fames ac ante ipsum primis in faucibus. Pellentesque venenatis dolor imperdiet dolor mattis sagittis. Praesent rutrum sem diam, vitae egestas enim auctor sit amet. Pellentesque leo mauris, consectetur id ipsum sit amet, fersapien risus, commodo eget turpis at, elementum convallis elit. Pellentesque enim turpis, hendrerit tristique lorem ipsum dolor.</p>
-										
-										<div class="html2pdf__page-break"></div>
-									</div>
+										<h2>Choosing Connectors and Wiring Boards</h2>
+										<p>One of the critical aspects of any PCB is understanding how it will be used and how signals will be routed in and out of the board. Selecting suitable connectors and wiring your boards together properly can really make or break a project. By using the appropriate connectors and wiring scheme you can ensure that your robot is easy to assemble/dis-assemble as well as mitigate stupid errors. Additionally, if you choose the right connectors you will not even need to communicate with your team how a board gets wired to another board, the connectors/PCB will do that for you! As an example we will talk about the connectors and wiring we could use on a power board that utilise the RichTek buck converter.</p>
 
-										
+										<p>Well first we need to connect our power supply to our board. However, before we go and select a connector we need to think about the types of power supplies that may be used. Well obviously we could use the supplied battery, but do we want to always use it? What about when you are simply doing some static testing (i.e. the robot is not moving around), do we want to be able to connect the board to a bench top power supply? The teaching team would personally answer yes to this question, so then the follow on question is how would a bench top power supply be connected to our power board? Well the teaching team would make up a custom cable that plugs into the bench top power supply (i.e. uses 4mm banana plugs) and then uses the same connector as the battery (i.e. this <a target="_blank" href="https://www.ebay.com/itm/5Pairs-Amass-XT30PW-30A-Low-Temperature-Rise-Fire-Retardant-Plug-/222890869254?hash=item33e554c206">one</a>). Okay so that is the input side to our power board, now what about the output side.</p>
 
-									<div class="page-wrapper"> 
-										<hr class="major pdf-exclude" />
-										<h2>Magna etiam veroeros</h2>
-										<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis dapibus rutrum facilisis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Etiam tristique libero eu nibh porttitor fermentum. Nullam venenatis erat id vehicula viverra. Nunc ultrices eros ut ultricies condimentum. Mauris risus lacus, blandit sit amet venenatis non, bibendum vitae dolor. Nunc lorem mauris, fringilla in aliquam at, euismod in lectus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. In non lorem sit amet elit placerat maximus. Pellentesque aliquam maximus risus, vel sed vehicula.</p>
-										<p>Interdum et malesuada fames ac ante ipsum primis in faucibus. Pellentesque venenatis dolor imperdiet dolor mattis sagittis. Praesent rutrum sem diam, vitae egestas enim auctor sit amet. Pellentesque leo mauris, consectetur id ipsum sit amet, fersapien risus, commodo eget turpis at, elementum convallis elit. Pellentesque enim turpis, hendrerit tristique lorem ipsum dolor.</p>
+										<p>We now want to connect the 5V output voltage line of our power board to the micro USB power slot of the Raspberry Pi. The Pi side is obvious we will use a hacked micro usb cable, the power board side is up to you. However, we would highly recommend you use some form of polarised connector and one that can handle at least 3A. The teaching team would personally use a Barrel Jack connector designed for a PCB such as this <a blank="_target" href="https://www.sparkfun.com/products/119">one</a>.</p>
 
-										<hr class="major pdf-exclude" />
-										<h2>Lorem aliquam bibendum</h2>
-										<p>Donec eget ex magna. Interdum et malesuada fames ac ante ipsum primis in faucibus. Pellentesque venenatis dolor imperdiet dolor mattis sagittis. Praesent rutrum sem diam, vitae egestas enim auctor sit amet. Pellentesque leo mauris, consectetur id ipsum sit amet, fergiat. Pellentesque in mi eu massa lacinia malesuada et a elit. Donec urna ex, lacinia in purus ac, pretium pulvinar mauris. Curabitur sapien risus, commodo eget turpis at, elementum convallis elit. Pellentesque enim turpis, hendrerit.</p>
-										<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis dapibus rutrum facilisis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Etiam tristique libero eu nibh porttitor fermentum. Nullam venenatis erat id vehicula viverra. Nunc ultrices eros ut ultricies condimentum. Mauris risus lacus, blandit sit amet venenatis non, bibendum vitae dolor. Nunc lorem mauris, fringilla in aliquam at, euismod in lectus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. In non lorem sit amet elit placerat maximus. Pellentesque aliquam maximus risus, vel sed vehicula.</p>
-										<div class="html2pdf__page-break"></div>
-									</div>
+										<p>The final thing to discuss is the switch. While yes you could have the switch soldered directly into the PCB this could make it extremely difficult to turn the robot on and off. Instead you will probably should have a 2 pin standard pitch (0.1") header on your board, and the reciprocal header soldered to wires connected to your switch. The teaching team would also recommend to have this colour coded, as in use a blue header on your board and use a blue connector wired to your switch. This will make it easier for you to communicate to another user how it all fits together, as well as for a user to intuitively understand how it connects together if you are not around.</p>
+
+										<p>By using the battery connector on the input side, the barrel jack on the other side with a custom barrel jack to micro USB cable and a colour coded switch cable we have created a wiring scheme that communicates its own purpose. This will mitigate stupid mistakes and ensure your team knows exactly how to use your system.</p>
+
+										<p>In EGB320 we often see teams having a large number of prototyping wires. However, having a large number of these can often lead to a wiring disaster. This also can make . By having a large number of prototyping wires in your robot you introduces many unnessesary problems. For example, it can make reassembly an absolute nightmare and something your dread. It also makes it extremely hard to debug, because it will be difficult to tell if a single wire is slightly loose, and actually if you use a proper header (i.e. a 3 pin header for a 3 pin terminal) then you will get a more solid connection. Finally, the wiring does not tell the user of your system how it connects to other systems, which is poor engineering design. So ultimately you should be creating your own cables using the appropriate headers, and not simply using standard 0.1" with a bunch of prototyping wires.</p>
+
 									
+										<hr class="major pdf-exclude" />
+										<h2>Manufacturing a PCB</h2>
+
+										<h3>PCB Design Software</h3>
+										<p>Once you have a circuit you will need to create a schematic and then turn that schematic into a manufacturable PCB. In EGB320 you may use any PCB design software you like as long as it has the capabilities of producing Gerber files, however we will be supporting EagleCAD. The 3 standard PCB design software packages are:</p>
+
+										<ul>
+											<li>Ealge CAD - SparkFun has great tutorials on creating <a target="_blank" href="https://learn.sparkfun.com/tutorials/making-custom-footprints-in-eagle?_ga=2.44640935.2085573479.1533449798-543190659.1529969286">custom component footprints</a>, <a target="_blank" href="https://learn.sparkfun.com/tutorials/using-eagle-schematic?_ga=2.44640935.2085573479.1533449798-543190659.1529969286">drawing schematics</a>,  <a target="_blank" href="https://learn.sparkfun.com/tutorials/using-eagle-board-layout?_ga=2.44640935.2085573479.1533449798-543190659.1529969286">generating board layouts</a> and <a target="_blank" href="https://learn.sparkfun.com/tutorials/designing-pcbs-advanced-smd?_ga=2.44640935.2085573479.1533449798-543190659.1529969286">advanced SMD PCB</a> topics that we highly recommend you read through in detail. However, please use this job file when exporting your Gerber files.</li>
+											<li>KiCAD - is a great piece of open source software.</li>
+											<li>Altium - is the industry standard, but it is proprietry.</li>
+										</ul>
+										
+										<div class="html2pdf__page-break"></div>
+									</div>									
 
 								</section>
 
