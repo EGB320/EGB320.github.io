@@ -50,7 +50,7 @@ class ImageRecorder():
                 if key & 0xFF == ord('q'):            
                     break
                 # If the user has not pressed 'q' and the desired frequency has been reached --> SAVE FRAME
-                elif self.function_type=="count" and self.loop%self.input_var:
+                elif self.function_type=="count" and self.loop%self.input_var==0:
                     # Increment frame counter
                     self.counter = self.counter+1 
                     # Generate image path and filename

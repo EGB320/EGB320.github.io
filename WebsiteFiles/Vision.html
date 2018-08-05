@@ -52,15 +52,15 @@
 											<h1>Vision Tutorial</h1>
 										</header>							
 
-										<p>This tutorial will help you get started with computer vision on the raspberry pi. First we will get you up and running by learning to take images using OpenCV and python, then we will go through some image processing methods which you may find useful for your final project.</p>
+										<p>This tutorial will help you get started with computer vision on the Raspberry Pi. First we will get you up and running by learning to take images using OpenCV and python, then we will go through some image processing methods which you may find useful for your final project.</p>
 
 										<h2>OpenCV Python Basics</h2>
 										
-										<p>This part of the tutorial is designed to help you get started with capturing images and using OpenCV on the raspberry pi. Throughout this tutorial, we will be using python 3 and a raspberry pi camera however for your project you may use any programming language or camera you like.</p>
+										<p>This part of the tutorial is designed to help you get started with capturing images and using OpenCV on the Raspberry Pi. Throughout this tutorial, we will be using python 2.7 and a Raspberry Pi camera however for your project you may use any programming language or camera you like.</p>
 
 										<h3>Importing Libraries</h3>
 										
-										<p>The main libraries which you need to be familiar with for the vision component of your task are the OpenCV (open source computer vision) and numpy (numerical python) libraries. Both libraries have been pre-installed on your raspberry pi’s for you (OpenCV takes hours to install), however if for any reason you do need assistance installing these at any stage, we are happy to guide you through it.</p>
+										<p>The main libraries which you need to be familiar with for the vision component of your task are the OpenCV (open source computer vision) and numpy (numerical python) libraries. Both libraries have been pre-installed on your Raspberry Pi’s for you (OpenCV takes hours to install), however if for any reason you do need assistance installing these at any stage, we are happy to guide you through it.</p>
 
 										<p>To import these libraries, you should have the following at the top of each script:</p>
 
@@ -69,7 +69,7 @@ import numpy as np</code></pre>
 
 										<h3>The Camera Object</h3>
 										
-										<p>The next step is to create your camera object. There are 2 modules which you can use for this; the picamera module, or OpenCV’s inbuilt cv2.VideoCapture() module. There are advantages for use of either method, so it is up to you to decide which module you would like to use for your project. Since cv2.VideoCapture() will work with any camera, we will use this for demonstration.</p>
+										<p>The next step is to create your camera object. There are 2 modules which you can use for this; the picamera module, or OpenCV’s inbuilt cv2.VideoCapture() module. There are advantages for use of either method, so it is up to you to decide which module you would like to use for your project. Since cv2.VideoCapture() will work with any camera, and can be run using a webcam on a desktop, we will use this method for demonstration.</p>
 
 										<pre><code>cap = cv2.VideoCapture(0)  		# Connect to camera 0 (or the only camera)
 cap.set(3, 320)                     	# Set the width to 320
@@ -88,10 +88,7 @@ ret, frame = cap.read()	     		# Get a frame from the camera </code></pre>
 
 										<pre><code>imwrite(“frame0001.png”, frame)		# Save the frame as frame0001.png</code></pre>
 
-										<div class="html2pdf__page-break"></div>
-									</div>
-
-									<div class="page-wrapper"> 
+										
 										<h3>The Clean Up Step</h3>
 										
 										<p>To ensure a clean exit of your program, there are a couple of things you should do at the end of your script. Since we have opened an instance of the camera object and some pop-up windows using OpenCV, we need to close these prior to termination of the program. The following functions should be at the end of each vision script you run.</p>
@@ -101,7 +98,7 @@ cv2.destroyAllWindows()		# Close all opencv pop-up windows</code></pre>
 									
 										<hr class="major pdf-exclude" />
 										<h2>OpenCV Image Processing</h2>
-										<p>Now you have had the change to read in an image using python and opencv on your raspberry pi, you can start looking at the image processing steps you may want to use in your project. This part of the tutorial will present a range of different image processing methods which you may find helpful. </p>
+										<p>Now you have had the change to read in an image using python and opencv on your Raspberry Pi, you can start looking at the image processing steps you may want to use in your project. This part of the tutorial will present a range of different image processing methods which you may find helpful. </p>
 										
 										<h3>Changing Colour Spaces</h3>
 										
@@ -131,10 +128,7 @@ frame = cv2.merge((b, g, r))		# Merge the channels back into one image</code></p
 										<pre><code>sub_frame = frame[200:300, 200:300, 0]		# Extract blue colour channel of a 100 pixel region
 sub_ frame = sub_image * 2			# Double the pixel blue channel values
 frame[200:300, 200:300, 0] = sub_frame		# Replace the region in the original image with our sub frame</code></pre>
-										<div class="html2pdf__page-break"></div>
-									</div>
-
-									<div class="page-wrapper"> 
+										
 										<h3>Image Segmentation</h3>
 										
 										<p>Image segmentation is the division of an image into regions or segments which correspond to different objects within the image and is a critical step in most image analyses. In OpenCV there are many approaches to image segmentation. <br/> Simple thresholding can be completed using the cv2.threshold() function, which takes the following format;</p>
