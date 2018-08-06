@@ -85,7 +85,7 @@ ret, frame = cap.read()	     		# Get a frame from the camera
 										<p>Now you have called the function to read a frame in from the camera, and stored the data in your ‘frame’ variable, you may wish to display your image. The ‘ret’ variable you just created will tell you whether or not the frame was successfully obtained, so first you must ensure the read was a success. Then, you can use the OpenCV cv2.imshow() function to display your frame!</p>
 
 										<pre><code>if ret == True:				     # Check if data was obtained successfully
-	cv2.imshow(“CameraImage”, frame)     # Display the obtained frame in a window called “CameraImage”
+	cv2.imshow("CameraImage", frame)     # Display the obtained frame in a window called "CameraImage"
 	cv2.waitKey(0)			     # Make the program wait until you press a key before continuing.
 
 # Please note: cv2.waitKey() must be called for cv2.imshow to display. 
@@ -95,7 +95,7 @@ ret, frame = cap.read()	     		# Get a frame from the camera
 										
 										<p>If we wanted to save this image, we could add a save step after obtaining the image.</p>
 
-										<pre><code>cv2.imwrite(“frame0001.png”, frame)		# Save the frame as frame0001.png</code></pre>
+										<pre><code>cv2.imwrite("frame0001.png", frame)		# Save the frame as frame0001.png</code></pre>
 
 										
 										<h3>The Clean Up Step</h3>
