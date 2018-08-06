@@ -231,6 +231,8 @@
 
 
 										<h3>What About Omnidirectional Drive Systems</h3>
+										GET CHRIS TO CHECK THE CONTENT WITHIN THIS SECTION!
+
 										<p>Designing for a omnidirectional drive system uses the same process as a differential drive system. However, we need to account for the fact the wheels are angled when determining the high and low motor speeds. The simplest way to do this is to use the kinematic equations for your omnidirectional drive system and substitute your desired forward velocity. By doing this we can get the required wheel speeds to achieve this desired forward velocity. For example, the kinematic equations for 3 omnidirectional drive system wheeled system are:</p>
 
 										<figure class="figure">
@@ -238,9 +240,14 @@
     										<figcaption>Kinematic Equations for a 3 Omnidirectional Drive System.</figcaption>
 										</figure>
 
-										<p>If we wanted to be able to move with a forward velocity of 1m/s (i.e. |V| = 1, &theta; = 0 and &alpha; = 0) then we calculate the wheel velocities to be -0.866, 0, and 0.866 m/s for the 60&deg;, 180&deg; and 300&deg; wheel respectively. You may be wondering hold up how can my robot move faster than my angled wheel. SOMETHING HERE WITH DIAGRAM TO EXPLAIN WHY</p>
+										<p>If we wanted to be able to move with a forward velocity of 1m/s (i.e. |V| = 1, &theta; = 0 and &alpha; = 0) then we calculate the wheel velocities to be -0.866, 0, and 0.866 m/s for the 60&deg;, 180&deg; and 300&deg; wheel respectively.You may be wondering hold up how can my robot move faster than my angled wheel. This "speed boost", in the case of omni wheels with orthogonal rollers, is due to the fact that the rollers will rotate. The rotation of the rollers will have a small velocity component within the direction of the forward velocity.</p>
 
-										<p>However, this means that we need an additional amount of torque. How much extra torque do we need? Well it will be equal to approximately 15%. So you would compute your friction and acceleration torques as you would for a differential drive and then add on an extra 15%. Remember this is only for a 3 wheel omnidirectional system, for a 4 wheel system it is different.</p>
+										<figure class="figure">
+    										<img src="images/Hardware2/OmniDriveSpeedBoost.png" width="40%" alt="Image Not Found" />
+    										<figcaption>The "Extra Speed" is Caused by The Orthogonal Roller.</figcaption>
+										</figure>
+
+										<p>However, this means that we need an additional amount of torque, as we can not get a speed boost without giving something extra somewhere else. How much extra torque do we need? Well it will be equal to approximately 15%. So you would compute your friction and acceleration torques as you would for a differential drive and then add on an extra 15%. Remember this is only for a 3 wheel omnidirectional system, for a 4 wheel system it is different.</p>
 
 
 										<hr class="major pdf-exclude" />
