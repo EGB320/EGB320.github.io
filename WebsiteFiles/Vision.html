@@ -208,16 +208,16 @@ type 		→ 		The thresholding method being used (see <a href="https://docs.openc
 										<pre><code>import numpy as np
 import cv2
 
-cap = cv2.VideoCapture(0)								# Create the camera object
-cap.set(3, 640)										# Set the frame width
-cap.set(4, 480)										# Set the frame height
+cap = cv2.VideoCapture(0)							# Create the camera object
+cap.set(3, 640)									# Set the frame width
+cap.set(4, 480)									# Set the frame height
 
-ret, frame = cap.read()									# Import the raw frame
-frame_blue = frame[:,:,0];								# Extract blue channel
-ret, thresholded_frame = cv2.threshold(frame_blue, 127, 255, cv2.THRESH_BINARY)		# Threshold blue channel
+ret, frame = cap.read()								# Import the raw frame
+frame_blue = frame[:,:,0];							# Extract blue channel
+ret, thresholded_frame = cv2.threshold(frame_blue, 127, 255, cv2.THRESH_BINARY)	# Threshold blue channel
 
-cv2.imshow("Binary Thresholded Frame", thresholded_frame)				# Display thresholded frame
-cv2.waitKey(0)										# Exit on keypress
+cv2.imshow("Binary Thresholded Frame", thresholded_frame)			# Display thresholded frame
+cv2.waitKey(0)									# Exit on keypress
 
 cap.release()
 cv2.destroyAllWindows()</code></pre>
