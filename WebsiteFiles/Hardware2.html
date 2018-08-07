@@ -159,17 +159,17 @@
 &omega;<sub>max</sub> = (1&frasl;&eta;) * v<sub>max</sub> * r<sub>w</sub>					# Equation 1.3</code></pre> -->
 
 										<h3>Choosing Initial Design Parameters and Calculating Motor Values</h3>
-										<p>We will now work out 4 values, using Equations 1.1, 1.2 and 1.3, that will help us select a motor. These values are:</p>
+										<p>We will now work out 4 parameters, using Equations 1.1, 1.2 and 1.3, that will help us select a motor. These parameters are:</p>
 
 										<ul>
 											<li>The motor torque required to overcome friction (i.e. acceleration equals 0). This is the required torque to maintain a given speed. We will call this the Friction Torque.</li>
 											<li>The motor torque required to accelerate given our acceleration design requirement. We will denote this as the Acceleration Torque.</li>
 											<li>The top motor speed. We will denote this as the Top Motor Speed.</li>
-											<li>The low motor speed. We will call this the Low Motor Speed</li>
+											<li>The low motor speed. We will call this the Low Motor Speed.</li>
 										</ul>
 
 
-										<p>However, first we will need to choose some initial values for our design parameters. For this example we have selected the following:</p>
+										<p>However, first we will need to obtain some initial values for our design parameters (some of which may come from the design requirements). For this example we have selected the following:</p>
 
 										<ul>
 											<li>Robot Mass: 10kg</li>
@@ -178,7 +178,7 @@
 											<li>Efficiency: 0.8</li>
 										</ul>
 
-										<p>Using these values alongside our design requirements we calculate the 4 values to be:</p>
+										<p>Using these values alongside our design requirements we calculate the 4 parameters to be:</p>
 
 										<ul>
 											<li>Friction Torque = 2.207 N</li>
@@ -188,14 +188,14 @@
 										</ul>
 
 										<h3>Selecting a Motor</h3>
-										<p>We can now use the 4 values calculated in the previous section to help us select a motor. To start off with we are going to draw these as 2 horizontal and 2 vertical lines on a torque vs speed graph.</p>
+										<p>We can now use the 4 parameters calculated in the previous section to help us select a motor. To start, we are going to draw these parameters as 2 horizontal and 2 vertical lines on a torque vs speed graph.</p>
 
 										<figure class="figure">
     										<img src="images/Hardware2/DesignRequirementsGraph.png" width="70%" alt="Image Not Found" />
     										<figcaption>Calculated Design Values on Torque vs. Speed Graph.</figcaption>
 										</figure>
 
-										<p>So now we need to go traverse our favourite motor suppliers and attempt to find a suitable motor. In this example we went and found a DC brushed motor with the following characteristics:</p>
+										<p>So now we need to traverse our favourite motor suppliers and attempt to find a suitable motor. For this example, we found a DC brushed motor with the following characteristics:</p>
 
 										<ul>
 											<li>Nominal Voltage: 24 V</li>
@@ -204,14 +204,14 @@
 											<li>Stall Current: 5.8 A</li>
 										</ul>
 
-										<p>Using these values we can plot the nominal and threshold voltage torque vs. speed curves on the same graph as our calculated design values, see the figure below. Unfortunately, the motor datasheet did not state the threshold voltage or give us any information that allows us to approximate it, so we are going to set the threshold voltage to be approximately 40% of the nominal voltage.</p>
+										<p>Using these values we can plot the nominal and threshold voltage torque vs. speed curves on the same graph as our calculated design parameters, as shown in the figure below. Unfortunately, the motor datasheet did not state the threshold voltage or give us any information that allows us to approximate it, so we are going to set the threshold voltage to be approximately 40% of the nominal voltage.</p>
 
 										<figure class="figure">
     										<img src="images/Hardware2/PoorMotorGraph.png" width="70%" alt="Image Not Found" />
     										<figcaption>Motor 1 Torque vs. Speed Graph with Overlaid Design Values.</figcaption>
 										</figure>
 
-										<p>From this graph the two critical points we first need to investigate are the intersection of the Friction Torque line with the Low and High Motor Speed lines. We need to ensure that these intersection points are within our operating zone. As we can see only our low motor speed intersection point is within our operating zone and this motor probably is not suitable for our application. While we could run the motors at a higher voltage to try and achieve the high motor speed; we would need to run them at approximately double the nominal voltage which would drastically reduce the motor's lifetime. However, from this graph we can intuitively see that well if we could get a motor with a bit more torque and a higher RPM we should be able to meet our design requirements. So we do some more searching and find the following motor:</p>
+										<p>From this graph, we now need to investigate two particular critical points; these being the intersection of the Friction Torque line with each of the Low and High Motor Speed lines. We need to ensure that these intersection points are within our operating zone. As we can see from the graph, only our low motor speed intersection point is within our operating zone and this motor is probably not suitable for our application. While we could run the motors at a higher voltage to try and achieve the high motor speed; we would need to run them at approximately double the nominal voltage which would drastically reduce the motor's lifetime. However, from this graph we can intuitively see that if we could get a motor with a bit more torque and a higher RPM, we should be able to meet our design requirements. So we do some more searching and find the following motor:</p>
 
 										<ul>
 											<li>Nominal Voltage: 24 V</li>
@@ -220,41 +220,39 @@
 											<li>Stall Current: 16.7 A</li>
 										</ul>
 
-										<p>Plotting this motor's torque vs. speed graph and overlaying the calculated design values we can see that this motor could be suitable, the figure is below. The first thing we notice is that our friction torque line intersects with our high and low motor speed lines within the operating zone. This means that the motor should be able to achieve our desired minimum and maximum forward velocities. The next thing we shoud take note of is that our acceleration torque line is well below the stall torque, so we should be able to achieve our desired minimum acceleration. While this motor appears to be suitable for our application our low motor speed and friction torque intersection point is quite close our threshold voltage. This means that if our models and assumptions are slightly off then we may not be able to achieve our desired low forward velocity.</p>
+										<p>By plotting this motor's torque vs. speed graph and overlaying the calculated design values we can see that this motor could be suitable, as shown in the figure below. The first thing we notice is that our friction torque line intersects with our high and low motor speed lines within the operating zone. This means that the motor should be able to achieve our desired minimum and maximum forward velocities. The next thing we shoud take note of is that our acceleration torque line is well below the stall torque, so we should be able to achieve our desired minimum acceleration. While this motor appears to be suitable for our application, the low motor speed and friction torque intersection point is quite close to our threshold voltage. This means that if our models and assumptions are slightly off then we may not be able to achieve our desired low forward velocity.</p>
 
 										<figure class="figure">
     										<img src="images/Hardware2/SuitableMotorGraph.png" width="70%" alt="Image Not Found" />
     										<figcaption>Motor 2 Torque vs. Speed Graph with Overlaid Design Values.</figcaption>
 										</figure>
 
-										<p>Okay so we have now selected our motors, what next? Well next we would need to ensure that the weight of the motor and its stall current are suitable for our system. If they are, we would then need to go design the motor driver circuitry in order to control this motor. A tip for when you go select a H-Bridge IC, make sure you get a H-Bridge with in-built under voltage, over current and over temparature protection it may cost you a little bit more but it will save you a lot of issues. Additionally, make sure the H-Bridge can handle more than the stall current specified by the motor.</p>
+										<p>Okay so we have now selected our motors, what next? Well next we would need to ensure that the weight of the motor and its stall current are suitable for our system. If they are, we would then need to go design the motor driver circuitry in order to control this motor. A tip for selecting a H-Bridge IC; make sure you get a H-Bridge with in-built under-voltage, over-current and over-temparature protection. It may cost you a little bit more, but it will save you a lot of issues. Additionally, make sure the H-Bridge can handle more than the stall current specified by the motor.</p>
 
 
 										<h3>What About Omnidirectional Drive Systems</h3>
-										GET CHRIS TO CHECK THE CONTENT WITHIN THIS SECTION!
-
-										<p>Designing for a omnidirectional drive system uses the same process as a differential drive system. However, we need to account for the fact the wheels are angled when determining the high and low motor speeds. The simplest way to do this is to use the kinematic equations for your omnidirectional drive system and substitute your desired forward velocity. By doing this we can get the required wheel speeds to achieve this desired forward velocity. For example, the kinematic equations for 3 omnidirectional drive system wheeled system are:</p>
+										<p>Designing for a omnidirectional drive system uses the same process as a differential drive system. However, we need to account for the fact the wheels are angled when determining the high and low motor speeds. The simplest way to do this is to use the kinematic equations for your omnidirectional drive system, and substitute your desired forward velocity. By doing this we can get the required wheel speeds to achieve this desired forward velocity. For example, the kinematic equations for a 3 wheeled omnidirectional drive system are:</p>
 
 										<figure class="figure">
     										<img src="images/Hardware2/OmniKinematics.png" width="70%" alt="Image Not Found" />
-    										<figcaption>Kinematic Equations for a 3 Omnidirectional Drive System.</figcaption>
+    										<figcaption>Kinematic Equations for a 3 Wheeled Omnidirectional Drive System.</figcaption>
 										</figure>
 
-										<p>If we wanted to be able to move with a forward velocity of 1m/s (i.e. |V| = 1, &theta; = 0 and &alpha; = 0) then we calculate the wheel velocities to be -0.866, 0, and 0.866 m/s for the 60&deg;, 180&deg; and 300&deg; wheel respectively.You may be wondering hold up how can my robot move faster than my angled wheel. This "speed boost", in the case of omni wheels with orthogonal rollers, is due to the fact that the rollers will rotate. The rotation of the rollers will have a small velocity component within the direction of the forward velocity.</p>
+										<p>If we wanted to be able to move with a forward velocity of 1m/s (i.e. |V| = 1, &theta; = 0 and &alpha; = 0) then we calculate the wheel velocities to be -0.866, 0, and 0.866 m/s for the 60&deg;, 180&deg; and 300&deg; wheel respectively. You may be wondering <i>'hold up, how can my robot move faster than my angled wheel?'</i> Well, this "speed boost", in the case of omni wheels with orthogonal rollers, is due to the fact that the rollers will rotate. The rotation of the rollers will have a small velocity component in the direction of the forward velocity.</p>
 
 										<figure class="figure">
     										<img src="images/Hardware2/OmniDriveSpeedBoost.png" width="40%" alt="Image Not Found" />
     										<figcaption>The "Extra Speed" is Caused by The Orthogonal Roller.</figcaption>
 										</figure>
 
-										<p>However, this means that we need an additional amount of torque, as we can not get a speed boost without giving something extra somewhere else. How much extra torque do we need? Well it will be equal to approximately 15%. So you would compute your friction and acceleration torques as you would for a differential drive and then add on an extra 15%. Remember this is only for a 3 wheel omnidirectional system, for a 4 wheel system it is different.</p>
+										<p>However, this means that we need an additional amount of torque, as we cannot get a speed boost without giving something extra somewhere else. How much extra torque do we need? Well, it will be equal to approximately 15%. So you would compute your friction and acceleration torques as you would for a differential drive and then add on an extra 15%. Remember this is only for a 3 wheel omnidirectional system, for a 4 wheel system it is different.</p>
 
 
 										<hr class="major pdf-exclude" />
 										<h2>Kicker Design</h2>
-										<p>To design a kicker we need to develop a mathematical model. We can then use this mathematical model to help us select certain components and properties of the kicker system. Before we start developing a mathematical model we need to understand what quantity are we trying to model and what quantities we know or we can choose. For a soccer bot kicker system we are trying to design for a required ball velocity, and our known quantites, or ones that we can choose, are the mass of the ball, the mass of the kicker plate, and the force that we can apply to the kicker. So we need develop a mathematical model that represents the ball velocity in terms of these quantites; there may be some others that appear while we develop the equation.</p>
+										<p>To design a kicker we need to develop a mathematical model. We can then use this mathematical model to help us select certain components and properties of the kicker system. Before we start developing a mathematical model we need to understand what quantity we are trying to model, and what quantities we either know or can choose. For a soccer bot kicker system, we are trying to design for a required ball velocity, and our known quantites, or ones that we can choose, are the mass of the ball, the mass of the kicker plate, and the force that we can apply to the kicker. So we need develop a mathematical model that represents the ball velocity in terms of these quantites; there may be some others that appear while we develop the equation.</p>
 
-										<p>To start designing our mathematical model we need to assume that the collision between the kicker plate and the ball is elastic. You could assume that it is an inellastic collision but that makes it much harder. In an elastic collision both momemtum and energy are conserved. Furthermore if we assume that only kinetic energy is transferred during the collision and that there are no other forms of energy present, such as heat or noise, then we can write the following equations:</p>
+										<p>To start designing our mathematical model we need to assume that the collision between the kicker plate and the ball is elastic. You could assume that it is an inellastic collision, but that makes it much harder to model. In an elastic collision both momentum and energy are conserved. Furthermore, if we assume that only kinetic energy is transferred during the collision and that there are no other forms of energy present, such as heat or noise, then we can write the following equations:</p>
 
 										<pre><code># Conservation of Momentum
 m<sub>k</sub>v<sub>ki</sub> = m<sub>k</sub>v<sub>ki</sub> + m<sub>k</sub>v<sub>b</sub>				# The initial velocity of the ball is 0,  that is why it is removed from the LHS 
@@ -275,15 +273,15 @@ m<sub>b </sub> = the mass of the ball
 
 										<pre><code>v<sub>b</sub> = (2m<sub>k</sub> * v<sub>ki</sub>) / (m<sub>k</sub> + m<sub>b</sub>)		# Equation 3.1</code></pre>
 
-										<p>The final step in developing our mathematical model is to substitute the velocity of the kicker right before the collision (v<sub>ki</sub>) into known quantities. Well using one of the equations of motion we can find the v<sub>ki</sub> in terms of its mass, the force applied to the kicker plate and the distance the kicker plate travels.</p>
+										<p>The final step in developing our mathematical model is to substitute the velocity of the kicker right before the collision (v<sub>ki</sub>) into known quantities. Well using one of the equations of motion we can find the v<sub>ki</sub> in terms of its mass, the force applied to the kicker plate, and the distance the kicker plate travels.</p>
 
 										<pre><code># Equation of Motion
-v<sub>ki</sub><sup>2</sup> = v<sub>0</sub><sup>2</sup> + 2ad
+v<sub>ki</sub><sup>2</sup> = v<sub>0</sub><sup>2</sup> + 2a<sub>k</sub>d
 
 # Newton's Second Law
 F = m<sub>k</sub>a<sub>k</sub>
 
-# Assuming the kicker plate starts at rest then v<sub>0</sub> and subsituting we find
+# Assuming the kicker plate starts at rest then v<sub>0</sub> will equal zero. Subsituting, we find
 &radic;(v<sub>ki</sub>) = &radic;(2Fd &frasl; m<sub>k</sub>)
 </code></pre>
 
@@ -293,11 +291,11 @@ F = m<sub>k</sub>a<sub>k</sub>
 
 										<p>This is a starting point to a mathematical model for a kicker system. Depending on the style of kicker system you wish to design the mathematical model of the force applied will change. This is something you are going to have to investigate yourself but the teaching team are here to help. However, one of the most important things when designing a kicker is to perform impedance matching. 
 
-										<p>Impedance matching is when you match the impedance of your output with the impedance of your input to maximum power transfer. For a kicker system matching impedances means ensuring that the mass of the kicker plate equals the mass of the golf ball. To demonstrate this we can use the mathematical model developed and plot a graph of ball velocity vs kicker mass assuming a constant force is applied. If you do this you will get a graph like the figure below. As you can it as a distinctive peak. This peak occurs when the mass of the kicker matches the mass of the ball.</p>
+										<p>Impedance matching is when you match the impedance of your output with the impedance of your input to maximize power transfer. For a kicker system, matching impedances means ensuring that the mass of the kicker plate equals the mass of the golf ball. To demonstrate this, we can use the mathematical model we developed and can plot a graph of ball velocity vs kicker mass assuming a constant force is applied. If you complete this for your own system, you will get a graph like the figure below. As you can see, it has a distinctive peak velocity which occurs when the mass of the kicker matches the mass of the ball.</p>
 
 										<figure class="figure">
     										<img src="images/Hardware2/ImpedanceMatching.png" width="70%" alt="Image Not Found" />
-    										<figcaption>We need to Match the Impedance to Achieve Maximum Kicking Velocity.</figcaption>
+    										<figcaption>Impedence Matching for Maximum Velocity</figcaption>
 										</figure>
 
 
