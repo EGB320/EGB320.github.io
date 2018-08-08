@@ -69,7 +69,7 @@
 													
 												</div>
 												<div class="col-5" style="margin-left: 5%; width: 60%">
-													<span class="image fit"><img src="images/Hardware1/RichTek_CircuitDiagram.png" alt="Image Not Found" width="70%"/><figcaption>Switching Regulator (Buck Converter Circuit Example)</figcaption></span>
+													<span class="image fit"><img src="images/Hardware1/RichTek_CircuitDiagram.png" alt="Image Not Found" width="70%"/><figcaption>Richtek RT6254B Switching Regulator (Buck Converter Circuit Example)</figcaption></span>
 
 												</div>
 											</div>
@@ -105,7 +105,7 @@ dt = the change in time in seconds</code></pre>
 										<h2>Designing a Switching Regulator</h2>
 										<p>Now, you do not need to design a switching regulator completely from scratch. Like a linear regulator, you will choose an IC that applies to your application and then add in surrounding components to suit. However, there is a bit more work involved in selecting the surrounding components within a switching regulator. The main component we need to select is the inductor.</p>
 
-										<p>For this example we are going to design buck (step-down) converter that regulates a 2 cell LiPo battery (6.4-8.4 volts) down to 5 volts with a 2.5 Amp maximum output. The first thing we need to check is that the required duty cycle for our application is indeed possible (i.e. between 0 and 100%, or as stated in the regulator's datasheet). The equation to calculate the duty cycle can vary based on the topology you choose, but it only depends on the input and output voltages. The formulas to determine the duty cycle for a boost or buck converter are below. It should also be noted that most switching regulators, we cannot have duty cycles below or above a given threshold. This threshold is typically outlined in the switching regulator's datasheet, but typically if your required duty cycle is anywhere between 10-90% it should be fine.</p>
+										<p>For this example we are going to design buck (step-down) converter that regulates a 2 cell LiPo battery (6.4-8.4 volts) down to 5 volts with a 2.5 Amp maximum output. The first thing we need to check is that the required duty cycle for our application is indeed possible (i.e. between 0 and 100%, or as stated in the regulator's datasheet). The equation to calculate the duty cycle can vary based on the topology you choose, but it only depends on the input and output voltages. The formulas to determine the duty cycle for a boost or buck converter are below. It should also be noted that with most switching regulators we cannot have duty cycles below or above a given threshold. This threshold is typically outlined in the switching regulator's datasheet, but typically if your required duty cycle is anywhere between 10-90% it should be fine.</p>
 
 										<pre><code>D<sub>buck</sub> = V<sub>out</sub> &frasl; V<sub>input</sub>
 D<sub>boost</sub> = (V<sub>out</sub> - V<sub>input</sub>) &frasl; V<sub>out</sub></code></pre>
@@ -122,7 +122,7 @@ D<sub>boost</sub> = (V<sub>out</sub> - V<sub>input</sub>) &frasl; V<sub>out</sub
 	    										<figcaption>Typical Circuit Diagram for the RichTek RT6254B Switching Regulator</figcaption>
 										</figure>
 
-										<p><b>Important:</b> When selecting components, ensure they are in stock, and that you will be able to solder them by hand. Also ensure the components you select will depend on your chosen regulator, so you will need to read through the datasheets notes to aid your selection process.</p>
+										<p><b>Important:</b> When selecting components, ensure they are in stock, and that you will be able to solder them by hand. Also remember the components you select will depend on your chosen regulator, so you will need to read through the datasheets notes to aid your selection process.</p>
 
 										<h3>Inductor Selection</h3>
 										<p>The first thing the datasheet discusses, in regards to components, is how to select a suitable inductor. To determine the value of the inductor, the datasheet provides the following formula.</p>
