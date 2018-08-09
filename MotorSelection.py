@@ -27,8 +27,8 @@ efficiency = 0.8						# efficiency of the drive system
 
 # MOTOR PARAMETERS
 nominalVoltage = 24						# nominal motor voltage, in volts
-stallTorque = 6  						# nominal voltage stall torque, in Nm
-noLoadSpeed = 650 * (2*math.pi/60.0)	# nominal voltage no load speed, in rad/s
+stallTorque = 3  # 6						# nominal voltage stall torque, in Nm
+noLoadSpeed = 450 * (2*math.pi/60.0)# 650 * (2*math.pi/60.0)	# nominal voltage no load speed, in rad/s
 
 thresholdVoltage = 10					# voltage at which the motor will turn on
 maxVoltage = 30							# maximum voltage that can send to motors
@@ -50,8 +50,8 @@ maxMotorSpeed = maximumVelocity / float(wheelRadius)
 
 # torque to overcome friction and torque required for acceleration
 frictionTorque = (4.905*wheelFriction*robotMass*wheelRadius) / float(efficiency)
-accelerationTorque = (frictionTorque + wheelRadius*robotMass*acceleration) / float(efficiency)
-
+accelerationTorque = (robotMass*acceleration + 4.905*wheelFriction*robotMass)*wheelRadius / float(efficiency)
+#accelerationTorque = (frictionTorque + wheelRadius*robotMass*acceleration) / float(efficiency) (efficiency factored in twice for friction!!)
 print('Friction Torque: %f'%(frictionTorque))
 print('Acceleration Torque: %f'%(accelerationTorque))
 print('High Motor Speed: %f'%(maxMotorSpeed))
@@ -64,6 +64,7 @@ h1, = plt.plot([minMotorSpeed, minMotorSpeed], [0, accelerationTorque+0.2*accele
 h2, = plt.plot([maxMotorSpeed, maxMotorSpeed], [0, accelerationTorque+0.2*accelerationTorque], linestyle='--', linewidth=2)
 h3, = plt.plot([0, maxMotorSpeed+0.2*maxMotorSpeed], [frictionTorque, frictionTorque], linestyle='-.', linewidth=2)
 h4, = plt.plot([0, maxMotorSpeed+0.2*maxMotorSpeed], [accelerationTorque, accelerationTorque], linestyle='-.', linewidth=2)
+
 plt.legend([h1, h2, h3, h4], ['Low Motor Speed', 'High Motor Speed', 'Friction Torque', 'Acceleration Torque'], loc=0)
 # plt.legend(bbox_to_anchor=(1.05, 1), , borderaxespad=0.)
 plt.title('Motor Selection')
@@ -99,8 +100,9 @@ h3, = plt.plot([0, maxMotorSpeed+0.2*maxMotorSpeed], [frictionTorque, frictionTo
 h4, = plt.plot([0, maxMotorSpeed+0.2*maxMotorSpeed], [accelerationTorque, accelerationTorque], linestyle='-.', linewidth=2)
 h5, = plt.plot([0, noLoadSpeed], [stallTorque, 0], linewidth=2)
 h6, = plt.plot([0, threholdNoLoadSpeed], [thresholdStallTorque, 0], linewidth=2)
-h7, = plt.plot([0, maxNoLoadSpeed], [maxStallTorque, 0], linewidth=2)
-plt.legend([h1, h2, h3, h4, h5, h6], ['Low Motor Speed', 'High Motor Speed', 'Friction Torque', 'Acceleration Torque', 'Nominal Voltage', 'Threshold Voltage'], loc=0)
+#h7, = plt.plot([0, maxNoLoadSpeed], [maxStallTorque, 0], linewidth=2) # maximum voltage
+plt.plot(45,4.25,'w.') #force y axis to extend up
+plt.legend([h1, h2, h3, h4, h5, h6], ['Low Motor Speed', 'High Motor Speed', 'Friction Torque', 'Acceleration Torque', 'Nominal Voltage', 'Threshold Voltage'], loc=(0.25,0.52))
 plt.title('Motor Selection')
 plt.xlabel('Motor Speed (rad/s)')
 plt.ylabel('Torque (Nm)')
