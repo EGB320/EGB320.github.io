@@ -19,7 +19,7 @@
 		  function gtag(){dataLayer.push(arguments);}
 		  gtag('js', new Date());
 
-		  gtag('config', 'UA-123133357-1');
+		  gtag('con', 'UA-123133357-1');
 		</script>
 	</head>
 
@@ -60,7 +60,7 @@
 
 										<h3>Importing Libraries</h3>
 										
-										<p>The main libraries which you need to be familiar with for the vision component of your task are the OpenCV (open source computer vision) and numpy (numerical python) libraries. Both libraries have been pre-installed on your Raspberry Pi’s for you (OpenCV takes hours to install), however if for any reason you do need assistance installing these at any stage, we are happy to guide you through it.</p>
+										<p>The main libraries which you need to be familiar with for the vision component of your task are the OpenCV (open source computer vision) and numpy (numerical python) libraries. Both libraries have been pre-installed on your Raspberry Pi for you (OpenCV can take hours to install), however if for any reason you do need assistance installing these at any stage, we are happy to guide you through it.</p>
 
 										<p>To import these libraries, you should have the following at the top of each script:</p>
 
@@ -74,19 +74,28 @@ import numpy as np</code></pre>
 										<pre><code>cap = cv2.VideoCapture(0)  		# Connect to camera 0 (or the only camera)
 cap.set(3, 320)                     	# Set the width to 320
 cap.set(4, 240)                     	# Set the height to 240
-ret, frame = cap.read()	     		# Get a frame from the camera </code></pre>
+ret, frame = cap.read()	     		# Get a frame from the camera 
+
+# Other camera parameters can be altered, such as brightness and contrast.
+# See https://docs.opencv.org/3.0-beta/modules/videoio/doc/reading_and_writing_video.html#videocapture-set</code></pre>
+
 
 										<h3>Displaying Frames Using OpenCV and Python</h3>
 										
 										<p>Now you have called the function to read a frame in from the camera, and stored the data in your ‘frame’ variable, you may wish to display your image. The ‘ret’ variable you just created will tell you whether or not the frame was successfully obtained, so first you must ensure the read was a success. Then, you can use the OpenCV cv2.imshow() function to display your frame!</p>
 
-										<pre><code>If ret == True:				     # Check if data was obtained successfully
-	cv2.imshow(“CameraImage”, frame)     # Display the obtained frame in a window called “CameraImage”
-	cv2.waitKey(0)			     # Make the program wait until you press a key before continuing</code></pre>
+										<pre><code>if ret == True:				     # Check if data was obtained successfully
+	cv2.imshow("CameraImage", frame)     # Display the obtained frame in a window called "CameraImage"
+	cv2.waitKey(0)			     # Make the program wait until you press a key before continuing.
+
+# Please note: cv2.waitKey() must be called for cv2.imshow to display. 
+# The input parameter to the cv2.waitKey() function is the wait time delay in milliseconds. 
+# If you do not want infinite delays (0 = wait forever), simply put a 1 or other millisecond
+# value in the brackets instead.</code></pre>
 										
 										<p>If we wanted to save this image, we could add a save step after obtaining the image.</p>
 
-										<pre><code>imwrite(“frame0001.png”, frame)		# Save the frame as frame0001.png</code></pre>
+										<pre><code>cv2.imwrite("frame0001.png", frame)		# Save the frame as frame0001.png</code></pre>
 
 										
 										<h3>The Clean Up Step</h3>
@@ -104,29 +113,66 @@ cv2.destroyAllWindows()		# Close all opencv pop-up windows</code></pre>
 										
 										<p>Typically, images are captured using a derivative of the RGB colourspace, however there are many other colourspaces available for you to test as well. The default frame input will be read as BGR (blue, green, red) using the cv2.VideoCapture or picamera modules. Changing colourspaces after obtaining an image is quite simple using OpenCV, and examples of this are presented below.</p>
 
-										<pre><code>hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) 		# Convert to HSV colourspace
-lab_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2Lab) 		# Convert to Lab colourspace</code></pre>
+										<pre><code>hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) 		# Convert from BGR to HSV colourspace
+lab_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2Lab) 		# Convert from BGR to Lab colourspace</code></pre>
 
 										<p>For other colour spaces, such as YUV etc., refer to the following guide to obtain the code to pass into the cv2.cvtColor() function, <a href="https://docs.opencv.org/3.2.0/d7/d1b/group__imgproc__misc.html#ga4e0972be5de079fed4e3a10e24ef5ef0">OpenCV cvtColor docs</a>.</p>
 
 										<h3>Splitting Colour Channels and Creating Regions of Interest</h3>
 										
-										<p>It may be useful to operate independently with single-colour channels, or regions of interest within images. For example, we can set all the blue pixels in an image to zero using the OpenCV functions cv2.split() and cv2.merge().</p>
+										<p>It may be useful to operate independently with single-colour channels, or regions of interest within images. Extracting a single colour channel will produce a grayscale image which can be used for many image processing applications. For example, let's analyse the example frame below (resolution set to 320 x 240);
+
+										<figure class="figure">
+    										<img src="images/Vision/frame_000191.png" width="30%" alt="Image Not Found" />
+    										<figcaption>An Example Input Frame</figcaption>
+										</figure>
+
+										If we extract the blue, green and red colour channels, we produce the following output images;
+
+										<div class="row">
+										  <div class="col-4">
+										    <figure class="figure">
+		    										<img src="images/Vision/blue_channel.png" width="80%" alt="Image Not Found" />
+		    										<figcaption>Blue Colour Channel</figcaption>
+											</figure>
+										  </div>
+										  <div class="col-4">
+										    <figure class="figure">
+		    										<img src="images/Vision/green_channel.png" width="80%" alt="Image Not Found" />
+		    										<figcaption>Green Colour Channel</figcaption>
+											</figure>
+										  </div>
+										  <div class="col-4">
+										    <figure class="figure">
+		    										<img src="images/Vision/red_channel.png" width="80%" alt="Image Not Found" />
+		    										<figcaption>Red Colour Channel</figcaption>
+											</figure>
+										  </div>
+										</div>
+
+										We can use either cv2.split() or numpy array indexing to extract individual colour channels. To demonstrate the use of cv2.split(), lets set all the blue and green pixels in an image to zero, and then merge the colour channels using cv2.merge().</p>
 
 										<pre><code>b, g, r = cv2.split(frame)		# Split the frame into its 3 colour channels
 b = b*0					# Set the blue pixels to zero
+g = g*0					# Set the green pixels to zero
 frame = cv2.merge((b, g, r))		# Merge the channels back into one image</code></pre>
+										
+										If there was any red in the input image, the modified image should appear red tinged (since we cancelled out all blue and green pixel values). As you can see from the image below, there is a significant difference between setting colour channels to zero and extracting individual channels (as shown above). Setting, for example, the blue and green channels to zero will simply change a pixel from, say [180,200,135] to [0,0,135]. The other colour channels are still present, so the image is still a BGR image; we have just cancelled the appearance of all channels except red.
+
+										<figure class="figure">
+		    										<img src="images/Vision/bluegreenzeroed.png" width="30%" alt="Image Not Found" />
+		    										<figcaption>Frame With Blue and Green Channels Zeroed</figcaption>
+										</figure>
 
 
-
-										<p>Be aware of the computational cost of merging channels – this should be avoided if possible. An alternative to the OpenCV process can be achieved using numpy arrays, as shown below. Note: OpenCV reads images into python as numpy arrays. Images stored in numpy arrays are represented with 3 elements, being [rows, columns, colourchannels].</p>
+										<p>You may also need to be aware that there is a high computational cost of merging channels, so this should be avoided if possible. An alternative to the OpenCV process can be achieved using numpy arrays, as shown below. Note: OpenCV reads images into python as numpy arrays. Images stored in numpy arrays are represented with 3 elements, being [rows, columns, colour_channels].</p>
 
 										<pre><code>frame[:, :, 0] = 0				# Set colour channel 0 (blue) to 0</code></pre>
 
-										<p>If you wish to extract a region of interest from an image, you can also do this by indexing the numpy array. </p>
+										<p>You may also wish to extract a region of interest from an image at some stage. This can be done by indexing the numpy array. For example, to extract a 100 by 100 pixel region within a frame and double the blue channel values;</p>
 
 										<pre><code>sub_frame = frame[200:300, 200:300, 0]		# Extract blue colour channel of a 100 pixel region
-sub_ frame = sub_image * 2			# Double the pixel blue channel values
+sub_frame = sub_frame * 2			# Double the pixel blue channel values
 frame[200:300, 200:300, 0] = sub_frame		# Replace the region in the original image with our sub frame</code></pre>
 										
 										<h3>Image Segmentation</h3>
@@ -145,38 +191,63 @@ type 		→ 		The thresholding method being used (see <a href="https://docs.openc
 
 										<p>For more details regarding the threshold function, see the documentation at <a href="https://docs.opencv.org/3.4.1/d7/d1b/group__imgproc__misc.html#gae8a4a146d1ca78c626a53577199e9c57">OpenCV cv2.threshold() docs</a>. An overview of the mathematics behind various thresholding methods is provided here <a href="https://docs.opencv.org/3.4.1/d7/d1b/group__imgproc__misc.html#gaa9e58d2860d4afa658ef70a9b1115576">OpenCV thresholding methods docs</a>.</p>
 
-										<p>For example, we may wish to threshold an image such that
+										<p>For example, we may wish to threshold the blue channel of an image such that
 											<ul style="margin-left: 15px;">												
 													<li>all pixels > 127 are set to 255</li>
 													<li>all pixels < 127 are set to 0</li>
 											</ul>
 										</p>
 
-										<p>We would first convert our input frame to grayscale, then threshold the grayscale image using the binary thresholding method with a threshold of 127;</p>
+										<p>We would first extract the colour channel we wish to analyse (which will display as a grayscale image). We can then threshold this channel using the binary thresholding method with a threshold of 127;</p>
 
-
-										<pre><code>gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-ret, thresholded_frame = cv2.threshold(gray_frame, 127, 255, cv2.THRESH_BINARY)</code></pre>
+<!-- gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) -->
+										<pre><code>ret, thresholded_frame = cv2.threshold(gray_frame, 127, 255, cv2.THRESH_BINARY)</code></pre>
 										
 										<p>A full example of a colour thresholding and image segmentation process can be completed as per the following script;</p>
 
 										<pre><code>import numpy as np
 import cv2
 
-cap = cv2.VideoCapture(0)								# Create the camera object
-cap.set(3, 640)										# Set the frame width
-cap.set(4, 480)										# Set the frame height
+cap = cv2.VideoCapture(0)							# Create the camera object
+cap.set(3, 640)									# Set the frame width
+cap.set(4, 480)									# Set the frame height
 
-ret, frame = cap.read()									# Import the raw frame
-frame_blue = frame[:,:,0];								# Extract the blue colour channel
-gray_frame = cv2.cvtColor(frame_blue, cv2.COLOR_BGR2GRAY)				# Convert the frame to grayscale
-ret, thresholded_frame = cv2.threshold(gray_frame, 127, 255, cv2.THRESH_BINARY)		# Threshold the grayscale image
+ret, frame = cap.read()								# Import the raw frame
+frame_blue = frame[:,:,0];							# Extract blue channel
+ret, thresholded_frame = cv2.threshold(frame_blue, 127, 255, cv2.THRESH_BINARY)	# Threshold blue channel
 
-cv2.imshow("Binary Thresholded Frame", thresholded_frame)				# Display the thresholded frame
-cv2.waitKey(0)										# Wait for a keypress before exiting
+cv2.imshow("Binary Thresholded Frame", thresholded_frame)			# Display thresholded frame
+cv2.waitKey(0)									# Exit on keypress
 
 cap.release()
 cv2.destroyAllWindows()</code></pre>
+										<p>
+										The effect of this script on an input frame can be seen below, where the left image is the input image, the middle frame is the blue colour channel, and the right image is the thresholded frame.
+										</p>
+										<div class="row">
+										  <div class="col-4">
+										    <figure class="figure">
+		    										<img src="images/Vision/frame_000191.png" width="80%" alt="Image Not Found" />
+		    										<figcaption>The Input Frame</figcaption>
+											</figure>
+										  </div>
+										  <div class="col-4">
+										    <figure class="figure">
+		    										<img src="images/Vision/blue_channel.png" width="80%" alt="Image Not Found" />
+		    										<figcaption>The Blue Colour Channel</figcaption>
+											</figure>
+										  </div>
+										  <div class="col-4">
+										    <figure class="figure">
+		    										<img src="images/Vision/thresholded_blue.png" width="80%" alt="Image Not Found" />
+		    										<figcaption>Thresholded Blue Colour Channel</figcaption>
+											</figure>
+										  </div>
+										</div>
+										<p>
+										As you can see from the above images, our thresholding is clearly not adequate to segment the image for blue regions (since we highlighted the walls, not the blue goal). To correctly extract the blue goal, we should change this threshold and maybe consider using range based thresholding (pixels between 127 and 190, for example), or converting to a different colourspace.</p>
+
+
 										<div class="html2pdf__page-break"></div>
 									</div>
 
