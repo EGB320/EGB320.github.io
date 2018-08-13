@@ -71,7 +71,7 @@
 										<h2>Setting Up Your VREP Scene</h2>
 										<p><em>Make sure you have downloaded and extracted the EGB320 VREP files, see the top of the page for download link.</em></p>
 
-										<p>To setup the scene for this design project we must first launch VREP. Once VREP has launched, select File -> Open Scene. Then navigate to where you extracted the EGB320 VREP files and open up the file EGB320Scene.ttt. Aftet opening the file your VREP workspace should contain the Soccer Bot Arena, as well as 3 obstacles and the orange ball on a side table.</p>
+										<p>To setup the scene for this design project we must first launch VREP. Once VREP has launched, select File -> Open Scene. Then navigate to where you extracted the EGB320 VREP files and open up the file EGB320Scene.ttt. After opening the file your VREP workspace should contain the Soccer Bot Arena, as well as 3 obstacles and the orange ball on a side table.</p>
 
 										<figure class="figure">
     										<img src="images/vrep/EGB320_VrepScene.png" width="80%" alt="images/image-not-found.jpg" />
@@ -83,7 +83,7 @@
 
 									<div class="page-wrapper">
 
-										<p>We now need to load our SoccerBot robot model. The teaching team have already created two robot models, one for a differential drive robot and one for an omni drive robot. To load in your desired robot model select File -> Load Model. Then navigate to where you extracted the EGB320 VREP files and either select DifferentialDrive_SoccerBot.ttm or OmniDrive_SoccerBot.ttm. Only load one of these models at a time.</p>
+										<p>We now need to load our SoccerBot robot model. The teaching team have already created two robot models, one for a differential drive robot and one for an omni drive robot. To load in your desired robot model select File -> Load Model. Then navigate to where you extracted the EGB320 VREP files and either select DifferentialDrive_SoccerBot.ttm or OmniDrive_SoccerBot.ttm. Ensure that there is only one of these models within the scene at all times.</p>
 
 										<p>Next we will add what is known as a 'floating view' to allow us to visualise what the camera is seeing. To do this right click anywhere within the scene and then select Add -> Floating View. Now click on the object titled 'VisionSensor' on the right hand side of the screen within the Scene Hierarchy tree. Finally, right click on the newly created floating view and select View -> Associate view with selected vision sensor.</p>
 
@@ -121,7 +121,7 @@
 										
 										<hr class="major pdf-exclude" />
 										<h2>Controlling Your VREP Robot Using Python</h2>
-										<p>Interfacing to VREP with Python is quite trivial using VREP's Application Programming Interface (API). However, so you can concentrate on developing your navigation code we have created our own Python Module which simplifies it still. If you wish to know how to use the VREP API check out <a target="_blank" href="http://www.coppeliarobotics.com/helpFiles/en/remoteApiFunctionsPython.htm">VREP Python API Documentation</a> and <a target="_blank" href="https://www.youtube.com/watch?v=Hk98gquFYuk">this tutorial</a>.</p>
+										<p>Interfacing to VREP with Python is quite trivial using VREP's Application Programming Interface (API). However, so you can concentrate on developing your navigation code we have created our own Python Module which simplifies it still. If you wish to know how to use the VREP API check out the <a target="_blank" href="http://www.coppeliarobotics.com/helpFiles/en/remoteApiFunctionsPython.htm">VREP Python API Documentation</a> and <a target="_blank" href="https://www.youtube.com/watch?v=Hk98gquFYuk">this tutorial</a>.</p>
 
 										<p>To open a connection to VREP using the EGB320 SoccerBot Python Module first create a new Python Script in the EGB320 VREP Python Code Folder. You need create your script in this directory as your script will be implicitly calling functions from the vrep.py, vrepConst.py and the remoteAPI files (.so for Linux, .dll for Windows, .dylib for Mac).</p>
 
@@ -137,18 +137,26 @@ sceneParameters = SceneParameters()
 
 # SET ROBOT PARAMETERS
 robotParameters = RobotParameters()
+robotParameters.driveType = 'differential'	# specify if using differential or omni drive system
 
 # MAIN SCRIPT
 if __name__ == '__main__':
 
-	soccerBotSim = VREP_SoccerBot('127.0.0.1', robotParameters, sceneParameters)
-	soccerBotSim.StartSimulator()
+	# Wrap everything in a try except case that catches KeyboardInterrupts. 
+	# In the exception catch code attempt to Stop the VREP Simulator so don't have to Stop it manually when pressing CTRL+C
+	try:
+		soccerBotSim = VREP_SoccerBot('127.0.0.1', robotParameters, sceneParameters)
+		soccerBotSim.StartSimulator()
 
-	while True:
-		soccerBotSim.SetTargetVelocities(0.1, 0, 0)
-		soccerBotSim.UpdateBallPosition()</code></pre>
+		while True:
+			soccerBotSim.SetTargetVelocities(0.1, 0, 0)
+			soccerBotSim.UpdateBallPosition()
 
-										<p>Now run your script. You will find that it will attempt to connect to the VREP API server, but it will fail and so the script will terminate. This is because within VREP we have not said to start the simulator. To start the simulator go back into VREP and hit the Play button located on the menu bar. Then re-run your script. It should successfully connect to VREP and your robot should drive forward eventually crashing into the wall.</p>
+	except KeyboardInterrupt as e:
+		# attempt to stop simulator so it restarts and don't have to manually press the Stop button in VREP 
+		soccerBotSim.StopSimulator()</code></pre>
+
+										<p>Now run your script. The script should successfully connect to VREP and your robot should drive forward eventually crashing into the wall. Press CTRL+C to kill the script.</p>
 										<div class="html2pdf__page-break"></div>
 									</div>
 
@@ -164,9 +172,10 @@ if __name__ == '__main__':
 
 										<p>This loads up the default VREP scene parameters and stores them as a variable. The scene parameters include the starting ball position, as well as the positions of the 3 static obstacles. Later on we will discuss how to change the default scene parameters.</p>
 
-										<pre><code>robotParameters = RobotParameters()</code></pre>
+										<pre><code>robotParameters = RobotParameters()
+robotParameters.driveType = 'differential'	# specify if using differential or omni drive system</code></pre>
 
-										<p>This loads the default robot parameters and stores them as a variable. The robot parameters include the minimum and maximum linear speed your robot can travel, the position of the robot's camera, how well your vision system can detect objects, and how well your dribbler system can "hold" onto the ball.</p>
+										<p>This loads the default robot parameters and stores them as a variable. We also specifically set the drive type to be differential. If you loaded the omni drive model, you will need to change this to be omni instead. The robot parameters include the minimum and maximum linear speed your robot can travel, the position of the robot's camera, how well your vision system can detect objects, and how well your dribbler system can "hold" onto the ball. We will be discussing these parameters later on in this guide.</p>
 
 										<pre><code>if __name__ == 'main'</code></pre>
 
@@ -280,6 +289,7 @@ sceneParameters.obstacle2_StartingPosition = None
 robotParameters = RobotParameters()
 
 # Drive Parameters
+robotParameters.driveType = 'differential'		# specify if using differential or omni drive system
 robotParameters.minimumLinearSpeed = 0.04  		# minimum speed at which your robot can move forward in m/s
 robotParameters.maximumLinearSpeed = 0.25 		# maximum speed at which your robot can move forward in m/s
 robotParameters.driveSystemQuality = 1			# specifies how good your drive system is from 0 to 1 
@@ -301,8 +311,8 @@ robotParameters.dribblerQuality = 1 			# specifies how good your dribbler is fro
 							# (with 1.0 being awesome and 0 being non-existent)</code></pre>
 
 
-										<hr class="major pdf-exclude" />
-										<h2>Hardware In The Loop</h2>
+										<!-- <hr class="major pdf-exclude" />
+										<h2>Hardware In The Loop (UNDER DEVELOPMENT)</h2>
 										<p>If you are undertaking the Navigation/AI component of this design project you may wish to perform what is known as hardware in the loop. Hardware in the loop is when we test parts or all of the hardware, in our case the Raspberry Pi, but utilise simulated data or a simulated environment (e.g. VREP). By performing hardware in the loop, you will be able to test your navigation software on the Raspberry Pi without having to actually have any hardware. To perform hardware in the loop follow using VREP follow these instructions:</p>
 
 										<ol>
@@ -316,7 +326,7 @@ robotParameters.dribblerQuality = 1 			# specifies how good your dribbler is fro
 											<li>Launch and start VREP on the computer as you usually would.</li>
 											<li>Start your script on the Raspberry Pi.</li>
 										</ol>
-										<div class="html2pdf__page-break"></div>
+										<div class="html2pdf__page-break"></div> -->
 									</div>
 									
 

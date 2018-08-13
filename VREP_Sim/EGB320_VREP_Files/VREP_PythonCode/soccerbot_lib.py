@@ -35,8 +35,11 @@ class VREP_SoccerBot(object):
 		# VREP Object Handle Variables
 		self.robotHandle = None
 		self.cameraHandle = None
-		self.leftMotorHandle = None
+		self.leftMotorHandle = None 		# left and right used for differential drive
 		self.rightMotorHandle = None
+		self.v60MotorHandle = None 			# 60, 180, 300 used for omni drive
+		self.v180MotorHandle = None
+		self.v300MotorHandle = None
 		self.dribblerMotorHandle = None
 		self.kickerHandle = None
 		self.ballHandle = None
@@ -139,38 +142,88 @@ class VREP_SoccerBot(object):
 	#	y - the velocity of the robot in the direction orthogonal to the forward direction  (in m/s) (only used for omni systems)
 	#	theta_dt - the rotational velocity of the robot (in rad/s)
 	def SetTargetVelocities(self, x_dot, y_dot, theta_dot):
-		# ensure wheel base and wheel radius are set as these are not allowed to be changed
-		self.robotParameters.wheelBase = 0.16
-		self.robotParameters.wheelRadius = 0.025
+		
+		# Need to set based on drive system type
+		if self.robotParameters.driveType == 'differential':
+			# ensure wheel base and wheel radius are set as these are not allowed to be changed
+			self.robotParameters.wheelBase = 0.16
+			self.robotParameters.wheelRadius = 0.025
+		
+			# determine minimum wheel speed based on minimumLinear and maximumLinear speed
+			minWheelSpeed = self.robotParameters.minimumLinearSpeed / self.robotParameters.wheelRadius
+			maxWheelSpeed = self.robotParameters.maximumLinearSpeed / self.robotParameters.wheelRadius
 
-		# determine minimum wheel speed based on minimumLinear and maximumLinear speed
-		minWheelSpeed = self.robotParameters.minimumLinearSpeed / self.robotParameters.wheelRadius
-		maxWheelSpeed = self.robotParameters.maximumLinearSpeed / self.robotParameters.wheelRadius
+			# calculate left and right wheel speeds in rad/s
+			leftWheelSpeed = (x_dot - 0.5*theta_dot*self.robotParameters.wheelBase) / self.robotParameters.wheelRadius + self.leftWheelBias
+			rightWheelSpeed = (x_dot + 0.5*theta_dot*self.robotParameters.wheelBase) / self.robotParameters.wheelRadius + self.rightWheelBias
 
-		# calculate left and right wheel speeds in rad/s
-		leftWheelSpeed = (x_dot - 0.5*theta_dot*self.robotParameters.wheelBase) / self.robotParameters.wheelRadius + self.leftWheelBias
-		rightWheelSpeed = (x_dot + 0.5*theta_dot*self.robotParameters.wheelBase) / self.robotParameters.wheelRadius + self.rightWheelBias
+			# add gaussian noise to the wheel speed
+			if self.robotParameters.driveSystemQuality != 1:
+				leftWheelSpeed = np.random.normal(leftWheelSpeed, (1-self.robotParameters.driveSystemQuality)*1, 1)
+				rightWheelSpeed = np.random.normal(rightWheelSpeed, (1-self.robotParameters.driveSystemQuality)*1, 1)
 
-		# add gaussian noise to the wheel speed
-		if self.robotParameters.driveSystemQuality != 1:
-			leftWheelSpeed = np.random.normal(leftWheelSpeed, (1-self.robotParameters.driveSystemQuality)*1, 1)
-			rightWheelSpeed = np.random.normal(rightWheelSpeed, (1-self.robotParameters.driveSystemQuality)*1, 1)
+			# ensure wheel speeds are not greater than maximum wheel speed
+			leftWheelSpeed = min(leftWheelSpeed, maxWheelSpeed)
+			rightWheelSpeed = min(rightWheelSpeed, maxWheelSpeed)
 
-		# ensure wheel speeds are not greater than maximum wheel speed
-		leftWheelSpeed = min(leftWheelSpeed, maxWheelSpeed)
-		rightWheelSpeed = min(rightWheelSpeed, maxWheelSpeed)
+			# set wheel speeds to 0 if less than the minimum wheel speed
+			if abs(leftWheelSpeed) < minWheelSpeed:
+				leftWheelSpeed = 0
+			if abs(rightWheelSpeed) < minWheelSpeed:
+				rightWheelSpeed = 0
 
-		# set wheel speeds to 0 if less than the minimum wheel speed
-		if abs(leftWheelSpeed) < minWheelSpeed:
-			leftWheelSpeed = 0
-		if abs(rightWheelSpeed) < minWheelSpeed:
-			rightWheelSpeed = 0
+			# set motor speeds
+			errorCode = vrep.simxSetJointTargetVelocity(self.clientID, self.leftMotorHandle, leftWheelSpeed, vrep.simx_opmode_oneshot_wait)
+			errorCode = vrep.simxSetJointTargetVelocity(self.clientID, self.rightMotorHandle, rightWheelSpeed, vrep.simx_opmode_oneshot_wait) 
+			if errorCode != 0:
+				print('Failed to set left and/or right motor speed. Error code %d'%errorCode)
 
-		# set motor speeds
-		errorCode = vrep.simxSetJointTargetVelocity(self.clientID, self.leftMotorHandle, leftWheelSpeed, vrep.simx_opmode_oneshot_wait)
-		errorCode = vrep.simxSetJointTargetVelocity(self.clientID, self.rightMotorHandle, rightWheelSpeed, vrep.simx_opmode_oneshot_wait) 
-		if errorCode != 0:
-			print('Failed to set left and/or right motor speed. Error code %d'%errorCode) 
+		elif self.robotParameters.driveType == 'omni':
+			# ensure wheel base and wheel radius are set as these are not allowed to be changed
+			self.robotParameters.wheelBase = 0.08
+			self.robotParameters.wheelRadius = 0.025
+		
+			# determine minimum wheel speed based on minimumLinear and maximumLinear speed
+			minWheelSpeed = 0.5*(self.robotParameters.minimumLinearSpeed / self.robotParameters.wheelRadius)*0.866
+			maxWheelSpeed = 0.5*(self.robotParameters.maximumLinearSpeed / self.robotParameters.wheelRadius)*0.866
+
+			# determine magnitude of speed
+			speedMag = math.sqrt(math.pow(x_dot,2) + math.pow(y_dot,2))
+			speedHeading = math.atan2(y_dot, x_dot)
+
+			# calculate individual wheel speeds
+			v60Speed = 0.5*(speedMag * (-1*(math.sqrt(3)/2)*math.cos(speedHeading) + 0.5*math.sin(speedHeading)) + theta_dot*self.robotParameters.wheelBase) / self.robotParameters.wheelRadius
+			v180Speed = 0.5*(-1*speedMag * math.sin(speedHeading) + theta_dot*self.robotParameters.wheelBase) / self.robotParameters.wheelRadius
+			v300Speed = 0.5*(speedMag * ((math.sqrt(3)/2)*math.cos(speedHeading) + 0.5*math.sin(speedHeading)) + theta_dot*self.robotParameters.wheelBase) / self.robotParameters.wheelRadius
+
+			# add gaussian noise to the wheel speed
+			if self.robotParameters.driveSystemQuality != 1:
+				v60Speed = np.random.normal(v60Speed, (1-self.robotParameters.driveSystemQuality)*1, 1)
+				v180Speed = np.random.normal(v180Speed, (1-self.robotParameters.driveSystemQuality)*1, 1)
+				v300Speed = np.random.normal(v300Speed, (1-self.robotParameters.driveSystemQuality)*1, 1)
+			
+			# ensure wheel speeds are not greater than maximum wheel speed
+			v60Speed = min(v60Speed, maxWheelSpeed)
+			v180Speed = min(v180Speed, maxWheelSpeed)
+			v300Speed = min(v300Speed, maxWheelSpeed)
+
+			# set wheel speeds to 0 if less than the minimum wheel speed
+			if abs(v60Speed) < minWheelSpeed:
+				v60Speed = 0
+			if abs(v180Speed) < minWheelSpeed:
+				v180Speed = 0
+			if abs(v300Speed) < minWheelSpeed:
+				v300Speed = 0
+
+
+			# set motor speeds
+			errorCode = vrep.simxSetJointTargetVelocity(self.clientID, self.v60MotorHandle, v60Speed, vrep.simx_opmode_oneshot_wait)
+			errorCode = vrep.simxSetJointTargetVelocity(self.clientID, self.v180MotorHandle, v180Speed, vrep.simx_opmode_oneshot_wait)
+			errorCode = vrep.simxSetJointTargetVelocity(self.clientID, self.v300MotorHandle, v300Speed, vrep.simx_opmode_oneshot_wait)
+			if errorCode != 0:
+				print('Failed to set left and/or right motor speed. Error code %d'%errorCode)
+
+
 
 	# Returns true if the ball is within the dribbler
 	# returns:
@@ -254,8 +307,8 @@ class VREP_SoccerBot(object):
 			print('Failed to get Vision Sensor object handle. Terminating Program.')
 			exit(-1)
 
-		leftErrorCode, rightErrorCode = self.GetMotorHandles()
-		if leftErrorCode != 0 or rightErrorCode != 0:
+		errorCode1, errorCode2, errorCode3 = self.GetMotorHandles()
+		if errorCode1 != 0 or errorCode2 != 0 or errorCode3 != 0:
 			print('Failed to get Motor object handles. Terminating Program.')
 			exit(-1)
 
@@ -304,9 +357,21 @@ class VREP_SoccerBot(object):
 			
 	# Get VREP Motor Handles
 	def GetMotorHandles(self):
-		leftErrorCode, self.leftMotorHandle = vrep.simxGetObjectHandle(self.clientID, 'LeftMotor', vrep.simx_opmode_oneshot_wait)
-		rightErrorCode, self.rightMotorHandle = vrep.simxGetObjectHandle(self.clientID, 'RightMotor', vrep.simx_opmode_oneshot_wait)
-		return leftErrorCode, rightErrorCode
+		errorCode1 = 0
+		errorCode2 = 0
+		errorCode3 = 0
+
+		if self.robotParameters.driveType == 'differential':
+			errorCode1, self.leftMotorHandle = vrep.simxGetObjectHandle(self.clientID, 'LeftMotor', vrep.simx_opmode_oneshot_wait)
+			errorCode2, self.rightMotorHandle = vrep.simxGetObjectHandle(self.clientID, 'RightMotor', vrep.simx_opmode_oneshot_wait)
+		
+		elif self.robotParameters.driveType == 'omni':
+			errorCode1, self.v60MotorHandle = vrep.simxGetObjectHandle(self.clientID, 'V60_Motor', vrep.simx_opmode_oneshot_wait)
+			errorCode2, self.v180MotorHandle = vrep.simxGetObjectHandle(self.clientID, 'V180_Motor', vrep.simx_opmode_oneshot_wait)
+			errorCode3, self.v300MotorHandle = vrep.simxGetObjectHandle(self.clientID, 'V300_Motor', vrep.simx_opmode_oneshot_wait)
+
+		return errorCode1, errorCode2, errorCode3
+
 
 			
 	# Get VREP Dribbler Handle
@@ -525,9 +590,10 @@ class RobotParameters(object):
 		self.robotSize = 0.18 # This parameter cannot be changed
 		
 		# Drive/Wheel Parameters
+		self.driveType = 'differential'	# specifies the drive type ('differential' or 'omni')
 		self.wheelBase = 0.160 # This parameter cannot be changed
 		self.wheelRadius = 0.025 # This parameter cannot be changed
-		self.minimumLinearSpeed = 0.04 	# minimum speed at which your robot can move forward in m/s
+		self.minimumLinearSpeed = 0.0 	# minimum speed at which your robot can move forward in m/s
 		self.maximumLinearSpeed = 0.25 	# maximum speed at which your robot can move forward in m/s
 		self.driveSystemQuality = 1.0 # specifies how good your drive system is from 0 to 1 (with 1 being able to drive in a perfectly straight line when a told to do so)
 

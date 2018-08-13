@@ -19,6 +19,7 @@ sceneParameters.obstacle2_StartingPosition = None   # starting position of obsta
 robotParameters = RobotParameters()
 
 # Drive Parameters
+robotParameters.driveType = 'differential'	# specify if using differential or omni drive system
 robotParameters.minimumLinearSpeed = 0.04  	# minimum speed at which your robot can move forward in m/s
 robotParameters.maximumLinearSpeed = 0.25 	# maximum speed at which your robot can move forward in m/s
 robotParameters.driveSystemQuality = 1		# specifies how good your drive system is from 0 to 1 (with 1 being able to drive in a perfectly straight line when a told to do so)
@@ -42,8 +43,8 @@ robotParameters.dribblerQuality = 1 # specifies how good your dribbler is from 0
 # MAIN SCRIPT
 if __name__ == '__main__':
 
-	# Wrap everything in a try except case that catches KeyboardInterrupts and SystemExits. 
-	# In the exception catch code attempt to Stop the VREP Simulator so don't have to Stop it manually
+	# Wrap everything in a try except case that catches KeyboardInterrupts. 
+	# In the exception catch code attempt to Stop the VREP Simulator so don't have to Stop it manually when pressing CTRL+C
 	try:
 
 		# Create VREP SoccerBot object - this will attempt to open a connection to VREP. Make sure the VREP simulator is running.
@@ -56,7 +57,7 @@ if __name__ == '__main__':
 			soccerBotSim.SetTargetVelocities(0.1, 0, 0.5)
 
 			# Get Detected Objects
-			ballRB, blueRB, yellowRB, obstaclesRB = soccerSimBot.GetDetectedObjects()
+			ballRB, blueRB, yellowRB, obstaclesRB = soccerBotSim.GetDetectedObjects()
 
 			# Check to see if the ball is within the camera's FOV
 			if ballRB != None:
@@ -64,7 +65,7 @@ if __name__ == '__main__':
 				ballBearing = ballRB[1]
 
 			# Check to see if any obstacles are within the camera's FOV
-			if obstacles != None:
+			if obstaclesRB != None:
 				# loop through each obstacle detected using Pythonian way
 				for obstacle in obstaclesRB:
 					obstacleRange = obstacle[0]
@@ -73,7 +74,7 @@ if __name__ == '__main__':
 			# Update Ball Position
 			soccerBotSim.UpdateBallPosition()
 
-	except (KeyboardInterrupt, SystemExit) as e:
+	except KeyboardInterrupt as e:
 		# attempt to stop simulator so it restarts and don't have to manually press the Stop button in VREP 
 		soccerBotSim.StopSimulator()
 
