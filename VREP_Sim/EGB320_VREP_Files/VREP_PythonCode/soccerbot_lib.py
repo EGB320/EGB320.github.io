@@ -3,6 +3,7 @@ import vrep
 import time
 import math
 import numpy as np
+import sys
 
 
 ################################
@@ -84,7 +85,7 @@ class VREP_SoccerBot(object):
 		if vrep.simxStartSimulation(self.clientID, vrep.simx_opmode_oneshot_wait) != 0:
 			print('An error occurred while trying to start the simulator via the Python API. Terminating Program!')
 			print('Comment out calls to StartSimulator() and start the simulator manully by pressing the Play button in VREP.')
-			exit(-1)
+			sys.exit(-1)
 		else:
 			print('Successfully started the VREP Simulator.')
 
@@ -291,7 +292,7 @@ class VREP_SoccerBot(object):
 			print('Connected to VREP API Server.')
 		else:
 			print('Failed to connect to VREP API Server. Terminating Program')
-			exit(-1)
+			sys.exit(-1)
 
 
 	# Get VREP Object Handles
@@ -300,42 +301,42 @@ class VREP_SoccerBot(object):
 		errorCode = self.GetRobotHandle()
 		if errorCode != 0:
 			print('Failed to get Robot object handle. Terminating Program.')
-			exit(-1)
+			sys.exit(-1)
 
 		errorCode = self.GetCameraHandle()
 		if errorCode != 0:
 			print('Failed to get Vision Sensor object handle. Terminating Program.')
-			exit(-1)
+			sys.exit(-1)
 
 		errorCode1, errorCode2, errorCode3 = self.GetMotorHandles()
 		if errorCode1 != 0 or errorCode2 != 0 or errorCode3 != 0:
 			print('Failed to get Motor object handles. Terminating Program.')
-			exit(-1)
+			sys.exit(-1)
 
 		errorCode = self.GetdribblerMotorHandle()
 		if errorCode != 0:
 			print('Failed to get Dribbler object handle. Terminating Program.')
-			exit(-1)
+			sys.exit(-1)
 
 		errorCode = self.GetkickerHandle()
 		if errorCode != 0:
 			print('Failed to get Kicker object handle. Terminating Program.')
-			exit(-1)
+			sys.exit(-1)
 
 		errorCode = self.GetBallHandle()
 		if errorCode != 0:
 			print('Failed to get Ball object handle. Terminating Program.')
-			exit(-1)
+			sys.exit(-1)
 
 		blueErrorCode, yellowErrorCode = self.GetGoalHandles()
 		if blueErrorCode != 0 or yellowErrorCode != 0:
 			print('Failed to get Motor object handles. Terminating Program.')
-			exit(-1)
+			sys.exit(-1)
 
 		obs0ErrorCode, obs1ErrorCode, obs2ErrorCode = self.GetObstacleHandles()
 		if obs0ErrorCode != 0 or obs1ErrorCode != 0 or obs2ErrorCode != 0:
 			print('Failed to get Obstacle object handles. Terminating Program.')
-			exit(-1)
+			sys.exit(-1)
 
 
 	############################################
