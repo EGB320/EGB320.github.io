@@ -1388,7 +1388,14 @@ simxUChar* _appendCommand_i_f(simxInt cmd,simxUChar options,simxInt intValue,sim
     ((simxUShort*)(data+simx_cmdheaderoffset_delay_or_split))[0]=extApi_endianConversionUShort(delayOrSplit);
     data[simx_cmdheaderoffset_status]=options;
     ((simxInt*)(data+SIMX_SUBHEADER_SIZE))[0]=extApi_endianConversionInt(intValue);
-    ((simxFloat*)(data+SIMX_SUBHEADER_SIZE))[1]=extApi_endianConversionFloat(floatValue);
+
+    #ifdef ARM_PROCESSOR
+        simxFloat retVal = extApi_endianConversionFloat(floatValue);
+        memcpy(((simxFloat*)(data+SIMX_SUBHEADER_SIZE))+1, &retVal, sizeof(simxFloat));
+    #else
+        ((simxFloat*)(data+SIMX_SUBHEADER_SIZE))[1]=extApi_endianConversionFloat(floatValue);
+    #endif
+
     return(_appendChunkToBuffer(data,SIMX_SUBHEADER_SIZE+4+4,buffer,buffer_bufferSize,buffer_dataSize));
 }
 

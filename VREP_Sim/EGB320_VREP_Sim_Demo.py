@@ -22,7 +22,7 @@ sceneParameters.obstacle2_StartingPosition = None   # starting position of obsta
 robotParameters = RobotParameters()
 
 # Drive Parameters
-robotParameters.driveType = 'omni'
+robotParameters.driveType = 'differential'
 robotParameters.minimumLinearSpeed = 0.04  	# minimum speed at which your robot can move forward in m/s
 robotParameters.maximumLinearSpeed = 0.25 	# maximum speed at which your robot can move forward in m/s
 robotParameters.driveSystemQuality = 1	# specifies how good your drive system is from 0 to 1 (with 1 being able to drive in a perfectly straight line when a told to do so)
