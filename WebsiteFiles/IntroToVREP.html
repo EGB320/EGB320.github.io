@@ -220,7 +220,7 @@ soccerBotSim.SetTargetVelocities(0.1, 0, 0.5)</code></pre>
 
 										<p><b>GetDetectedObjects()</b>: The GetDetectedObjects function takes no arguments and returns, as 4 variables in order, the range and bearing to the ball, the blue goal, the yellow goal, and any obstacles if they are within the camera's field of view (FOV). The range and bearing is returned as a 2 element array. If the object is not within the field of view that respective return variable will be set to none. How far the away the objects can be detected is based on the robot parameters, see <a href="#RobotParameters">Robot Parameters</a>. Example function usage:<p>
 
-										<pre><code>ballRB, blueRB, yellowRB, obstaclesRB = soccerSimBot.GetDetectedObjects()
+										<pre><code>ballRB, blueRB, yellowRB, obstaclesRB = soccerBotSim.GetDetectedObjects()
 
 # Check to see if the ball is within the camera's FOV
 if ballRB != None:
