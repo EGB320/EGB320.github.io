@@ -50,10 +50,10 @@ maxMotorSpeed = maximumVelocity / float(wheelRadius)
 
 # torque to overcome friction and torque required for acceleration
 frictionTorque = (4.905*wheelFriction*robotMass*wheelRadius) / float(efficiency)
-accelerationTorque = (robotMass*acceleration + 4.905*wheelFriction*robotMass)*wheelRadius / float(efficiency)
+accelerationTorque = (0.5*robotMass*wheelRadius) * (acceleration + wheelFriction*9.81) / float(efficiency)
 #accelerationTorque = (frictionTorque + wheelRadius*robotMass*acceleration) / float(efficiency) (efficiency factored in twice for friction!!)
 print('Friction Torque: %f'%(frictionTorque))
-print('Acceleration Torque: %f'%(accelerationTorque))
+print('Acceleration Torque: %f'%(accelerationTorque-frictionTorque))
 print('High Motor Speed: %f'%(maxMotorSpeed))
 print('Low Motor Speed: %f'%(minMotorSpeed))
 

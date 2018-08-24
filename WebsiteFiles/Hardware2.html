@@ -130,15 +130,15 @@
 										<p>We now need to develop a mathematical model of our drive system. This will involve using physics knowledge to somehow relate the forces in our free body diagram with our design requirements, allowing the selection of a suitable motor. To start, we need to remember Newton's second law: the cumulative force exterted on an object is equal to its mass multipled by its acceleration, or mathematically &Sigma;F = ma. From our free body diagram we can mathematically determine the required output torque for a desired acceleration: </p>
 
 										<pre><code>&Sigma;F = m<sub>r</sub> * a
-&tau;<sub>o</sub>&frasl;r<sub>w</sub> - F<sub>f</sub> = m<sub>r</sub> * a
-&tau;<sub>o</sub> = (m<sub>r</sub> * a + F<sub>f</sub>) * r<sub>w</sub></code></pre>
+2*(&tau;<sub>o</sub>&frasl;r<sub>w</sub>) - 2*F<sub>f</sub> = m<sub>r</sub> * a
+&tau;<sub>o</sub> = (0.5 * m<sub>r</sub> * a + F<sub>f</sub>) * r<sub>w</sub></code></pre>
 
-										<p>Using our knowledge of physics, we can determine the frictional force. The force due to friction is a product of the normal force multipled by a coefficient of friction. If we assume the robot is operating on flat surface parallel to the ground, we can state that the normal force is equal to half the robot's mass times gravity. Why half the robot's mass? Well remember we have two drive wheels and we assumed the center of mass is directly above the wheels and halfway between them, so each wheel will "support" half the mass. Hence, we can say that the required output torque for a given acceleration is given by the following equation:</p>
+										<p>The torque and friction force terms are multiplied by 2 because we have two wheels on our differential drive robot and we must include all forces acting on our robot. Using our knowledge of physics, we can determine the frictional force. The force due to friction is a product of the normal force multipled by a coefficient of friction. If we assume the robot is operating on flat surface parallel to the ground, we can state that the normal force is equal to half the robot's mass times gravity. Why half the robot's mass? Well remember we have two drive wheels and we assumed the center of mass is directly above the wheels and halfway between them, so each wheel will "support" half the mass. Hence, we can say that the required output torque for a given acceleration is given by the following equation:</p>
 
-										<pre><code>&tau;<sub>o</sub> = (m<sub>r</sub> * a + F<sub>f</sub>) * r<sub>w</sub>
-&tau;<sub>o</sub> = (m<sub>r</sub> * a + &mu; * N<sub>f</sub>) * r<sub>w</sub>
-&tau;<sub>o</sub> = (m<sub>r</sub> * a + &mu; * m<sub>r</sub> * 9.81&frasl;2) * r<sub>w</sub>
-&tau;<sub>o</sub> = (m<sub>r</sub> * a + 4.905 * &mu; * m<sub>r</sub>) * r<sub>w</sub></code></pre>
+										<pre><code>&tau;<sub>o</sub> = (0.5 * m<sub>r</sub> * a + F<sub>f</sub>) * r<sub>w</sub>
+&tau;<sub>o</sub> = (0.5 * m<sub>r</sub> * a + &mu; * N<sub>f</sub>) * r<sub>w</sub>
+&tau;<sub>o</sub> = (0.5 * m<sub>r</sub> * a + 0.5 * &mu; * m<sub>r</sub> * g) * r<sub>w</sub>
+&tau;<sub>o</sub> = (0.5 * m<sub>r</sub> * r<sub>w</sub>) * (a + &mu; * g) </code></pre>
 
 										<p>Now, as engineers we are also aware of a little thing called loss. Throughout the drive system there are going to be losses. These losses could be due to heat, or noise, and caused by friction in the gears, or the shaft spinning within the wheel hub. Simply put, the power that we put in is not going to be the power we get out, and so we can model this as an efficiency factor. The required output torque is the torque we need at the wheel itself, which will only be a percentage of the torque supplied by the motor. Hence, mathematically:</p>
 
@@ -146,7 +146,7 @@
 
 										<p>If we substitute this into our required output torque equation, and rearrange, we can obtain our final equation. This final equation specifies the required motor torque given a desired acceleration, and some design parameters such as wheel radius for a two wheel differential drive robot.</p>
 
-										<pre><code>&tau;<sub>m</sub> = (1&frasl;&eta;) * ((m<sub>r</sub> * a + 4.905 * &mu; * m<sub>r</sub>) * r<sub>w</sub>)		# Equation 2.1</code></pre>
+										<pre><code>&tau;<sub>m</sub> = (1&frasl;&eta;) * (0.5 * m<sub>r</sub> * r<sub>w</sub>) * (a + &mu; * g)		# Equation 2.1</code></pre>
 
 										<p>From the formulas above you can also see we require the mass of the robot, the radius of the robot's drive wheels, a coefficient of friction, and an efficiency. Obviously you do not currently have these, but they are what are sometimes referred to as design parameters. These design parameters are values that you may be able to change in order to tailor your design to the design requirements. For example, we could change the wheel radius, which would subsequently affect the acceleration and top speed of our robot. Additionally, some of these design parameters may become design requirements. For example, after performing all our calculations and selecting a motor we may consider the mass of the robot to be a design requirement; as in we must ensure the mass of robot does not exceed this value.</p>
 
