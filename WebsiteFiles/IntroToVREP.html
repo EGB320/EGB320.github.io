@@ -321,15 +321,15 @@ robotParameters.dribblerQuality = 1 			# specifies how good your dribbler is fro
 													<li> Remember your Python navigation script needs to be in the same folder as the vrep.py, vrepConst.py and the VREP remote API shared library file. The shared API library file you require depends on your OS.</li>
 												</ul>
 											</li>
-											<li>Remove the remoteApi.so file. This shared library file was compiled for the Ubuntu OS. Don't worry about removing the shared library files for Windos (.dll) or Mac (.dylib).</li>
-											<li>Rename the remoteApi_Pi.so to be remoteApi.so.
+											<li>Delete the remoteApi.so file; this was compiled for Ubuntu desktop and will conflict with our RPi version.</li>
+											<li>Rename the remoteApi_Pi.so to remoteApi.so.
 												<ul>
-													<li>If the remoteApi_Pi.so file is not located within that folder copy it from the VREP_PythonCode folder located in the downloadable zip file at the top of the page.</li>
+													<li>If the remoteApi_Pi.so file is not currently located within your navigation script folder, copy it from the VREP_PythonCode folder located in the downloadable zip file at the top of the page.</li>
 												</ul>
 											</li>
 											<li>Now ensure the Raspberry Pi and the computer you wish to run VREP on are on the same network (i.e. the QUT network).</li>
 											<li>Get the IP address of the computer you will be running VREP on.</li>
-											<li>On the Raspberry Pi within Python script change the IP address being passed into the VREP_SoccerBot class creation function. For example:
+											<li>On the Raspberry Pi, in your python navigation script, change the IP address being passed into the VREP_SoccerBot class creation function. For example:
 
 												<pre><code>soccerBotSim = VREP_SoccerBot('pc_ip_address', robotParameters, sceneParameters)</code></pre>
 
