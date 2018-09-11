@@ -12,8 +12,8 @@ from soccerbot_lib import *
 
 # SET SCENE PARAMETERS
 sceneParameters = SceneParameters()
-sceneParameters.ballStartingPosition = [0.5, 0] # starting position of the ball [x, y] (in metres)
-sceneParameters.obstacle0_StartingPosition = [0.7, 0.7]  # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
+sceneParameters.ballStartingPosition = [0.12, -0.8] # starting position of the ball [x, y] (in metres)
+sceneParameters.obstacle0_StartingPosition = [0, -0.6]  # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
 sceneParameters.obstacle1_StartingPosition = None   # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
 sceneParameters.obstacle2_StartingPosition = None   # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
 
@@ -51,45 +51,51 @@ if __name__ == '__main__':
 		soccerBotSim = VREP_SoccerBot('127.0.0.1', robotParameters, sceneParameters)
 		soccerBotSim.StartSimulator()
 
+		forwardVel = 0
+		rotationVel = 0.5
+
 
 		state = 'ball_search'
 		while True:
-			# check to see if ball is in dribbler
-			if soccerBotSim.BallInDribbler():
-				state = 'goal_search'
-			else:
-				state = 'ball_search'
+			# # check to see if ball is in dribbler
+			# if soccerBotSim.BallInDribbler():
+			# 	state = 'goal_search'
+			# else:
+			# 	state = 'ball_search'
 
-			# get detected objects
+			# # get detected objects
 			ballRangeBearing, blueGoalRangeBearing, yellowGoalRangeBearing, obstaclesRangeBearing = soccerBotSim.GetDetectedObjects()
 
+			if ballRangeBearing != None:
+				print("Ball in view")
 
-			# change action depending on state
-			if state == 'ball_search':
-				# move towards the ball or rotate until you can see it
-				if ballRangeBearing != None:
-					forwardVel = 0.25*ballRangeBearing[0]
-					rotationVel = 0.5*ballRangeBearing[1]
 
-					if forwardVel < soccerBotSim.robotParameters.minimumLinearSpeed:
-						forwardVel = soccerBotSim.robotParameters.minimumLinearSpeed
-				else:
-					forwardVel = 0
-					rotationVel = 0.5
+			# # change action depending on state
+			# if state == 'ball_search':
+			# 	# move towards the ball or rotate until you can see it
+			# 	if ballRangeBearing != None:
+			# 		forwardVel = 0.25*ballRangeBearing[0]
+			# 		rotationVel = 0.5*ballRangeBearing[1]
 
-			elif state == 'goal_search':
-				# either rotate to face blue goal, move towards goal, or kick
-				if blueGoalRangeBearing == None:
-					forwardVel = 0
-					rotationVel = 0.5
-				elif blueGoalRangeBearing[0] > 0.7:
-					forwardVel = 0.1*blueGoalRangeBearing[0]
-					rotationVel = 0.35*blueGoalRangeBearing[1]
+			# 		if forwardVel < soccerBotSim.robotParameters.minimumLinearSpeed:
+			# 			forwardVel = soccerBotSim.robotParameters.minimumLinearSpeed
+			# 	else:
+			# 		forwardVel = 0
+			# 		rotationVel = 0.5
 
-					if forwardVel < soccerBotSim.robotParameters.minimumLinearSpeed:
-						forwardVel = soccerBotSim.robotParameters.minimumLinearSpeed
-				else:
-					soccerBotSim.KickBall(0.25)
+			# elif state == 'goal_search':
+			# 	# either rotate to face blue goal, move towards goal, or kick
+			# 	if blueGoalRangeBearing == None:
+			# 		forwardVel = 0
+			# 		rotationVel = 0.5
+			# 	elif blueGoalRangeBearing[0] > 0.7:
+			# 		forwardVel = 0.1*blueGoalRangeBearing[0]
+			# 		rotationVel = 0.35*blueGoalRangeBearing[1]
+
+			# 		if forwardVel < soccerBotSim.robotParameters.minimumLinearSpeed:
+			# 			forwardVel = soccerBotSim.robotParameters.minimumLinearSpeed
+			# 	else:
+			# 		soccerBotSim.KickBall(0.25)
 
 			# Set Velocity
 			soccerBotSim.SetTargetVelocities(forwardVel, 0, rotationVel)
@@ -97,7 +103,7 @@ if __name__ == '__main__':
 			# Update Ball Position
 			soccerBotSim.UpdateBallPosition()
 
-	except (KeyboardInterrupt, SystemExit) as e:
+	except (KeyboardInterrupt) as e:
 		# attempt to stop simulator so it restarts and don't have to manually press the Stop button in VREP 
 		soccerBotSim.StopSimulator()
 

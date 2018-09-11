@@ -112,11 +112,8 @@ class VREP_SoccerBot(object):
 		yellowGoalRangeBearing = None
 		obstaclesRangeBearing = None
 
-
-		# check to see if ball is in field of view
-		inFOV, _range, _bearing = self.ObjectInCameraFOV(self.ballHandle, self.robotParameters.maxBallDetectionDistance)
-		if inFOV == True:
-			ballRangeBearing = [_range, _bearing]
+		# variables used to check for occlusion between obstacle and ball
+		obstacleViewLimits = None
 
 		# check to see if either goal is in field of view
 		inFOV, _range, _bearing = self.ObjectInCameraFOV(self.blueGoalHandle, self.robotParameters.maxGoalDetectionDistance)
@@ -131,9 +128,38 @@ class VREP_SoccerBot(object):
 		for ii in range(0, 3):
 			inFOV, _range, _bearing = self.ObjectInCameraFOV(self.obstacleHandles[ii], self.robotParameters.maxObstacleDetectionDistance)
 			if inFOV == True and self.ObstacleOutsideArena(ii) == False:
+				
+				# make obstaclesRangeBearing and obstacleViewLimits into empty lists
 				if obstaclesRangeBearing == None:
 					obstaclesRangeBearing = []
+				if obstacleViewLimits == None:
+					obstacleViewLimits = []
+				
 				obstaclesRangeBearing.append([_range, _bearing])
+
+				# determine view limits
+				beta = math.atan2(0.09, _range)
+				min_view = max(_bearing-beta, -(self.horizontalViewAngle/2.0))
+				max_view = min(_bearing+beta, (self.horizontalViewAngle/2.0))
+				# print('Range: %0.2f, View: [%0.2f, %0.2f]'%(_range, min_view, max_view))
+				obstacleViewLimits.append([_range, min_view, max_view, ii])
+
+
+		# check to see if ball is in field of view
+		inFOV, _range, _bearing = self.ObjectInCameraFOV(self.ballHandle, self.robotParameters.maxBallDetectionDistance)
+		if inFOV == True:
+			ballRangeBearing = [_range, _bearing]
+
+		# check to see if ball is occluded by an obstacle
+		if ballRangeBearing != None and obstaclesRangeBearing != None:
+			for ii in range(0, len(obstaclesRangeBearing)):
+				# check if ball is further away than obstacle
+				if ballRangeBearing[0] > obstaclesRangeBearing[ii][0]:
+					# check to see if ball inside view angle of obstacle
+					# print("Ball Angle: %0.2f, Obstacle Angles: %0.2f, %0.2f"%(ballRangeBearing[1], obstacleViewLimits[ii][1], obstacleViewLimits[ii][2]))
+					if ballRangeBearing[1] > obstacleViewLimits[ii][1] and ballRangeBearing[1] < obstacleViewLimits[ii][2]:
+						# print("Ball Occluded by Obstacle %d"%(obstacleViewLimits[ii][3]))
+						ballRangeBearing = None
 
 		return ballRangeBearing, blueGoalRangeBearing, yellowGoalRangeBearing, obstaclesRangeBearing
 	
@@ -236,6 +262,7 @@ class VREP_SoccerBot(object):
 
 		return False
 
+	
 	# Will attempt to fire the kicker plate. The kick plate will not be fired if the kicker plate
 	# has not reset itself (will reset automatically with time, takes approximately 1 second).
 	# inputs:
@@ -374,7 +401,6 @@ class VREP_SoccerBot(object):
 		return errorCode1, errorCode2, errorCode3
 
 
-			
 	# Get VREP Dribbler Handle
 	def GetdribblerMotorHandle(self):
 		errorCode, self.dribblerMotorHandle = vrep.simxGetObjectHandle(self.clientID, 'DribblerMotor', vrep.simx_opmode_oneshot_wait)
@@ -429,16 +455,22 @@ class VREP_SoccerBot(object):
 		if self.sceneParameters.obstacle0_StartingPosition != None:
 			vrepStartingPosition = [self.sceneParameters.obstacle0_StartingPosition[0], self.sceneParameters.obstacle0_StartingPosition[1], 0.8125]
 			vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[0], -1, vrepStartingPosition, vrep.simx_opmode_oneshot_wait)
+		else:
+			vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[0], -1, [2, 0, 0.8125], vrep.simx_opmode_oneshot_wait)
 			
 		# move obstacle 1 to starting position
 		if self.sceneParameters.obstacle1_StartingPosition != None:
 			vrepStartingPosition = [self.sceneParameters.obstacle1_StartingPosition[0], self.sceneParameters.obstacle1_StartingPosition[1], 0.8125]
 			vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[1], -1, vrepStartingPosition, vrep.simx_opmode_oneshot_wait)
+		else:
+			vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[1], -1, [2, -0.3, 0.8125], vrep.simx_opmode_oneshot_wait)
 			
 		# move obstacle 2 to starting position
 		if self.sceneParameters.obstacle2_StartingPosition != None:
 			vrepStartingPosition = [self.sceneParameters.obstacle2_StartingPosition[0], self.sceneParameters.obstacle2_StartingPosition[1], 0.8125]
 			vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[2], -1, vrepStartingPosition, vrep.simx_opmode_oneshot_wait)
+		else:
+			vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[2], -1, [2, -0.6, 0.8125], vrep.simx_opmode_oneshot_wait)
 			
 
 	### CAMERA FUNCTIONS ###
@@ -529,10 +561,7 @@ class VREP_SoccerBot(object):
 
 		# check range is not to far away
 		if _range > maxViewDistance:
-			return False, 0, 0
-
-		# UNTESTED CODE
-		
+			return False, 0, 0		
 
 		# check to see if in field of view
 		if abs(horizontalAngle) > (self.horizontalViewAngle/2.0):
