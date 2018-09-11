@@ -1,1 +1,0 @@
-/usr/bin/cc  -fPIC   -shared -Wl,-soname,libRemoteApi.so -o lib/libRemoteApi.so CMakeFiles/RemoteApi.dir/extApiPlatform.c.o CMakeFiles/RemoteApi.dir/extApi.c.o 

@@ -12,10 +12,10 @@ from soccerbot_lib import *
 
 # SET SCENE PARAMETERS
 sceneParameters = SceneParameters()
-sceneParameters.ballStartingPosition = [0.12, -0.8] # starting position of the ball [x, y] (in metres)
-sceneParameters.obstacle0_StartingPosition = [0, -0.6]  # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
-sceneParameters.obstacle1_StartingPosition = None   # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
-sceneParameters.obstacle2_StartingPosition = None   # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
+sceneParameters.ballStartingPosition = [0.56, -0.76] # starting position of the ball [x, y] (in metres)
+sceneParameters.obstacle0_StartingPosition = [0.32, -0.49]  # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
+sceneParameters.obstacle1_StartingPosition = [0.26, -0.68]   # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
+sceneParameters.obstacle2_StartingPosition = [-0.41, -0.73]   # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
 
 
 # SET ROBOT PARAMETERS
@@ -23,7 +23,7 @@ robotParameters = RobotParameters()
 
 # Drive Parameters
 robotParameters.driveType = 'differential'
-robotParameters.minimumLinearSpeed = 0.04  	# minimum speed at which your robot can move forward in m/s
+robotParameters.minimumLinearSpeed = 0.0  	# minimum speed at which your robot can move forward in m/s
 robotParameters.maximumLinearSpeed = 0.25 	# maximum speed at which your robot can move forward in m/s
 robotParameters.driveSystemQuality = 1	# specifies how good your drive system is from 0 to 1 (with 1 being able to drive in a perfectly straight line when a told to do so)
 
@@ -52,11 +52,14 @@ if __name__ == '__main__':
 		soccerBotSim.StartSimulator()
 
 		forwardVel = 0
-		rotationVel = 0.5
+		rotationVel = 0.1
 
 
 		state = 'ball_search'
 		while True:
+			# soccerBotSim.WallDetection()
+			# time.sleep(1)
+
 			# # check to see if ball is in dribbler
 			# if soccerBotSim.BallInDribbler():
 			# 	state = 'goal_search'
@@ -65,9 +68,6 @@ if __name__ == '__main__':
 
 			# # get detected objects
 			ballRangeBearing, blueGoalRangeBearing, yellowGoalRangeBearing, obstaclesRangeBearing = soccerBotSim.GetDetectedObjects()
-
-			if ballRangeBearing != None:
-				print("Ball in view")
 
 
 			# # change action depending on state

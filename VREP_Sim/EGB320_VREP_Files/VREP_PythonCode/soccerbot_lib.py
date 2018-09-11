@@ -151,17 +151,123 @@ class VREP_SoccerBot(object):
 			ballRangeBearing = [_range, _bearing]
 
 		# check to see if ball is occluded by an obstacle
-		if ballRangeBearing != None and obstaclesRangeBearing != None:
-			for ii in range(0, len(obstaclesRangeBearing)):
+		if ballRangeBearing != None and obstacleViewLimits != None:
+			for obs in obstacleViewLimits:
 				# check if ball is further away than obstacle
-				if ballRangeBearing[0] > obstaclesRangeBearing[ii][0]:
+				if ballRangeBearing != None and ballRangeBearing[0] > obs[0]:
 					# check to see if ball inside view angle of obstacle
-					# print("Ball Angle: %0.2f, Obstacle Angles: %0.2f, %0.2f"%(ballRangeBearing[1], obstacleViewLimits[ii][1], obstacleViewLimits[ii][2]))
-					if ballRangeBearing[1] > obstacleViewLimits[ii][1] and ballRangeBearing[1] < obstacleViewLimits[ii][2]:
-						# print("Ball Occluded by Obstacle %d"%(obstacleViewLimits[ii][3]))
+					# print("Ball Angle: %0.2f, Obstacle Angles: %0.2f, %0.2f"%(ballRangeBearing[1], obs[1], obs[2]))
+					if ballRangeBearing[1] > obs[1] and ballRangeBearing[1] < obs[2]:
+						# print("Ball Occluded by Obstacle %d"%(obs[3]))
 						ballRangeBearing = None
+						break
 
 		return ballRangeBearing, blueGoalRangeBearing, yellowGoalRangeBearing, obstaclesRangeBearing
+
+
+	def WallDetection(self):
+
+		wallPoints = []
+
+		# get position of camera in global coordinates
+		errorCode, position = vrep.simxGetObjectPosition(self.clientID, self.cameraHandle, -1, vrep.simx_opmode_oneshot_wait)
+		errorCode, orientation = vrep.simxGetObjectOrientation(self.clientID, self.robotHandle, -1, vrep.simx_opmode_oneshot_wait)
+		if errorCode != 0:
+			# return empty wallPoints list
+			return wallPoints
+
+		# 2D pose of the camera
+		cameraPose = [position[0], position[1], orientation[2]]
+		# print cameraPose
+		
+		# get range and bearing to each corner
+		_range, _bearing = self.FieldCornerRangeBearing(cameraPose, [1, 1])
+		_range, _bearing = self.FieldCornerRangeBearing(cameraPose, [-1, 1])
+		_range, _bearing = self.FieldCornerRangeBearing(cameraPose, [-1, -1])
+		_range, _bearing = self.FieldCornerRangeBearing(cameraPose, [1, -1])
+
+		p1, p2, centreRange = self.CameraViewWallIntersectionPoints(cameraPose, 'east')
+		if p1 != None:
+			wallPoints.append(p1)
+		if p2 != None:
+			wallPoints.append(p2)
+
+		p1, p2, centreRange = self.CameraViewWallIntersectionPoints(cameraPose, 'north')
+		if p1 != None:
+			wallPoints.append(p1)
+		if p2 != None:
+			wallPoints.append(p2)
+
+		p1, p2, centreRange = self.CameraViewWallIntersectionPoints(cameraPose, 'west')
+		if p1 != None:
+			wallPoints.append(p1)
+		if p2 != None:
+			wallPoints.append(p2)
+
+		p1, p2, centreRange = self.CameraViewWallIntersectionPoints(cameraPose, 'south')
+		if p1 != None:
+			wallPoints.append(p1)
+		if p2 != None:
+			wallPoints.append(p2)
+
+		print wallPoints
+
+
+	def FieldCornerRangeBearing(self, cameraPose, cornerPosition):
+		_range = math.sqrt(math.pow(cameraPose[0]-cornerPosition[0], 2) + math.pow(cameraPose[1]-cornerPosition[1], 2))
+		_bearing = math.atan2(cornerPosition[1]-cameraPose[1], cornerPosition[0]-cameraPose[0]) - cameraPose[2]
+
+		# print("Corner: (%.2f, %.2f), Range: %.2f, Bearing: %.2f"%(cornerPosition[0], cornerPosition[1], _range, _bearing))
+
+		return _range, _bearing
+
+
+	def CameraViewWallIntersectionPoints(self, cameraPose, wall):
+		if wall == 'east':
+			x = 1
+			y = (x - cameraPose[0]) * math.tan(cameraPose[2]) + cameraPose[1]
+		
+		elif wall == 'north':
+			y = 1
+			x = (y - cameraPose[1]) / math.tan(cameraPose[2]) + cameraPose[0]
+
+		elif wall == 'west':
+			x = -1
+			y = (x - cameraPose[0]) * math.tan(cameraPose[2]) + cameraPose[1]
+
+		elif wall == 'south':
+			y = -1
+			x = (y - cameraPose[1]) / math.tan(cameraPose[2]) + cameraPose[0]
+
+		# calculate range to wall along camera's axis
+		centreRange = math.sqrt(math.pow(cameraPose[0]-x, 2) + math.pow(cameraPose[1]-y, 2))
+
+		# # calculate range to camera view limit points
+		range1 = centreRange*math.sin(math.pi/2.0 + cameraPose[2]) / math.sin(math.pi/2.0 - self.horizontalViewAngle/2.0 - cameraPose[2])
+		range2 = centreRange*math.sin(math.pi/2.0 - cameraPose[2]) / math.sin(math.pi/2.0 - self.horizontalViewAngle/2.0 + cameraPose[2])
+		# print(wall + ' Wall Point: (%.2f, %.2f), Centre Range: %.2f, View Limit Ranges: (%.2f, %.2f)'%(x, y, centreRange, range1, range2))
+
+		# determine intersection points on wall
+		d1 = centreRange*math.sin(self.horizontalViewAngle/2.0) / math.sin(math.pi/2.0 - self.horizontalViewAngle/2.0 - cameraPose[2])
+		d2 = centreRange*math.sin(self.horizontalViewAngle/2.0) / math.sin(math.pi/2.0 - self.horizontalViewAngle/2.0 + cameraPose[2])
+
+		if wall == 'east' or wall == 'west':
+			p1 = [x, y+d1]
+			p2 = [x, y-d2]
+		elif wall == 'north' or wall == 'south':
+			p1 = [x+d1, y]
+			p2 = [x-d2, y]
+		# print(wall + ' Wall Point 1: (%.2f, %.2f), Wall Point 2: (%.2f, %.2f)' %(p1[0], p1[1], p2[0], p2[1]))
+
+		# make sure p1 is within bounds
+		if not(p1[0] >= -1 and p1[0] <= 1 and p1[1] >= -1 and p1[1] <= 1):
+			p1 = None
+		# make sure p2 is within bounds
+		if not(p2[0] >= -1 and p2[0] <= 1 and p2[1] >= -1 and p2[1] <= 1):
+			p2 = None
+
+		return p1, p2, centreRange
+	
 	
 	# Set Target Velocities
 	# inputs:
@@ -251,7 +357,6 @@ class VREP_SoccerBot(object):
 				print('Failed to set left and/or right motor speed. Error code %d'%errorCode)
 
 
-
 	# Returns true if the ball is within the dribbler
 	# returns:
 	#	true - if ball is in the dribbler
@@ -299,8 +404,6 @@ class VREP_SoccerBot(object):
 			vrep.simxSetObjectPosition(self.clientID, self.ballHandle, -1, [0,0,0.725], vrep.simx_opmode_oneshot_wait)
 
 
-
-
 	#########################################
 	####### VREP API SERVER FUNCTIONS #######
 	#########################################
@@ -327,42 +430,42 @@ class VREP_SoccerBot(object):
 		# attempt to get vrep object handles
 		errorCode = self.GetRobotHandle()
 		if errorCode != 0:
-			print('Failed to get Robot object handle. Terminating Program.')
+			print('Failed to get Robot object handle. Terminating Program. Error Code %d'%(errorCode))
 			sys.exit(-1)
 
 		errorCode = self.GetCameraHandle()
 		if errorCode != 0:
-			print('Failed to get Vision Sensor object handle. Terminating Program.')
+			print('Failed to get Vision Sensor object handle. Terminating Program. Error Code %d'%(errorCode))
 			sys.exit(-1)
 
 		errorCode1, errorCode2, errorCode3 = self.GetMotorHandles()
 		if errorCode1 != 0 or errorCode2 != 0 or errorCode3 != 0:
-			print('Failed to get Motor object handles. Terminating Program.')
+			print('Failed to get Motor object handles. Terminating Program. Error Codes %d, %d, %d'%(errorCode1, errorCode2, errorCode3))
 			sys.exit(-1)
 
 		errorCode = self.GetdribblerMotorHandle()
 		if errorCode != 0:
-			print('Failed to get Dribbler object handle. Terminating Program.')
+			print('Failed to get Dribbler object handle. Terminating Program. Error Code %d'%(errorCode))
 			sys.exit(-1)
 
 		errorCode = self.GetkickerHandle()
 		if errorCode != 0:
-			print('Failed to get Kicker object handle. Terminating Program.')
+			print('Failed to get Kicker object handle. Terminating Program. Error Code %d'%(errorCode))
 			sys.exit(-1)
 
 		errorCode = self.GetBallHandle()
 		if errorCode != 0:
-			print('Failed to get Ball object handle. Terminating Program.')
+			print('Failed to get Ball object handle. Terminating Program. Error Code %d'%(errorCode))
 			sys.exit(-1)
 
 		blueErrorCode, yellowErrorCode = self.GetGoalHandles()
 		if blueErrorCode != 0 or yellowErrorCode != 0:
-			print('Failed to get Motor object handles. Terminating Program.')
+			print('Failed to get Motor object handles. Terminating Program. Error Codes %d, %d'%(blueErrorCode, yellowErrorCode))
 			sys.exit(-1)
 
 		obs0ErrorCode, obs1ErrorCode, obs2ErrorCode = self.GetObstacleHandles()
 		if obs0ErrorCode != 0 or obs1ErrorCode != 0 or obs2ErrorCode != 0:
-			print('Failed to get Obstacle object handles. Terminating Program.')
+			print('Failed to get Obstacle object handles. Terminating Program. Error Codes %d, %d, %d'%(obs0ErrorCode, obs1ErrorCode, obs2ErrorCode))
 			sys.exit(-1)
 
 
@@ -432,6 +535,14 @@ class VREP_SoccerBot(object):
 		obs1ErrorCode, self.obstacleHandles[1] = vrep.simxGetObjectHandle(self.clientID, 'Obstacle_1', vrep.simx_opmode_oneshot_wait)
 		obs2ErrorCode, self.obstacleHandles[2] = vrep.simxGetObjectHandle(self.clientID, 'Obstacle_2', vrep.simx_opmode_oneshot_wait)
 		return obs0ErrorCode, obs1ErrorCode, obs2ErrorCode
+
+
+	# def GetWallHandles(self):
+	# 	eastWallErrorCode, self.eastWall = vrep.simxGetObjectHandle(self.clientID, 'Obstacle_0', vrep.simx_opmode_oneshot_wait)
+	# 	northWallErrorCode, self.northWall = vrep.simxGetObjectHandle(self.clientID, 'Obstacle_1', vrep.simx_opmode_oneshot_wait)
+	# 	westWallErrorCode, self.westWall = vrep.simxGetObjectHandle(self.clientID, 'Obstacle_2', vrep.simx_opmode_oneshot_wait)
+	# 	southWallErrorCode, self.southWall = vrep.simxGetObjectHandle(self.clientID, 'Obstacle_2', vrep.simx_opmode_oneshot_wait)
+	# 	return eastWallErrorCode, northWallErrorCode, westWallErrorCode, southWallErrorCode
 
 	###############################################
 	####### ROBOT AND SCENE SETUP FUNCTIONS #######
