@@ -13,9 +13,9 @@ from soccerbot_lib import *
 # SET SCENE PARAMETERS
 sceneParameters = SceneParameters()
 sceneParameters.ballStartingPosition = [0.56, -0.76] # starting position of the ball [x, y] (in metres)
-sceneParameters.obstacle0_StartingPosition = [0.32, -0.49]  # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
-sceneParameters.obstacle1_StartingPosition = [0.26, -0.68]   # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
-sceneParameters.obstacle2_StartingPosition = [-0.41, -0.73]   # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
+sceneParameters.obstacle0_StartingPosition = None  # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
+sceneParameters.obstacle1_StartingPosition = None   # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
+sceneParameters.obstacle2_StartingPosition = None   # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
 
 
 # SET ROBOT PARAMETERS
@@ -52,13 +52,15 @@ if __name__ == '__main__':
 		soccerBotSim.StartSimulator()
 
 		forwardVel = 0
-		rotationVel = 0.1
+		rotationVel = 0
 
 
 		state = 'ball_search'
 		while True:
-			# soccerBotSim.WallDetection()
-			# time.sleep(1)
+			wallPoints = soccerBotSim.WallDetection()
+			print("\n\nWall Intersection Points: "),
+			print wallPoints
+			time.sleep(1)
 
 			# # check to see if ball is in dribbler
 			# if soccerBotSim.BallInDribbler():
@@ -67,7 +69,7 @@ if __name__ == '__main__':
 			# 	state = 'ball_search'
 
 			# # get detected objects
-			ballRangeBearing, blueGoalRangeBearing, yellowGoalRangeBearing, obstaclesRangeBearing = soccerBotSim.GetDetectedObjects()
+			# ballRangeBearing, blueGoalRangeBearing, yellowGoalRangeBearing, obstaclesRangeBearing = soccerBotSim.GetDetectedObjects()
 
 
 			# # change action depending on state

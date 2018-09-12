@@ -164,7 +164,15 @@ class VREP_SoccerBot(object):
 
 		return ballRangeBearing, blueGoalRangeBearing, yellowGoalRangeBearing, obstaclesRangeBearing
 
-
+	
+	# Gets the Range and Bearing to all valid wall points at the camera's view limits. A valid point is one that is on the arena wall on the 
+	# limit of the camera's field of view and that is at least a minimum distance away.
+	# returns:
+	#	None - if there are no valid wall points (i.e. the robot is right up against a wall and facing it)
+	#	A list of [range, bearing] arrays. There will either be 1, 2, or 3 [range, bearing] arrays depending on the situation
+	#		will return 1 if the robot is close to a wall but not directly facing it and one edge of the camera's view limit is up against the wall, while the other can see part of the field
+	#		will return 2 if the robot can see the wall but is not facing a corner
+	#		will return 3 if the robot can see the wall and is facing into a corner
 	def WallDetection(self):
 
 		wallPoints = []
@@ -178,97 +186,23 @@ class VREP_SoccerBot(object):
 
 		# 2D pose of the camera
 		cameraPose = [position[0], position[1], orientation[2]]
-		# print cameraPose
 		
-		# get range and bearing to each corner
-		_range, _bearing = self.FieldCornerRangeBearing(cameraPose, [1, 1])
-		_range, _bearing = self.FieldCornerRangeBearing(cameraPose, [-1, 1])
-		_range, _bearing = self.FieldCornerRangeBearing(cameraPose, [-1, -1])
-		_range, _bearing = self.FieldCornerRangeBearing(cameraPose, [1, -1])
+		# Get range and bearing to the valid points at limit of camera's view (no occlusions)
+		wallPoints = self.CameraViewLimitsRangeAndBearing(cameraPose)
+		if wallPoints == None:
+			# return None to indicate to close to wall or because some maths error and didn't get 1 or 2 valid intersection points 
+			# (hopefully a maths error doesn't occur and believe all cases have been taken care of)
+			return None
 
-		p1, p2, centreRange = self.CameraViewWallIntersectionPoints(cameraPose, 'east')
-		if p1 != None:
-			wallPoints.append(p1)
-		if p2 != None:
-			wallPoints.append(p2)
+		# See if a corner is within the field of view (no occlusions)
+		cornerRangeBearing = self.FieldCornerRangeBearing(cameraPose)
+		if cornerRangeBearing == []:
+			return wallPoints
 
-		p1, p2, centreRange = self.CameraViewWallIntersectionPoints(cameraPose, 'north')
-		if p1 != None:
-			wallPoints.append(p1)
-		if p2 != None:
-			wallPoints.append(p2)
-
-		p1, p2, centreRange = self.CameraViewWallIntersectionPoints(cameraPose, 'west')
-		if p1 != None:
-			wallPoints.append(p1)
-		if p2 != None:
-			wallPoints.append(p2)
-
-		p1, p2, centreRange = self.CameraViewWallIntersectionPoints(cameraPose, 'south')
-		if p1 != None:
-			wallPoints.append(p1)
-		if p2 != None:
-			wallPoints.append(p2)
-
-		print wallPoints
-
-
-	def FieldCornerRangeBearing(self, cameraPose, cornerPosition):
-		_range = math.sqrt(math.pow(cameraPose[0]-cornerPosition[0], 2) + math.pow(cameraPose[1]-cornerPosition[1], 2))
-		_bearing = math.atan2(cornerPosition[1]-cameraPose[1], cornerPosition[0]-cameraPose[0]) - cameraPose[2]
-
-		# print("Corner: (%.2f, %.2f), Range: %.2f, Bearing: %.2f"%(cornerPosition[0], cornerPosition[1], _range, _bearing))
-
-		return _range, _bearing
-
-
-	def CameraViewWallIntersectionPoints(self, cameraPose, wall):
-		if wall == 'east':
-			x = 1
-			y = (x - cameraPose[0]) * math.tan(cameraPose[2]) + cameraPose[1]
+		wallPoints.append(cornerRangeBearing)
+		return wallPoints
 		
-		elif wall == 'north':
-			y = 1
-			x = (y - cameraPose[1]) / math.tan(cameraPose[2]) + cameraPose[0]
 
-		elif wall == 'west':
-			x = -1
-			y = (x - cameraPose[0]) * math.tan(cameraPose[2]) + cameraPose[1]
-
-		elif wall == 'south':
-			y = -1
-			x = (y - cameraPose[1]) / math.tan(cameraPose[2]) + cameraPose[0]
-
-		# calculate range to wall along camera's axis
-		centreRange = math.sqrt(math.pow(cameraPose[0]-x, 2) + math.pow(cameraPose[1]-y, 2))
-
-		# # calculate range to camera view limit points
-		range1 = centreRange*math.sin(math.pi/2.0 + cameraPose[2]) / math.sin(math.pi/2.0 - self.horizontalViewAngle/2.0 - cameraPose[2])
-		range2 = centreRange*math.sin(math.pi/2.0 - cameraPose[2]) / math.sin(math.pi/2.0 - self.horizontalViewAngle/2.0 + cameraPose[2])
-		# print(wall + ' Wall Point: (%.2f, %.2f), Centre Range: %.2f, View Limit Ranges: (%.2f, %.2f)'%(x, y, centreRange, range1, range2))
-
-		# determine intersection points on wall
-		d1 = centreRange*math.sin(self.horizontalViewAngle/2.0) / math.sin(math.pi/2.0 - self.horizontalViewAngle/2.0 - cameraPose[2])
-		d2 = centreRange*math.sin(self.horizontalViewAngle/2.0) / math.sin(math.pi/2.0 - self.horizontalViewAngle/2.0 + cameraPose[2])
-
-		if wall == 'east' or wall == 'west':
-			p1 = [x, y+d1]
-			p2 = [x, y-d2]
-		elif wall == 'north' or wall == 'south':
-			p1 = [x+d1, y]
-			p2 = [x-d2, y]
-		# print(wall + ' Wall Point 1: (%.2f, %.2f), Wall Point 2: (%.2f, %.2f)' %(p1[0], p1[1], p2[0], p2[1]))
-
-		# make sure p1 is within bounds
-		if not(p1[0] >= -1 and p1[0] <= 1 and p1[1] >= -1 and p1[1] <= 1):
-			p1 = None
-		# make sure p2 is within bounds
-		if not(p2[0] >= -1 and p2[0] <= 1 and p2[1] >= -1 and p2[1] <= 1):
-			p2 = None
-
-		return p1, p2, centreRange
-	
-	
 	# Set Target Velocities
 	# inputs:
 	#	x - the velocity of the robot in the forward direction (in m/s)
@@ -695,6 +629,178 @@ class VREP_SoccerBot(object):
 
 		return True
 
+	
+	# Gets the range and bearing to a corner that is within the camera's field of view.
+	# Will only return a single corner, as only one corner can be in the field of view with the current setup.
+	# returns:
+	#	a list containing a [range, bearing] or an empty list if no corner is within the field of view
+	def FieldCornerRangeBearing(self, cameraPose):
+		rangeAndBearing = []
+
+		# Get range and bearing from camera's pose to each corner
+		_range, _bearing = self.GetRangeAndBearingFromPoseAndPoint(cameraPose, [1, 1])
+		if abs(_bearing) < (self.horizontalViewAngle/2.0):
+			rangeAndBearing = [_range, _bearing]
+
+		_range, _bearing = self.GetRangeAndBearingFromPoseAndPoint(cameraPose, [-1, 1])
+		if abs(_bearing) < (self.horizontalViewAngle/2.0):
+			rangeAndBearing = [_range, _bearing]
+
+		_range, _bearing = self.GetRangeAndBearingFromPoseAndPoint(cameraPose, [-1, -1])
+		if abs(_bearing) < (self.horizontalViewAngle/2.0):
+			rangeAndBearing = [_range, _bearing]
+
+		_range, _bearing = self.GetRangeAndBearingFromPoseAndPoint(cameraPose, [1, -1])
+		if abs(_bearing) < (self.horizontalViewAngle/2.0):
+			rangeAndBearing = [_range, _bearing]
+
+		return rangeAndBearing
+
+
+	# Gets the range and bearing to the camera's field of view limits.
+	# returns:
+	#	None - if there are no valid wall points (i.e. the robot is right up against a wall and facing it)
+	#	A list of [range, bearing] arrays. There will either be 1 or 2 [range, bearing] arrays depending on the situation
+	#		will return 1 if the robot is close to a wall but not directly facing it and one edge of the camera's view limit is up against the wall, while the other can see part of the field
+	#		will return 2 if the robot can see the wall but is not facing a corner
+	def CameraViewLimitsRangeAndBearing(self, cameraPose):
+		viewLimitIntersectionPoints = []
+		rangeAndBearings = []
+
+		# Get valid camera view limit points along the east wall (yellow goal wall)
+		p1, p2 = self.CameraViewLimitWallIntersectionPoints(cameraPose, 'east')
+		if p1 != None:
+			viewLimitIntersectionPoints.append(p1)
+		if p2 != None:
+			viewLimitIntersectionPoints.append(p2)
+
+		# Get valid camera view limit points along the north wall (wall in positive y-direction)
+		p1, p2 = self.CameraViewLimitWallIntersectionPoints(cameraPose, 'north')
+		if p1 != None:
+			viewLimitIntersectionPoints.append(p1)
+		if p2 != None:
+			viewLimitIntersectionPoints.append(p2)
+
+		# Get valid camera view limit points along the west wall (blue goal wall)
+		p1, p2 = self.CameraViewLimitWallIntersectionPoints(cameraPose, 'west')
+		if p1 != None:
+			viewLimitIntersectionPoints.append(p1)
+		if p2 != None:
+			viewLimitIntersectionPoints.append(p2)
+
+		# Get valid camera view limit points along the south wall (wall in negative y-direction)
+		p1, p2 = self.CameraViewLimitWallIntersectionPoints(cameraPose, 'south')
+		if p1 != None:
+			viewLimitIntersectionPoints.append(p1)
+		if p2 != None:
+			viewLimitIntersectionPoints.append(p2)
+
+		# Calculate range and bearing to the valid view limit wall intersection points and store in a list
+		for point in viewLimitIntersectionPoints:
+			_range, _bearing = self.GetRangeAndBearingFromPoseAndPoint(cameraPose, point)
+			rangeAndBearings.append([_range, _bearing])
+
+		# return None if rangeAndBearings list is empty
+		if rangeAndBearings == []:
+			return None
+		else:
+			return rangeAndBearings
+
+	
+	# Gets the point where the camera's view limit intersects with the specified wall.
+	# inputs:
+	#	cameraPose - pose of the camera [x, y, theta] in the global coordinate frame (centre of the field with x pointed towards yellow goal, and blue pointing across the field, and z point to the sky)
+	# 	wall - wall want to get the camera view limit points of ('east', 'west', 'north', 'south'). East = yellow goal wall, west = blue goal wall, north = positive y axis wall, south = negative y axis wall
+	# returns:
+	#	p1 - will be [x,y] point if it is a valid wall point (i.e. lies on the arena's walls and is within the field of view) or None if it is not valid
+	#	p2 - will be [x,y] point if it is a valid wall point (i.e. lies on the arena's walls and is within the field of view) or None if it is not valid
+	def CameraViewLimitWallIntersectionPoints(self, cameraPose, wall):
+		
+		# calculate range to wall along camera's axis using the point where the camera's axis intersects with the specified wall
+		x, y = self.CameraViewAxisWallIntersectionPoint(cameraPose, wall)
+		centreRange = math.sqrt(math.pow(cameraPose[0]-x, 2) + math.pow(cameraPose[1]-y, 2))
+
+
+		# determine camera view limit intersection points on wall
+		if wall == 'east' or wall == 'west':
+			d1 = centreRange*math.sin(self.horizontalViewAngle/2.0) / math.sin(math.pi/2.0 - self.horizontalViewAngle/2.0 - cameraPose[2])
+			d2 = centreRange*math.sin(self.horizontalViewAngle/2.0) / math.sin(math.pi/2.0 - self.horizontalViewAngle/2.0 + cameraPose[2])
+		elif wall == 'north' or wall == 'south':
+			d1 = centreRange*math.sin(self.horizontalViewAngle/2.0) / math.sin(math.pi - self.horizontalViewAngle/2.0 - cameraPose[2])
+			d2 = centreRange*math.sin(self.horizontalViewAngle/2.0) / math.sin(cameraPose[2] - self.horizontalViewAngle/2.0)
+
+
+		# add d1 and d2 (or subtract) to the camera's axis wall intersection point (add/subtract and x/y depends on wall)
+		if wall == 'east' or wall == 'west':
+			p1 = [x, y+d1]
+			p2 = [x, y-d2]
+		elif wall == 'north' or wall == 'south':
+			p1 = [x-d1, y]
+			p2 = [x+d2, y]
+
+		# determine camera view limit intersection point range and bearings relative to camera
+		range1, bearing1 = self.GetRangeAndBearingFromPoseAndPoint(cameraPose, p1)
+		range2, bearing2 = self.GetRangeAndBearingFromPoseAndPoint(cameraPose, p2)
+
+		# Check that the two view limit intersection points are valid (i.e. occur on the arena boundary and not outside, that the bearing is within view and the range is greater than a minimum distance)
+		# Need to add small percentage to the angle due to the numerical evaluation of VREP this is to ensure that after checking against all walls that 2 points are returned this is where the *1.05 comes from
+		# make sure p1 is within bounds and that bearing is valid
+		if (p1[0] < -1 or p1[0] > 1 or p1[1] < -1 or p1[1] > 1):
+			p1 = None
+		elif abs(bearing1) > (self.horizontalViewAngle/2.0)*1.05:
+			p1 = None
+		elif range1 < self.robotParameters.minWallDetectionDistance:
+			p1 = None
+		
+		# make sure p2 is within bounds
+		if (p2[0] < -1 or p2[0] > 1 or p2[1] < -1 or p2[1] > 1):
+			p2 = None
+		elif abs(bearing2) > (self.horizontalViewAngle/2.0)*1.05:
+			p2 = None
+		elif range2 < self.robotParameters.minWallDetectionDistance:
+			p2 = None
+
+		return p1, p2
+
+
+	# Gets the point where the camera's view axis (centre of image) intersects with the specified wall.
+	# inputs:
+	#	cameraPose - pose of the camera [x, y, theta] in the global coordinate frame (centre of the field with x pointed towards yellow goal, and blue pointing across the field, and z point to the sky)
+	# 	wall - wall want to get the camera view limit points of ('east', 'west', 'north', 'south'). East = yellow goal wall, west = blue goal wall, north = positive y axis wall, south = negative y axis wall
+	# returns:
+	#	x - the x coordinate where the camera's axis intersects with the specified wall
+	#	y - the y coordinate where the camera's axis intersects with the specified wall
+	def CameraViewAxisWallIntersectionPoint(self, cameraPose, wall):
+		if wall == 'east':
+			x = 1
+			y = (x - cameraPose[0]) * math.tan(cameraPose[2]) + cameraPose[1]
+		
+		elif wall == 'north':
+			y = 1
+			x = (y - cameraPose[1]) / math.tan(cameraPose[2]) + cameraPose[0]
+
+		elif wall == 'west':
+			x = -1
+			y = (x - cameraPose[0]) * math.tan(cameraPose[2]) + cameraPose[1]
+
+		elif wall == 'south':
+			y = -1
+			x = (y - cameraPose[1]) / math.tan(cameraPose[2]) + cameraPose[0]
+
+		return x, y
+	
+
+	# Wraps input value to be between -pi and pi
+	def WrapToPi(self, radians):
+		return ((radians + math.pi) % (2* math.pi) - math.pi)
+
+	# Gets the range and bearing given a pose and a point. 
+	# The bearing will be relative to the pose's angle
+	def GetRangeAndBearingFromPoseAndPoint(self, pose, point):
+		_range = math.sqrt(math.pow(pose[0] - point[0], 2) + math.pow(pose[1] - point[1], 2))
+		_bearing = self.WrapToPi(math.atan2((point[1]-pose[1]), (point[0]-pose[0])) - pose[2])
+
+		return _range, _bearing
 
 
 ####################################
@@ -749,6 +855,7 @@ class RobotParameters(object):
 		self.maxBallDetectionDistance = 1 # the maximum distance away that you can detect the ball in metres
 		self.maxGoalDetectionDistance = 2.5 # the maximum distance away that you can detect the goals in metres
 		self.maxObstacleDetectionDistance = 1.5 # the maximum distance away that you can detect the obstacles in metres
+		self.minWallDetectionDistance = 0.1 # the minimum distance away from a wall that you have to be to be able to detect it
 
 		# Dribbler Parameters
 		self.dribblerQuality = 1.0 # specifies how good your dribbler is from 0 to 1.0 (with 1.0 being awesome and 0 being non-existent)
