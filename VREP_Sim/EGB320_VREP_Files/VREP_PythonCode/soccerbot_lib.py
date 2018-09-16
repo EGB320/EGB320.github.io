@@ -127,22 +127,25 @@ class VREP_SoccerBot(object):
 		# check to see if any obstacles are in field of view
 		for ii in range(0, 3):
 			inFOV, _range, _bearing = self.ObjectInCameraFOV(self.obstacleHandles[ii], self.robotParameters.maxObstacleDetectionDistance)
+
+			# ensure obstacleViewLimits into empty list
+			if obstacleViewLimits == None:
+					obstacleViewLimits = []
+
+			# determine view limits
+			beta = math.atan2(0.09, _range)
+			min_view = max(_bearing-beta, -(self.horizontalViewAngle/2.0))
+			max_view = min(_bearing+beta, (self.horizontalViewAngle/2.0))
+			# print('Range: %0.2f, View: [%0.2f, %0.2f]'%(_range, min_view, max_view))
+			obstacleViewLimits.append([_range, min_view, max_view, ii])
+
 			if inFOV == True and self.ObstacleOutsideArena(ii) == False:
 				
-				# make obstaclesRangeBearing and obstacleViewLimits into empty lists
+				# make obstaclesRangeBearing into empty lists
 				if obstaclesRangeBearing == None:
 					obstaclesRangeBearing = []
-				if obstacleViewLimits == None:
-					obstacleViewLimits = []
 				
 				obstaclesRangeBearing.append([_range, _bearing])
-
-				# determine view limits
-				beta = math.atan2(0.09, _range)
-				min_view = max(_bearing-beta, -(self.horizontalViewAngle/2.0))
-				max_view = min(_bearing+beta, (self.horizontalViewAngle/2.0))
-				# print('Range: %0.2f, View: [%0.2f, %0.2f]'%(_range, min_view, max_view))
-				obstacleViewLimits.append([_range, min_view, max_view, ii])
 
 
 		# check to see if ball is in field of view
@@ -606,16 +609,16 @@ class VREP_SoccerBot(object):
 
 		# check range is not to far away
 		if _range > maxViewDistance:
-			return False, 0, 0		
+			return False, _range, horizontalAngle		
 
 		# check to see if in field of view
 		if abs(horizontalAngle) > (self.horizontalViewAngle/2.0):
 			# return False to indicate object could not be found
-			return False, 0, 0
+			return False, _range, horizontalAngle
 
 		if abs(verticalAngle) > (self.verticalViewAngle/2.0):
 			# return False to indicate object could not be found
-			return False, 0, 0
+			return False, _range, horizontalAngle
 
 		# return 0 to indicate is in FOV and range and horizontalAngle as the bearing
 		return True, _range, horizontalAngle
