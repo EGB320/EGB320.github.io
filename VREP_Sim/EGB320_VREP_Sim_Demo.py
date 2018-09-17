@@ -12,8 +12,8 @@ from soccerbot_lib import *
 
 # SET SCENE PARAMETERS
 sceneParameters = SceneParameters()
-sceneParameters.ballStartingPosition = [0.56, -0.7] # starting position of the ball [x, y] (in metres)
-sceneParameters.obstacle0_StartingPosition = [0.32, -0.49]  # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
+sceneParameters.ballStartingPosition = [0.4, -0.5] # starting position of the ball [x, y] (in metres)
+sceneParameters.obstacle0_StartingPosition = [0.3, -0.3]  # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
 sceneParameters.obstacle1_StartingPosition = [0.26, -0.68]   # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
 sceneParameters.obstacle2_StartingPosition = [-0.41, -0.73]   # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
 
@@ -52,10 +52,11 @@ if __name__ == '__main__':
 		soccerBotSim.StartSimulator()
 
 		forwardVel = 0
-		rotationVel = -0.5
+		rotationVel = -0.1
 
 
 		state = 'ball_search'
+		test = 0;
 		while True:
 			# wallPoints = soccerBotSim.WallDetection()
 			# print("\n\nWall Intersection Points: "),
@@ -70,7 +71,12 @@ if __name__ == '__main__':
 
 			# # get detected objects
 			ballRangeBearing, blueGoalRangeBearing, yellowGoalRangeBearing, obstaclesRangeBearing = soccerBotSim.GetDetectedObjects()
-			print obstaclesRangeBearing
+			print ballRangeBearing
+			# if obstaclesRangeBearing != None and test >= 3:
+			# 	soccerBotSim.StopSimulator()
+			# 	exit()
+			# elif obstaclesRangeBearing != None:
+			# 	test = test + 1
 
 
 			# # change action depending on state

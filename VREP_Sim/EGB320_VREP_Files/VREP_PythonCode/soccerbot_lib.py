@@ -128,24 +128,26 @@ class VREP_SoccerBot(object):
 		for ii in range(0, 3):
 			inFOV, _range, _bearing = self.ObjectInCameraFOV(self.obstacleHandles[ii], self.robotParameters.maxObstacleDetectionDistance)
 
-			# ensure obstacleViewLimits into empty list
-			if obstacleViewLimits == None:
-					obstacleViewLimits = []
-
-			# determine view limits
-			beta = math.atan2(0.09, _range)
-			min_view = max(_bearing-beta, -(self.horizontalViewAngle/2.0))
-			max_view = min(_bearing+beta, (self.horizontalViewAngle/2.0))
-			# print('Range: %0.2f, View: [%0.2f, %0.2f]'%(_range, min_view, max_view))
-			obstacleViewLimits.append([_range, min_view, max_view, ii])
-
-			if inFOV == True and self.ObstacleOutsideArena(ii) == False:
-				
+			# check to see if obstacle is in arena and inside camera's view. If so add its range and bearing to detected objects list
+			if inFOV == True and self.ObstacleOutsideArena(ii) == False:	
 				# make obstaclesRangeBearing into empty lists
 				if obstaclesRangeBearing == None:
 					obstaclesRangeBearing = []
 				
 				obstaclesRangeBearing.append([_range, _bearing])
+
+			# check to see if obstacle is inside arena. If so add to obstacle view limits list to check for ball occlusion
+			if self.ObstacleOutsideArena(ii) == False:
+				# ensure obstacleViewLimits into empty list
+				if obstacleViewLimits == None:
+						obstacleViewLimits = []
+
+				# determine view limits
+				beta = math.atan2(0.09, _range)
+				min_view = max(_bearing-beta, -(self.horizontalViewAngle/2.0))
+				max_view = min(_bearing+beta, (self.horizontalViewAngle/2.0))
+				# print('Range: %0.2f, View: [%0.2f, %0.2f]'%(_range, min_view, max_view))
+				obstacleViewLimits.append([_range, min_view, max_view, ii])
 
 
 		# check to see if ball is in field of view
@@ -603,7 +605,7 @@ class VREP_SoccerBot(object):
 			return errorCode, 0, 0
 
 		# calculate range, horizontal and vertical angles
-		_range = position[2]
+		_range = math.sqrt(math.pow(position[0], 2) + math.pow(position[2], 2))
 		horizontalAngle = math.atan2(position[0], position[2])
 		verticalAngle = math.atan2(position[1], position[2])
 
