@@ -60,6 +60,17 @@ class VREP_SoccerBot(object):
 		# Ball Parameters
 		self.ballSize = 0.05 # diameter of ball
 
+		# Variables to hold object positions
+		self.robotPose = None
+		self.cameraPose = None
+		self.ballPosition = None
+		self.blueGoalPosition = None
+		self.yellowGoalPosition = None
+		self.obstaclePositions = [None, None, None]
+
+		# Variable to hold whether the ball has been joined to the robot
+		self.ballConnectedToRobot = False
+
 		# Attempt to Open Connection to VREP API Server
 		self.OpenConnectionToVREP(vrep_server_ip)
 
@@ -89,6 +100,18 @@ class VREP_SoccerBot(object):
 		else:
 			print('Successfully started the VREP Simulator.')
 
+		# Setup streaming modes to each object
+		vrep.simxGetObjectPosition(self.clientID, self.robotHandle, -1, vrep.simx_opmode_streaming)
+		vrep.simxGetObjectOrientation(self.clientID, self.robotHandle, -1, vrep.simx_opmode_streaming)
+		vrep.simxGetObjectPosition(self.clientID, self.cameraHandle, -1, vrep.simx_opmode_streaming)
+		vrep.simxGetObjectPosition(self.clientID, self.ballHandle, -1, vrep.simx_opmode_streaming)
+		vrep.simxGetObjectPosition(self.clientID, self.blueGoalHandle, -1, vrep.simx_opmode_streaming)
+		vrep.simxGetObjectPosition(self.clientID, self.yellowGoalHandle, -1, vrep.simx_opmode_streaming)
+		for handle in self.obstacleHandles:
+			vrep.simxGetObjectPosition(self.clientID, handle, -1, vrep.simx_opmode_streaming)
+
+		time.sleep(1)
+
 
 	# Stops the VREP Simulator. 
 	# The VREP Simulator can also be stopped manually by pressing the Stop Button in VREP.
@@ -99,6 +122,16 @@ class VREP_SoccerBot(object):
 		else:
 			print('Successfully stoped the VREP Simulator.')
 
+		# Stop streaming modes to each object
+		vrep.simxGetObjectPosition(self.clientID, self.robotHandle, -1, vrep.simx_opmode_discontinue)
+		vrep.simxGetObjectOrientation(self.clientID, self.robotHandle, -1, vrep.simx_opmode_discontinue)
+		vrep.simxGetObjectPosition(self.clientID, self.cameraHandle, -1, vrep.simx_opmode_discontinue)
+		vrep.simxGetObjectPosition(self.clientID, self.ballHandle, -1, vrep.simx_opmode_discontinue)
+		vrep.simxGetObjectPosition(self.clientID, self.blueGoalHandle, -1, vrep.simx_opmode_discontinue)
+		vrep.simxGetObjectPosition(self.clientID, self.yellowGoalHandle, -1, vrep.simx_opmode_discontinue)
+		for handle in self.obstacleHandles:
+			vrep.simxGetObjectPosition(self.clientID, handle, -1, vrep.simx_opmode_discontinue)
+
 
 	# Gets the Range and Bearing to All Detected Objects.
 	# returns:
@@ -107,100 +140,98 @@ class VREP_SoccerBot(object):
 	#	yellowGoalRangeBearing - range and bearing to the yellow goal with respect to the camera, will return None if the object is not detected
 	#	obstaclesRangeBearing - range and bearing to the obstacles with respect to the camera, will return None if the object is not detected
 	def GetDetectedObjects(self):
+		# Variables used to return range and bearing to the objects
 		ballRangeBearing = None
 		blueGoalRangeBearing = None
 		yellowGoalRangeBearing = None
 		obstaclesRangeBearing = None
 
 		# variables used to check for occlusion between obstacle and ball
-		obstacleViewLimits = None
+		obstacleBearingLimits = []
 
-		# check to see if either goal is in field of view
-		inFOV, _range, _bearing = self.ObjectInCameraFOV(self.blueGoalHandle, self.robotParameters.maxGoalDetectionDistance)
-		if inFOV == True:
-			blueGoalRangeBearing = [_range, _bearing]
+		# Make sure the camera's pose is not nonoe
+		if self.cameraPose != None:
 
-		inFOV, _range, _bearing = self.ObjectInCameraFOV(self.yellowGoalHandle, self.robotParameters.maxGoalDetectionDistance)
-		if inFOV == True:
-			yellowGoalRangeBearing = [_range, _bearing]
+			# check to see if ball is in field of view
+			if self.ballPosition != None:
+				inFOV, _range, _bearing = self.ObjectInCameraFOV(self.ballPosition, self.robotParameters.maxBallDetectionDistance)
+				if inFOV == True:
+					ballRangeBearing = [_range, _bearing]
 
-		# check to see if any obstacles are in field of view
-		for ii in range(0, 3):
-			inFOV, _range, _bearing = self.ObjectInCameraFOV(self.obstacleHandles[ii], self.robotParameters.maxObstacleDetectionDistance)
+			# check to see if blue goal is in field of view
+			if self.blueGoalPosition != None:
+				inFOV, _range, _bearing = self.ObjectInCameraFOV(self.blueGoalPosition, self.robotParameters.maxGoalDetectionDistance)
+				if inFOV == True:
+					blueGoalRangeBearing = [_range, _bearing]
 
-			# check to see if obstacle is in arena and inside camera's view. If so add its range and bearing to detected objects list
-			if inFOV == True and self.ObstacleOutsideArena(ii) == False:	
-				# make obstaclesRangeBearing into empty lists
-				if obstaclesRangeBearing == None:
-					obstaclesRangeBearing = []
-				
-				obstaclesRangeBearing.append([_range, _bearing])
-
-			# check to see if obstacle is inside arena. If so add to obstacle view limits list to check for ball occlusion
-			if self.ObstacleOutsideArena(ii) == False:
-				# ensure obstacleViewLimits into empty list
-				if obstacleViewLimits == None:
-						obstacleViewLimits = []
-
-				# determine view limits
-				beta = math.atan2(0.09, _range)
-				min_view = max(_bearing-beta, -(self.horizontalViewAngle/2.0))
-				max_view = min(_bearing+beta, (self.horizontalViewAngle/2.0))
-				# print('Range: %0.2f, View: [%0.2f, %0.2f]'%(_range, min_view, max_view))
-				obstacleViewLimits.append([_range, min_view, max_view, ii])
+			# check to see if yellow goal is in field of view
+			if self.yellowGoalPosition != None:
+				inFOV, _range, _bearing = self.ObjectInCameraFOV(self.yellowGoalPosition, self.robotParameters.maxGoalDetectionDistance)
+				if inFOV == True:
+					yellowGoalRangeBearing = [_range, _bearing]
 
 
-		# check to see if ball is in field of view
-		inFOV, _range, _bearing = self.ObjectInCameraFOV(self.ballHandle, self.robotParameters.maxBallDetectionDistance)
-		if inFOV == True:
-			ballRangeBearing = [_range, _bearing]
+			# check to see which obstacles are within the field of view
+			for index, obstaclePosition in enumerate(self.obstaclePositions):
+				if obstaclePosition != None:
+					inFOV, _range, _bearing = self.ObjectInCameraFOV(obstaclePosition, self.robotParameters.maxObstacleDetectionDistance)
+
+					# check to see if the current obstacle is in the FOV and within the field. If so add to detected obstacle range bearing list
+					if inFOV == True and self.PointInsideArena(obstaclePosition):
+
+						# make obstaclesRangeBearing into empty lists, if currently set to None
+						if obstaclesRangeBearing == None:
+							obstaclesRangeBearing = []
+
+						obstaclesRangeBearing.append([_range, _bearing])
+
+					# if obstacle is within the FOV, get the bearing to the obstacle's edges relative to the camera. Will be used to see if an obstacle is occluding the ball
+					if self.PointInsideArena(obstaclePosition):
+
+						# determine bearings to obstacle's edges
+						beta = math.atan2(0.09, _range)
+						min_bearing = max(_bearing-beta, -(self.horizontalViewAngle/2.0))
+						max_bearing = min(_bearing+beta, (self.horizontalViewAngle/2.0))
+						obstacleBearingLimits.append([_range, min_bearing, max_bearing, index])
+
 
 		# check to see if ball is occluded by an obstacle
-		if ballRangeBearing != None and obstacleViewLimits != None:
-			for obs in obstacleViewLimits:
-				# check if ball is further away than obstacle
+		if ballRangeBearing != None:
+			for obs in obstacleBearingLimits:
+				# check if ball is further away than obstacle (i.e. behind an obstalce)
 				if ballRangeBearing != None and ballRangeBearing[0] > obs[0]:
-					# check to see if ball inside view angle of obstacle
-					# print("Ball Angle: %0.2f, Obstacle Angles: %0.2f, %0.2f"%(ballRangeBearing[1], obs[1], obs[2]))
+					# check to see if ball's bearing is inside obstacle's edge bearings
 					if ballRangeBearing[1] > obs[1] and ballRangeBearing[1] < obs[2]:
-						# print("Ball Occluded by Obstacle %d"%(obs[3]))
 						ballRangeBearing = None
 						break
 
 		return ballRangeBearing, blueGoalRangeBearing, yellowGoalRangeBearing, obstaclesRangeBearing
 
 	
-	# Gets the Range and Bearing to all valid wall points at the camera's view limits. A valid point is one that is on the arena wall on the 
-	# limit of the camera's field of view and that is at least a minimum distance away.
+	# Gets the Range and Bearing to the wall(s)
 	# returns:
 	#	None - if there are no valid wall points (i.e. the robot is right up against a wall and facing it)
 	#	A list of [range, bearing] arrays. There will either be 1, 2, or 3 [range, bearing] arrays depending on the situation
-	#		will return 1 if the robot is close to a wall but not directly facing it and one edge of the camera's view limit is up against the wall, while the other can see part of the field
-	#		will return 2 if the robot can see the wall but is not facing a corner
-	#		will return 3 if the robot can see the wall and is facing into a corner
+	#		will return 1 range-bearing array if the robot is close to a wall but not directly facing it and one edge of the camera's view limit is up against the wall, while the other can see part of the field
+	#		will return 2 range-bearing array if the robot can see the wall but is not facing a corner
+	#		will return 3 range-bearing array if the robot can see the wall and is facing into a corner
 	def WallDetection(self):
+		wallPoints = None
 
-		wallPoints = []
-
-		# get position of camera in global coordinates
-		errorCode, position = vrep.simxGetObjectPosition(self.clientID, self.cameraHandle, -1, vrep.simx_opmode_oneshot_wait)
-		errorCode, orientation = vrep.simxGetObjectOrientation(self.clientID, self.robotHandle, -1, vrep.simx_opmode_oneshot_wait)
-		if errorCode != 0:
-			# return empty wallPoints list
-			return wallPoints
-
-		# 2D pose of the camera
-		cameraPose = [position[0], position[1], orientation[2]]
+		if self.cameraPose == None:
+			return None
 		
+		cameraPose2D = [self.cameraPose[0], self.cameraPose[1], self.cameraPose[5]]
+
 		# Get range and bearing to the valid points at limit of camera's view (no occlusions)
-		wallPoints = self.CameraViewLimitsRangeAndBearing(cameraPose)
+		wallPoints = self.CameraViewLimitsRangeAndBearing(cameraPose2D)
 		if wallPoints == None:
 			# return None to indicate to close to wall or because some maths error and didn't get 1 or 2 valid intersection points 
 			# (hopefully a maths error doesn't occur and believe all cases have been taken care of)
 			return None
 
 		# See if a corner is within the field of view (no occlusions)
-		cornerRangeBearing = self.FieldCornerRangeBearing(cameraPose)
+		cornerRangeBearing = self.FieldCornerRangeBearing(cameraPose2D)
 		if cornerRangeBearing == []:
 			return wallPoints
 
@@ -300,11 +331,7 @@ class VREP_SoccerBot(object):
 	# returns:
 	#	true - if ball is in the dribbler
 	def BallInDribbler(self):
-		errorCode, position = vrep.simxGetObjectPosition(self.clientID, self.ballHandle, self.dribblerMotorHandle, vrep.simx_opmode_oneshot_wait)
-		if math.sqrt(math.pow(position[0], 2) + math.pow(position[1], 2)) < 0.033:
-			return True
-
-		return False
+		return self.ballConnectedToRobot
 
 	
 	# Will attempt to fire the kicker plate. The kick plate will not be fired if the kicker plate
@@ -315,6 +342,11 @@ class VREP_SoccerBot(object):
 		# check to make sure kicker has reset
 		errorCode, jointPosition = vrep.simxGetJointPosition(self.clientID, self.kickerHandle, vrep.simx_opmode_oneshot_wait)
 		if errorCode == 0 and jointPosition < 0.005:
+			# make sure to disconnect ball from robot
+			if self.ballConnectedToRobot:
+				vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndBall',[0],[],[],bytearray(),vrep.simx_opmode_blocking)
+				self.ballConnectedToRobot = False
+
 			# kick and wait short time to reset kicker position
 			vrep.simxSetJointTargetVelocity(self.clientID, self.kickerHandle, kickSpeed, vrep.simx_opmode_oneshot_wait)
 			vrep.simxSetJointPosition(self.clientID, self.kickerHandle, 0.04, vrep.simx_opmode_oneshot_wait)
@@ -326,21 +358,29 @@ class VREP_SoccerBot(object):
 
 
 	# Update Ball Position - call this in every loop as to reset the ball position if in the goal
-	# this function also emulates your dribbler quality
+	# this function also emulates your dribbler quality. Deprecated function should use UpdateObjectPositions instead.
 	def UpdateBallPosition(self):
-		errorCode, position = vrep.simxGetObjectPosition(self.clientID, self.ballHandle, -1, vrep.simx_opmode_oneshot_wait)
-		if errorCode == 0 and position[0] > -1 and position[0] < 1 and position[1] > -1 and position[1] < 1:
-			# random chance that the ball will come out of dribbler, to do this let us slow the dribbler down
-			if self.robotParameters.dribblerQuality == 0:
-				errorCode = vrep.simxSetJointTargetVelocity(self.clientID, self.dribblerMotorHandle, 0, vrep.simx_opmode_oneshot_wait)
-			elif np.random.rand() < (1 - self.robotParameters.dribblerQuality):
-				errorCode = vrep.simxSetJointTargetVelocity(self.clientID, self.dribblerMotorHandle, 0, vrep.simx_opmode_oneshot_wait)
-				time.sleep(0.05)
-				errorCode = vrep.simxSetJointTargetVelocity(self.clientID, self.dribblerMotorHandle, 87.2, vrep.simx_opmode_oneshot_wait)
+		# deprecated function - left here so doesn't ruin students API
+		self.UpdateObjectPositions()
+		
 
-		else:
-			# ball is in a goal, lets reset it to the center of the arena
-			vrep.simxSetObjectPosition(self.clientID, self.ballHandle, -1, [0,0,0.725], vrep.simx_opmode_oneshot_wait)
+	# Update Object Positions - call this in every loop of your navigation code (or at the frequency your vision system runs at). 
+	# This is required to get correct range and bearings to objects, as well as resets the ball's position to the centre of the field when a goal is scored.
+	# This function also emulates the dribbler. The function returns the global pose/position of the robot and the objects too. 
+	# However, you should not use these return values in your nagivation code, they are there to help you debug if you wish.
+	# returns: 
+	#		robotPose - a 6 element array representing the robot's pose (x,y,z,roll,pitch,yaw), or None if was not successfully updated from VREP
+	#		ballPosition - a 3 element array representing the ball's position (x,y,z), or None if was not successfully updated from VREP
+	#		obstaclePositions - a 3 element list, with each index in the list containing a 3 element array representing the ball's position (x,y,z), or None if was not successfully updated from VREP
+	def UpdateObjectPositions(self):
+		# attempt to get object positions from VREP
+		self.GetObjectPositions()
+
+		# update ball
+		self.UpdateBall()
+
+		# return object positions		
+		return self.robotPose, self.ballPosition, self.obstaclePositions 
 
 
 	#########################################
@@ -382,10 +422,10 @@ class VREP_SoccerBot(object):
 			print('Failed to get Motor object handles. Terminating Program. Error Codes %d, %d, %d'%(errorCode1, errorCode2, errorCode3))
 			sys.exit(-1)
 
-		errorCode = self.GetdribblerMotorHandle()
-		if errorCode != 0:
-			print('Failed to get Dribbler object handle. Terminating Program. Error Code %d'%(errorCode))
-			sys.exit(-1)
+		# errorCode = self.GetdribblerMotorHandle()
+		# if errorCode != 0:
+		# 	print('Failed to get Dribbler object handle. Terminating Program. Error Code %d'%(errorCode))
+		# 	sys.exit(-1)
 
 		errorCode = self.GetkickerHandle()
 		if errorCode != 0:
@@ -476,13 +516,6 @@ class VREP_SoccerBot(object):
 		return obs0ErrorCode, obs1ErrorCode, obs2ErrorCode
 
 
-	# def GetWallHandles(self):
-	# 	eastWallErrorCode, self.eastWall = vrep.simxGetObjectHandle(self.clientID, 'Obstacle_0', vrep.simx_opmode_oneshot_wait)
-	# 	northWallErrorCode, self.northWall = vrep.simxGetObjectHandle(self.clientID, 'Obstacle_1', vrep.simx_opmode_oneshot_wait)
-	# 	westWallErrorCode, self.westWall = vrep.simxGetObjectHandle(self.clientID, 'Obstacle_2', vrep.simx_opmode_oneshot_wait)
-	# 	southWallErrorCode, self.southWall = vrep.simxGetObjectHandle(self.clientID, 'Obstacle_2', vrep.simx_opmode_oneshot_wait)
-	# 	return eastWallErrorCode, northWallErrorCode, westWallErrorCode, southWallErrorCode
-
 	###############################################
 	####### ROBOT AND SCENE SETUP FUNCTIONS #######
 	###############################################
@@ -502,25 +535,28 @@ class VREP_SoccerBot(object):
 		vrep.simxSetObjectPosition(self.clientID, self.ballHandle, -1, vrepStartingPosition, vrep.simx_opmode_oneshot_wait)
 		
 		# move obstacle 0 to starting position
-		if self.sceneParameters.obstacle0_StartingPosition != None:
-			vrepStartingPosition = [self.sceneParameters.obstacle0_StartingPosition[0], self.sceneParameters.obstacle0_StartingPosition[1], 0.8125]
-			vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[0], -1, vrepStartingPosition, vrep.simx_opmode_oneshot_wait)
-		else:
-			vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[0], -1, [2, 0, 0.8125], vrep.simx_opmode_oneshot_wait)
+		if self.sceneParameters.obstacle0_StartingPosition != -1:
+			if self.sceneParameters.obstacle0_StartingPosition != None:
+				vrepStartingPosition = [self.sceneParameters.obstacle0_StartingPosition[0], self.sceneParameters.obstacle0_StartingPosition[1], 0.8125]
+				vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[0], -1, vrepStartingPosition, vrep.simx_opmode_oneshot_wait)
+			else:
+				vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[0], -1, [2, 0, 0.8125], vrep.simx_opmode_oneshot_wait)
 			
 		# move obstacle 1 to starting position
-		if self.sceneParameters.obstacle1_StartingPosition != None:
-			vrepStartingPosition = [self.sceneParameters.obstacle1_StartingPosition[0], self.sceneParameters.obstacle1_StartingPosition[1], 0.8125]
-			vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[1], -1, vrepStartingPosition, vrep.simx_opmode_oneshot_wait)
-		else:
-			vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[1], -1, [2, -0.3, 0.8125], vrep.simx_opmode_oneshot_wait)
+		if self.sceneParameters.obstacle1_StartingPosition != -1:
+			if self.sceneParameters.obstacle1_StartingPosition != None:
+				vrepStartingPosition = [self.sceneParameters.obstacle1_StartingPosition[0], self.sceneParameters.obstacle1_StartingPosition[1], 0.8125]
+				vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[1], -1, vrepStartingPosition, vrep.simx_opmode_oneshot_wait)
+			else:
+				vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[1], -1, [2, -0.3, 0.8125], vrep.simx_opmode_oneshot_wait)
 			
 		# move obstacle 2 to starting position
-		if self.sceneParameters.obstacle2_StartingPosition != None:
-			vrepStartingPosition = [self.sceneParameters.obstacle2_StartingPosition[0], self.sceneParameters.obstacle2_StartingPosition[1], 0.8125]
-			vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[2], -1, vrepStartingPosition, vrep.simx_opmode_oneshot_wait)
-		else:
-			vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[2], -1, [2, -0.6, 0.8125], vrep.simx_opmode_oneshot_wait)
+		if self.sceneParameters.obstacle2_StartingPosition != -1:
+			if self.sceneParameters.obstacle2_StartingPosition != None:
+				vrepStartingPosition = [self.sceneParameters.obstacle2_StartingPosition[0], self.sceneParameters.obstacle2_StartingPosition[1], 0.8125]
+				vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[2], -1, vrepStartingPosition, vrep.simx_opmode_oneshot_wait)
+			else:
+				vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[2], -1, [2, -0.6, 0.8125], vrep.simx_opmode_oneshot_wait)
 			
 
 	### CAMERA FUNCTIONS ###
@@ -596,43 +632,136 @@ class VREP_SoccerBot(object):
 	####### API HELPER FUNCTIONS #######
 	####################################	
 
-	# Checks to see if an Object is within the field of view of the camera
-	def ObjectInCameraFOV(self, objectHandle, maxViewDistance):
-		# get object position relative to the camera
-		errorCode, position = vrep.simxGetObjectPosition(self.clientID, objectHandle, self.cameraHandle, vrep.simx_opmode_oneshot_wait)
-		if errorCode != 0:
-			# return False to indicate object could not be found
-			return errorCode, 0, 0
+	# Prints the pose/position of the objects in the scene
+	def PrintObjectPositions(self):
+		print("\n\n***** OBJECT POSITIONS *****")
+		if self.robotPose != None:
+			print("Robot 2D Pose (x,y,theta): %0.4f, %0.4f, %0.4f"%(self.robotPose[0], self.robotPose[1], self.robotPose[2]))
 
-		# calculate range, horizontal and vertical angles
-		_range = math.sqrt(math.pow(position[0], 2) + math.pow(position[2], 2))
-		horizontalAngle = math.atan2(position[0], position[2])
-		verticalAngle = math.atan2(position[1], position[2])
+		if self.cameraPose != None:
+			print("Camera 3D Pose (x,y,z,roll,pitch,yaw): %0.4f, %0.4f, %0.4f, %0.4f, %0.4f, %0.4f"%(self.cameraPose[0], self.cameraPose[1], self.cameraPose[2], self.cameraPose[3], self.cameraPose[4], self.cameraPose[5]))
+			
+		if self.ballPosition != None:
+			print("Ball Position (x,y,z): %0.4f, %0.4f, %0.4f"%(self.ballPosition[0], self.ballPosition[1], self.ballPosition[2]))
+			
+		if self.blueGoalPosition != None:
+			print("Blue Goal Position (x,y,z): %0.4f, %0.4f, %0.4f"%(self.blueGoalPosition[0], self.blueGoalPosition[1], self.blueGoalPosition[2]))
+			
+		if self.yellowGoalPosition != None:
+			print("Yellow Goal Position (x,y,z): %0.4f, %0.4f, %0.4f"%(self.yellowGoalPosition[0], self.yellowGoalPosition[1], self.yellowGoalPosition[2]))
+
+		for index, obstacle in enumerate(self.obstaclePositions):
+			if obstacle != None:
+				print("Obstacle %d Position (x,y,z): %0.4f, %0.4f, %0.4f"%(index, obstacle[0], obstacle[1], obstacle[2]))
+
+
+	# Gets the pose/position in the global coordinate frame of all the objects in the scene.
+	# Stores them in class variables. Variables will be set to none if could not be updated
+	def GetObjectPositions(self):
+		# Set camera pose and object position to None so can check in an error occurred
+		self.robotPose = None
+		self.cameraPose = None
+		self.ballPosition = None
+		self.blueGoalPosition = None
+		self.yellowGoalPosition = None
+		self.obstaclePositions = [None, None, None]
+
+		# GET 2D ROBOT POSE
+		errorCode, robotPosition = vrep.simxGetObjectPosition(self.clientID, self.robotHandle, -1, vrep.simx_opmode_buffer)
+		errorCode, robotOrientation = vrep.simxGetObjectOrientation(self.clientID, self.robotHandle, -1, vrep.simx_opmode_buffer)
+		if errorCode == 0:
+			self.robotPose = [robotPosition[0], robotPosition[1], robotPosition[1], robotOrientation[0], robotOrientation[1], robotOrientation[2]]
+
+		# GET 3D CAMERA POSE
+		errorCode, cameraPosition = vrep.simxGetObjectPosition(self.clientID, self.cameraHandle, -1, vrep.simx_opmode_buffer)
+		if errorCode == 0:
+			self.cameraPose = [cameraPosition[0], cameraPosition[1], cameraPosition[2], robotOrientation[0], robotOrientation[1], robotOrientation[2]]
+
+		# GET POSITION OF EACH OBJECT
+		# ball position
+		errorCode, ballPosition = vrep.simxGetObjectPosition(self.clientID, self.ballHandle, -1, vrep.simx_opmode_buffer)
+		if errorCode == 0:
+			self.ballPosition = ballPosition
+
+		# blue goal position
+		errorCode, blueGoalPosition = vrep.simxGetObjectPosition(self.clientID, self.blueGoalHandle, -1, vrep.simx_opmode_buffer)
+		if errorCode == 0:
+			self.blueGoalPosition = blueGoalPosition
+
+		# yellow goal position
+		errorCode, yellowGoalPosition = vrep.simxGetObjectPosition(self.clientID, self.yellowGoalHandle, -1, vrep.simx_opmode_buffer)
+		if errorCode == 0:
+			self.yellowGoalPosition = yellowGoalPosition
+
+		# obstacle positions
+		obstaclePositions = [None, None, None]
+		for index, obs in enumerate(self.obstaclePositions):
+			errorCode, obstaclePositions[index] = vrep.simxGetObjectPosition(self.clientID, self.obstacleHandles[index], -1, vrep.simx_opmode_buffer)
+			if errorCode == 0:
+				self.obstaclePositions[index] = obstaclePositions[index]
+
+
+	# Checks to see if an Object is within the field of view of the camera
+	def ObjectInCameraFOV(self, objectPosition, maxViewDistance):
+		# calculate range and bearing on 2D plane - relative to the camera
+		cameraPose2d = [self.cameraPose[0], self.cameraPose[1], self.cameraPose[5]]
+		_range, _bearing = self.GetRangeAndBearingFromPoseAndPoint(cameraPose2d, objectPosition)
+
+		# angle from camera's axis to the object's position
+		verticalAngle = math.atan2(objectPosition[2]-self.cameraPose[2], _range)
 
 		# check range is not to far away
 		if _range > maxViewDistance:
-			return False, _range, horizontalAngle		
+			# return False to indicate object outside camera's FOV and range and bearing
+			return False, _range, _bearing		
 
 		# check to see if in field of view
-		if abs(horizontalAngle) > (self.horizontalViewAngle/2.0):
-			# return False to indicate object could not be found
-			return False, _range, horizontalAngle
+		if abs(_bearing) > (self.horizontalViewAngle/2.0):
+			# return False to indicate object outside camera's FOV and range and bearing
+			return False, _range, _bearing
 
 		if abs(verticalAngle) > (self.verticalViewAngle/2.0):
-			# return False to indicate object could not be found
-			return False, _range, horizontalAngle
+			# return False to indicate object outside camera's FOV and range and bearing
+			return False, _range, _bearing
 
-		# return 0 to indicate is in FOV and range and horizontalAngle as the bearing
-		return True, _range, horizontalAngle
+		# return True to indicate is in FOV and range and bearing
+		return True, _range, _bearing
 
 	
-	# Determines if an obstacle is outside the arena, returns true if that is the case
-	def ObstacleOutsideArena(self, obstacleID):
-		errorCode, position = vrep.simxGetObjectPosition(self.clientID, self.obstacleHandles[obstacleID], -1, vrep.simx_opmode_oneshot_wait)
-		if errorCode == 0 and position[0] > -1 and position[0] < 1 and position[1] > -1 and position[1] < 1:
-			return False
+	# Determines if a 2D point is inside the arena, returns true if that is the case
+	def PointInsideArena(self, position):
+		if position[0] > -1 and position[0] < 1 and position[1] > -1 and position[1] < 1:
+			return True
 
-		return True
+		return False
+
+
+	# Update the ball
+	def UpdateBall(self):
+		if self.ballPosition != None:
+			if self.PointInsideArena(self.ballPosition) == False:
+				# ball is in a goal, lets reset it to the center of the arena, and hope the robot isn't there
+				vrep.simxSetObjectPosition(self.clientID, self.ballHandle, -1, [0,0,0.725], vrep.simx_opmode_oneshot_wait)
+
+			elif self.PointInsideArena(self.ballPosition) == True:
+				# get range to ball from the robot
+				ballDist = self.DribblerToBallDistance()
+
+				# See if need to connect/disconnect ball from robot
+				if ballDist != None and ballDist < 0.03 and self.ballConnectedToRobot == False:
+					# make physical connection between ball and robot to simulate dribbler
+					vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndBall',[1],[],[],bytearray(),vrep.simx_opmode_blocking)
+					self.ballConnectedToRobot = True
+
+				elif self.ballConnectedToRobot == True:
+					# random chance to disconnect
+					if np.random.rand() > self.robotParameters.dribblerQuality:
+						# terminate connection between ball and robot to simulate dribbler
+						vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndBall',[0],[],[],bytearray(),vrep.simx_opmode_blocking)
+						self.ballConnectedToRobot = False
+
+				elif ballDist != None and ballDist > 0.03:
+					self.ballConnectedToRobot = False
 
 	
 	# Gets the range and bearing to a corner that is within the camera's field of view.
@@ -662,7 +791,7 @@ class VREP_SoccerBot(object):
 		return rangeAndBearing
 
 
-	# Gets the range and bearing to the camera's field of view limits.
+	# Gets the range and bearing to where the edge of camera's field of view intersects with the arena walls.
 	# returns:
 	#	None - if there are no valid wall points (i.e. the robot is right up against a wall and facing it)
 	#	A list of [range, bearing] arrays. There will either be 1 or 2 [range, bearing] arrays depending on the situation
@@ -712,7 +841,7 @@ class VREP_SoccerBot(object):
 			return rangeAndBearings
 
 	
-	# Gets the point where the camera's view limit intersects with the specified wall.
+	# Gets the points where the edges of the camera's field of view intersects with the specified wall.
 	# inputs:
 	#	cameraPose - pose of the camera [x, y, theta] in the global coordinate frame (centre of the field with x pointed towards yellow goal, and blue pointing across the field, and z point to the sky)
 	# 	wall - wall want to get the camera view limit points of ('east', 'west', 'north', 'south'). East = yellow goal wall, west = blue goal wall, north = positive y axis wall, south = negative y axis wall
@@ -799,13 +928,34 @@ class VREP_SoccerBot(object):
 	def WrapToPi(self, radians):
 		return ((radians + math.pi) % (2* math.pi) - math.pi)
 
-	# Gets the range and bearing given a pose and a point. 
+	# Gets the range and bearing given a 2D pose (x,y,theta) and a point(x,y). 
 	# The bearing will be relative to the pose's angle
 	def GetRangeAndBearingFromPoseAndPoint(self, pose, point):
 		_range = math.sqrt(math.pow(pose[0] - point[0], 2) + math.pow(pose[1] - point[1], 2))
 		_bearing = self.WrapToPi(math.atan2((point[1]-pose[1]), (point[0]-pose[0])) - pose[2])
 
 		return _range, _bearing
+
+
+	# Gets the orthogonal distance (in metres) from the dribbler to the ball. 
+	# Assuming the the ball's centroid is within 70 degrees of the dribbler's centroid
+	def DribblerToBallDistance(self):
+		# get the position of the ball relative to the dribbler motor
+		if self.robotPose != None and self.ballPosition != None:
+			# get the pose of the dribbler in the x-y plane using the robot's pose with some offsets
+			dribblerPose = [self.robotPose[0]+0.1*math.cos(self.robotPose[5]), self.robotPose[1]+0.1*math.sin(self.robotPose[5]), self.robotPose[5]]
+
+			# get range and bearing from dribbler to ball position
+			_range, _bearing = self.GetRangeAndBearingFromPoseAndPoint(dribblerPose, self.ballPosition)
+
+			# check to see if the bearing to the ball is larger than 70 degrees. If so return None
+			if abs(_bearing) > math.radians(70):
+				return None
+
+			# return distance to ball from dibbler orthogonal to dribbler's rotational axis
+			return abs(_range * math.cos(_bearing))
+
+		return None
 
 
 ####################################
