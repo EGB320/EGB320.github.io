@@ -19,7 +19,7 @@ sceneParameters.obstacle2_StartingPosition = None   # starting position of obsta
 robotParameters = RobotParameters()
 
 # Drive Parameters
-robotParameters.driveType = 'differential'	# specify if using differential or omni drive system
+robotParameters.driveType = 'omni'	# specify if using differential or omni drive system
 robotParameters.minimumLinearSpeed = 0.04  	# minimum speed at which your robot can move forward in m/s
 robotParameters.maximumLinearSpeed = 0.25 	# maximum speed at which your robot can move forward in m/s
 robotParameters.driveSystemQuality = 1		# specifies how good your drive system is from 0 to 1 (with 1 being able to drive in a perfectly straight line when a told to do so)
@@ -71,8 +71,18 @@ if __name__ == '__main__':
 					obstacleRange = obstacle[0]
 					obstacleBearing = obstacle[1]
 
+			# Get Detected Wall Points
+			wallPoints = soccerBotSim.GetDetectedWallPoints()
+			if wallPoints == None:
+				print("To close to the wall")
+			else:
+				print("\nDetected Wall Points")
+				# print the range and bearing to each wall point in the list
+				for point in wallPoints:
+					print("\tWall Point (range, bearing): %0.4f, %0.4f"%(point[0], point[1]))
+
 			# Update Ball Position
-			soccerBotSim.UpdateBallPosition()
+			soccerBotSim.UpdateObjectPositions()
 
 	except KeyboardInterrupt as e:
 		# attempt to stop simulator so it restarts and don't have to manually press the Stop button in VREP 

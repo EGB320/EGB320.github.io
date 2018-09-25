@@ -215,7 +215,7 @@ class VREP_SoccerBot(object):
 	#		will return 1 range-bearing array if the robot is close to a wall but not directly facing it and one edge of the camera's view limit is up against the wall, while the other can see part of the field
 	#		will return 2 range-bearing array if the robot can see the wall but is not facing a corner
 	#		will return 3 range-bearing array if the robot can see the wall and is facing into a corner
-	def WallDetection(self):
+	def GetDetectedWallPoints(self):
 		wallPoints = None
 
 		if self.cameraPose == None:
@@ -531,8 +531,9 @@ class VREP_SoccerBot(object):
 	def SetScene(self):
 		
 		# move ball to starting position
-		vrepStartingPosition = [self.sceneParameters.ballStartingPosition[0], self.sceneParameters.ballStartingPosition[1], 0.725]
-		vrep.simxSetObjectPosition(self.clientID, self.ballHandle, -1, vrepStartingPosition, vrep.simx_opmode_oneshot_wait)
+		if self.sceneParameters.ballStartingPosition != -1:
+			vrepStartingPosition = [self.sceneParameters.ballStartingPosition[0], self.sceneParameters.ballStartingPosition[1], 0.725]
+			vrep.simxSetObjectPosition(self.clientID, self.ballHandle, -1, vrepStartingPosition, vrep.simx_opmode_oneshot_wait)
 		
 		# move obstacle 0 to starting position
 		if self.sceneParameters.obstacle0_StartingPosition != -1:

@@ -1,0 +1,226 @@
+<!DOCTYPE HTML>
+<!--
+	Editorial by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>EGB320 Mechatronics Design 2</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link id="pagestyle" rel="stylesheet" href="assets/css/main.css" />
+		<link href="assets/css/main.css" media="print" rel="stylesheet" />
+
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=UA-123133357-1"></script>
+		<script>
+		  window.dataLayer = window.dataLayer || [];
+		  function gtag(){dataLayer.push(arguments);}
+		  gtag('js', new Date());
+
+		  gtag('config', 'UA-123133357-1');
+		</script>
+	</head>
+
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+
+							<!-- Header -->
+								<header id="header">
+									<div id="col-12">
+								        <div class="row" style="position: relative; top: 0.75em;">
+								        	<a href="#" class="button pdf-exclude icon fa-print" style="position: absolute; right: 1em; bottom: 2.5em;" onclick="CreateDocumentToExportPDF('EGB320_IntroToVREP.pdf')"></a>
+								        </div>
+								        <div class="row" style="position: relative;">
+								        	<a href="index.html" class="logo">EGB320 - Mechatronics Design 2</a>
+											<a id="date" class="logo date" style="position: absolute; right: 1em;">Date</a>
+										</div>
+								    </div>
+								</header>
+
+							<!-- Content -->
+								<section>
+									
+										<header class="main">
+											<h1>EGB320 Soccer Bot Library Documentation</h1>
+											<a href="dlc/EGB320_VREP_Files.zip" class="button pdf-exclude icon fa-download" download> EGB320 VREP Files</a>
+										</header>							
+
+										<p>The documentation for the EGB320 soccerbot_lib.py file which wraps the VREP Python API can be found here.</p>
+
+
+										 <hr class="major pdf-exclude" />
+										<h2>SoccerBot Python Module Functions</h2>
+										<p>There are only 8 functions within the SoccerBot Python Module that you will need to call.</p>
+
+										<p><b>StartSimulator()</b>: The StartSimulator function starts the VREP simulator. This is the same as manually pressing the Play button within VREP.</p>
+
+										<p><b>StopSimulator()</b>: The StopSimulator function stops the VREP simulator. This is the same as manually pressing the Stop button within VREP.</p>
+
+										<p><b>SetTargetVelocities(x_dot, y_dot, theta_dot)</b>: The SetTargetVelocities function sets the robot's linear speed in the x and y direction with respect to the robot's coordinate frame and the robot's rotation velocity. The linear speeds, x_dot and y_dot, are in m/s while the rotation velocity, theta_dot, is in rad/s. Setting the y_dot velocity to a non-zero value while using a differential drive robot is impossible, and will simply be reset to 0. The maximum and minimum values you can set are based on the robot parameters, see <a href="#RobotParameters">Robot Parameters</a>. Only ball-obstacle occlusion is currently implemented. Example function usage:</p>
+
+										<pre><code># move the robot at a forward velocity of 0.1m/s with a rotational velocity of 0.5 rad/s.
+soccerBotSim.SetTargetVelocities(0.1, 0, 0.5)</code></pre>
+
+										<p><b>GetDetectedObjects()</b>: The GetDetectedObjects function takes no arguments and returns, as 4 variables in order, the range and bearing to the ball, the blue goal, the yellow goal, and any obstacles if they are within the camera's field of view (FOV). The range and bearing is returned as a 2 element array. If the object is not within the field of view that respective return variable will be set to none. How far the away the objects can be detected is based on the robot parameters, see <a href="#RobotParameters">Robot Parameters</a>. Example function usage:<p>
+
+										<pre><code>ballRB, blueRB, yellowRB, obstaclesRB = soccerBotSim.GetDetectedObjects()
+
+# Check to see if the ball is within the camera's FOV
+if ballRB != None:
+	ballRange = ballRB[0]
+	ballBearing = ballRB[1]
+
+# Check to see if any obstacles are within the camera's FOV
+if obstacles != None:
+	# loop through each obstacle detected using Pythonian way
+	for obstacle in obstaclesRB:
+		obstacleRange = obstacle[0]
+		obstacleBearing = obstacle[1]</code></pre>
+
+										<p><b>GetDetectedWallPoints()</b>: The GetDetectedWallPoints function takes no arguments and returns a single variable that holds any detected wall points as a list of list containing the range and bearing to each wall point. The list will either contain 1, 2 or 3 range-bearing arrays depending on the situation, for the 3 scenarios see <a href="#WallPointScenarios">Wall Point Scenarios</a>. The returned variable will be none if there are no wall points detected (i.e. the robot is to close to a wall).</p>
+
+										<pre><code># detect any wall points, check to make sure not to close to the wall
+wallPoints = soccerBotSim.GetDetectedWallPoints()
+if wallPoints == None:
+	print("To close to the wall")
+else:
+	# print the range and bearing to each wall point in the list
+	for point in wallPoint:
+		print("Wall Point (range, bearing): %0.4f, %0.4f"%(point[0], point[1]))
+										</code></pre>
+										
+
+										<p><b>KickBall(kickSpeed)</b>: The KickBall function attempts to fire the kicker plate with the passed kick speed. The kicker plate will not be fired if it has not reset. The kicker plate will reset itself over time automatically, it takes approximately 1 second to reset. Example function usage: </p>
+
+										<pre><code># Attempt to kick the ball with a kick speed of 0.5m/s
+soccerBotSim.KickSpeed(0.5)</code></pre>
+
+										<p><b>BallInDribbler()</b>: The BallInDribbler function takes no arguments and returns true if the ball is within the robot's dribbler, false if it is not. Example Usage: </p>
+
+										<pre><code># check to see if ball is in dribbler
+if soccerBotSim.BallInDribbler() == True:
+	# attempt to kick the ball with a kick speed of 0.5 m/s
+	soccerBotSim.KickBall(0.5)</code></pre>
+
+
+										<p><b>UpdateObjectPositions()</b>: The UpdateObjectPositions function does two things. Firstly it updates internal class variables holding the position of the various object within the scene (i.e. ball and goals). Secondly it updates the position of the ball, by moving it back the center of the arena when a goal is score as well as emulating the dribbler by randomly "releasing" the ball. How often the ball is randomly released from the "dribbler" is based on a passed robot parameter. <b><em>This function should be called within every loop</em></b>.</p>
+
+										<pre><code> while True:
+	 # Navigation/AI Code - Get detected objects, and set robot velocities etc.
+
+	# Update the ball position in each loop
+	soccerBotSim.UpdateObjectPositions()</code></pre>
+
+
+										<hr class="major pdf-exclude" />
+										<h2>Scene and Robot Parameters</h2>
+
+										<h3>Scene Parameters</h3>
+										<p>The scene parameters allow you to set the starting position of the ball and the position of the 3 static obstacles. The robot will always start within the center of the arena within the VREP simulator. The following example shows how to set the starting position of the ball and the static obstacle positions. Setting the ball and obstacle starting positions to -1 will allow you to manually set the positions within VREP.</p>
+
+										<pre><code> # SET SCENE PARAMETERS
+sceneParameters = SceneParameters()
+
+# Set the ball's starting position [x, y] (in metres), 
+# or set to -1 if want to manually set the position of the ball using VREP controls
+sceneParameters.ballStartingPosition = [0.5, 0]
+
+# Set the position of the obstacles [x, y] (in metres), specify None if not wanted in the scene, 
+# or set to -1 if want to manually set the obstacle positions using VREP controls
+sceneParameters.obstacle0_StartingPosition = [0.7, 0.7] 
+sceneParameters.obstacle1_StartingPosition = None
+sceneParameters.obstacle2_StartingPosition = -1
+</code></pre>
+
+										<h2 id="RobotParameters">Robot Parameters</h2>
+										<p>The robot parameters allow you to set the minimum and maximum linear (forward) speed the robot can move, how far the vision system can detect the various objects, the quality of the dribbler, and the position of the camera. We suggest you try and simulate your real robot as much as possible to eliminate as many integration bugs as possible. You will need to get these parameters from your various team members. The following example shows you how to set the various parameters.</p>
+
+										<pre><code># SET ROBOT PARAMETERS
+robotParameters = RobotParameters()
+
+# Drive Parameters
+robotParameters.driveType = 'differential'		# specify if using differential or omni drive system
+robotParameters.minimumLinearSpeed = 0.04  		# minimum speed at which your robot can move forward in m/s
+robotParameters.maximumLinearSpeed = 0.25 		# maximum speed at which your robot can move forward in m/s
+robotParameters.driveSystemQuality = 1			# specifies how good your drive system is from 0 to 1 
+							# (with 1 being able to drive in a perfectly straight line)
+
+# Camera Parameters
+robotParameters.cameraOrientation = 'landscape'		# specifies the orientation of the camera
+robotParameters.cameraDistanceFromRobotCenter = 0.1 	# distance between the camera and the center of the robot
+robotParameters.cameraHeightFromFloor = 0.03 		# height of the camera relative to the floor in metres
+robotParameters.cameraTilt = 0.17 			# tilt of the camera in radians
+
+# Vision Processing Parameters
+robotParameters.maxBallDetectionDistance = 1 		# the maximum distance you can detect the ball in metres
+robotParameters.maxGoalDetectionDistance = 2.5 		# the maximum distance you can detect the goals in metres
+robotParameters.maxObstacleDetectionDistance = 1.5 	# the maximum distance you can detect the obstacles in metres
+
+# Dribbler Parameters
+robotParameters.dribblerQuality = 1 			# specifies how good your dribbler is from 0 to 1.0 
+							# (with 1.0 being awesome and 0 being non-existent)</code></pre>
+
+
+										<h2 id="WallPointScenarios">Wall Point Scenarios</h2>
+
+										<p><b>One wall point</b> will be detected when the robot is close to the wall but not directly facing it.</p>
+										<figure class="figure">
+    										<img src="images/vrep/OnEdge_WithPoints.png" width="40%" alt="images/image-not-found.jpg" />
+    										<figcaption>One point detected (red dot) when the robot is close to the wall but not directly facing it.</figcaption>
+										</figure>
+
+										<p><b>Two wall points</b> will be detected when the robot is not close to the wall but no arena corner is within the field of view.</p>
+										<figure class="figure">
+    										<img src="images/vrep/FacingWall_WithPoints.png" width="40%" alt="images/image-not-found.jpg" />
+    										<figcaption>Two points detected (red dots) when the robot is facing a wall but cannot see a corner.</figcaption>
+										</figure>
+
+										<p><b>Three wall points</b> will be detected when the robot is not close to the wall and an arena corner is within the field of view.</p>
+										<figure class="figure">
+    										<img src="images/vrep/FacingCorner_WithPoints.png" width="40%" alt="images/image-not-found.jpg" />
+    										<figcaption>Three points detected (red dots) when the robot is facing a wall and can see a corner.</figcaption>
+										</figure>
+									
+
+								</section>
+
+						</div>
+					</div>
+
+				<!-- Sidebar -->
+					<div id="sidebar">
+						<!-- Will be inserted with JS -->
+					</div>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+			<script src="assets/js/generatePDF.js"></script>
+			<script type="text/javascript">
+				// On Load
+				$(document).ready(function(){
+					// Load sidebar
+					$('#sidebar').load('navbar.html');
+
+					// Insert today's date
+					var d = new Date();
+					var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+					document.getElementById("date").innerHTML = d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+				});
+			</script>
+
+	</body>
+</html>

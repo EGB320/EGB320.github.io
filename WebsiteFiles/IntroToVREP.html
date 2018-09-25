@@ -197,8 +197,6 @@ robotParameters.driveType = 'differential'	# specify if using differential or om
 										<div class="html2pdf__page-break"></div>
 									</div>
 
-									<div class="page-wrapper"> 
-
 										 <pre><code>while True:
 	soccerBotSim.SetTargetVelocities(0.1, 0, 0)
 	soccerBotSim.UpdateBallPosition()</code></pre>
@@ -207,108 +205,7 @@ robotParameters.driveType = 'differential'	# specify if using differential or om
 
 										 <hr class="major pdf-exclude" />
 										<h2>SoccerBot Python Module Functions</h2>
-										<p>There are only 7 functions within the SoccerBot Python Module that you will need to call, including the StartSimulator, SetTargetVelocities and UpdateBallPosition functions which we have already seen.</p>
-
-										<p><b>StartSimulator()</b>: The StartSimulator function starts the VREP simulator. This is the same as manually pressing the Play button within VREP.</p>
-
-										<p><b>StopSimulator()</b>: The StopSimulator function stops the VREP simulator. This is the same as manually pressing the Stop button within VREP.</p>
-
-										<p><b>SetTargetVelocities(x_dot, y_dot, theta_dot)</b>: The SetTargetVelocities function sets the robot's linear speed in the x and y direction with respect to the robot's coordinate frame and the robot's rotation velocity. The linear speeds, x_dot and y_dot, are in m/s while the rotation velocity, theta_dot, is in rad/s. Setting the y_dot velocity to a non-zero value while using a differential drive robot is impossible, and will simply be reset to 0. The maximum and minimum values you can set are based on the robot parameters, see <a href="#RobotParameters">Robot Parameters</a>. Example function usage:</p>
-
-										<pre><code># move the robot at a forward velocity of 0.1m/s with a rotational velocity of 0.5 rad/s.
-soccerBotSim.SetTargetVelocities(0.1, 0, 0.5)</code></pre>
-
-										<p><b>GetDetectedObjects()</b>: The GetDetectedObjects function takes no arguments and returns, as 4 variables in order, the range and bearing to the ball, the blue goal, the yellow goal, and any obstacles if they are within the camera's field of view (FOV). The range and bearing is returned as a 2 element array. If the object is not within the field of view that respective return variable will be set to none. How far the away the objects can be detected is based on the robot parameters, see <a href="#RobotParameters">Robot Parameters</a>. Example function usage:<p>
-
-										<pre><code>ballRB, blueRB, yellowRB, obstaclesRB = soccerBotSim.GetDetectedObjects()
-
-# Check to see if the ball is within the camera's FOV
-if ballRB != None:
-	ballRange = ballRB[0]
-	ballBearing = ballRB[1]
-
-# Check to see if any obstacles are within the camera's FOV
-if obstacles != None:
-	# loop through each obstacle detected using Pythonian way
-	for obstacle in obstaclesRB:
-		obstacleRange = obstacle[0]
-		obstacleBearing = obstacle[1]</code></pre>
-										<div class="html2pdf__page-break"></div>
-									</div>
-
-									<div class="page-wrapper"> 
-
-										<p><b>KickBall(kickSpeed)</b>: The KickBall function attempts to fire the kicker plate with the passed kick speed. The kicker plate will not be fired if it has not reset. The kicker plate will reset itself over time automatically, it takes approximately 1 second to reset. Example function usage: </p>
-
-										<pre><code># Attempt to kick the ball with a kick speed of 0.5m/s
-soccerBotSim.KickSpeed(0.5)</code></pre>
-
-										<p><b>BallInDribbler()</b>: The BallInDribbler function takes no arguments and returns true if the ball is within the robot's dribbler, false if it is not. Example Usage: </p>
-
-										<pre><code># check to see if ball is in dribbler
-if soccerBotSim.BallInDribbler() == True:
-	# attempt to kick the ball with a kick speed of 0.5 m/s
-	soccerBotSim.KickBall(0.5)</code></pre>
-
-
-										<p><b>UpdateBallPosition()</b>: The UpdateBallPosition function does two things. Firstly it resets the ball position to the center of the arena when a goal is score. Secondly, it helps emulate the quality of your dribbler by randomly "releasing" the ball. How often this random event occurs based on a passed robot parameter. This function should be called within every loop.</p>
-
-										<pre><code> while True:
-	 # Navigation/AI Code - Get detected objects, and set robot velocities etc.
-
-	# Update the ball position in each loop
-	soccerBotSim.UpdateBallPosition()</code></pre>
-
-
-										<hr class="major pdf-exclude" />
-										<h2>Scene and Robot Parameters</h2>
-
-										<h3>Scene Parameters</h3>
-										<p>The scene parameters allow you to set the starting position of the ball and the position of the 3 static obstacles. The robot will always start within the center of the arena within the VREP simulator. The following example shows how to set the starting position of the ball and the static obstacle positions.</p>
-
-										<pre><code> # SET SCENE PARAMETERS
-sceneParameters = SceneParameters()
-
-# Set the ball's starting position [x, y] (in metres)
-sceneParameters.ballStartingPosition = [0.5, 0]
-
-# Set the position of the obstacles [x, y] (in metres), or specify None if not wanted in the scene
-sceneParameters.obstacle0_StartingPosition = [0.7, 0.7] 
-sceneParameters.obstacle1_StartingPosition = None
-sceneParameters.obstacle2_StartingPosition = None
-</code></pre>
-										<div class="html2pdf__page-break"></div>
-									</div>
-
-									<div class="page-wrapper"> 
-
-										<h2 id="RobotParameters">Robot Parameters</h2>
-										<p>The robot parameters allow you to set the minimum and maximum linear (forward) speed the robot can move, how far the vision system can detect the various objects, the quality of the dribbler, and the position of the camera. We suggest you try and simulate your real robot as much as possible to eliminate as many integration bugs as possible. You will need to get these parameters from your various team members. The following example shows you how to set the various parameters.</p>
-
-										<pre><code># SET ROBOT PARAMETERS
-robotParameters = RobotParameters()
-
-# Drive Parameters
-robotParameters.driveType = 'differential'		# specify if using differential or omni drive system
-robotParameters.minimumLinearSpeed = 0.04  		# minimum speed at which your robot can move forward in m/s
-robotParameters.maximumLinearSpeed = 0.25 		# maximum speed at which your robot can move forward in m/s
-robotParameters.driveSystemQuality = 1			# specifies how good your drive system is from 0 to 1 
-							# (with 1 being able to drive in a perfectly straight line)
-
-# Camera Parameters
-robotParameters.cameraOrientation = 'landscape'		# specifies the orientation of the camera
-robotParameters.cameraDistanceFromRobotCenter = 0.1 	# distance between the camera and the center of the robot
-robotParameters.cameraHeightFromFloor = 0.03 		# height of the camera relative to the floor in metres
-robotParameters.cameraTilt = 0.17 			# tilt of the camera in radians
-
-# Vision Processing Parameters
-robotParameters.maxBallDetectionDistance = 1 		# the maximum distance you can detect the ball in metres
-robotParameters.maxGoalDetectionDistance = 2.5 		# the maximum distance you can detect the goals in metres
-robotParameters.maxObstacleDetectionDistance = 1.5 	# the maximum distance you can detect the obstacles in metres
-
-# Dribbler Parameters
-robotParameters.dribblerQuality = 1 			# specifies how good your dribbler is from 0 to 1.0 
-							# (with 1.0 being awesome and 0 being non-existent)</code></pre>
+										<p>The documentation for the EGB320 SoccerBot Python Module can be found <a href="SoccerBotLib_Documentation.html">here</a>.</p>
 
 
 										<hr class="major pdf-exclude" />
@@ -337,10 +234,7 @@ robotParameters.dribblerQuality = 1 			# specifies how good your dribbler is fro
 											</li>
 											<li>Launch and start VREP on the computer as you usually would.</li>
 											<li>Start your script on the Raspberry Pi.</li>
-										</ol>
-										<div class="html2pdf__page-break"></div>
-									</div>
-									
+										</ol>								
 
 								</section>
 
