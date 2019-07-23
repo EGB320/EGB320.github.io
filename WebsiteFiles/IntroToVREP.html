@@ -125,7 +125,7 @@
 
 										<p>To open a connection to VREP using the EGB320 SoccerBot Python Module first create a new Python Script in the EGB320 VREP Python Code Folder. You need create your script in this directory as your script will be implicitly calling functions from the vrep.py, vrepConst.py and the remoteAPI files (.so for Linux, .dll for Windows, .dylib for Mac).</p>
 
-										<p>Within your new script write add the following code.</p>
+										<p>Within your new script add the following code.</p>
 
 										<pre><code>#!/usr/bin/python
 
@@ -150,7 +150,7 @@ if __name__ == '__main__':
 
 		while True:
 			soccerBotSim.SetTargetVelocities(0.1, 0, 0)
-			soccerBotSim.UpdateBallPosition()
+			soccerBotSim.UpdateObjectPositions() # needs to be called once within main code loop
 
 	except KeyboardInterrupt as e:
 		# attempt to stop simulator so it restarts and don't have to manually press the Stop button in VREP 
@@ -199,9 +199,9 @@ robotParameters.driveType = 'differential'	# specify if using differential or om
 
 										 <pre><code>while True:
 	soccerBotSim.SetTargetVelocities(0.1, 0, 0)
-	soccerBotSim.UpdateBallPosition()</code></pre>
+	soccerBotSim.UpdateObjectPositions() # needs to be called once within main code loop</code></pre>
 
-										 <p>The final lines above consist of an infinite while loop which constantly calls the SetTargetVelocities and UpdateBallPosition Functions. The second line of code sets the velocities of our robot using the SetTargetVelocities function which takes three inputs. The inputs are the robot's desired linear velocity in the x direction, the y direction, followed by the desired rotational velocity. The units of measure are m/s and rad/s for the linear and rotational velocities respectively. These velocities are also specified within the robot's coordinate frame. In simple terms the x velocity is how quickly you want the robot to move forward, the y velocity is only applicable to omni-drive robots and is how quickly you want the robot to move perpendicular to its forward direction, and the rotational velocity is how quickly you want the robot to rotate. The third line calling the UpdateBallPosition function is used to reset the ball position to the center of the arena when it goes into a goal.</p>
+										 <p>The final lines above consist of an infinite while loop which constantly calls the SetTargetVelocities and UpdateObjectPositions Functions. The second line of code sets the velocities of our robot using the SetTargetVelocities function which takes three inputs. The inputs are the robot's desired linear velocity in the x direction, the y direction, followed by the desired rotational velocity. The units of measure are m/s and rad/s for the linear and rotational velocities respectively. These velocities are also specified within the robot's coordinate frame. In simple terms the x velocity is how quickly you want the robot to move forward, the y velocity is only applicable to omni-drive robots and is how quickly you want the robot to move perpendicular to its forward direction, and the rotational velocity is how quickly you want the robot to rotate. The third line calling the UpdateObjectPositions function is used to reset the ball position to the center of the arena when it goes into a goal.</p>
 
 										 <hr class="major pdf-exclude" />
 										<h2>SoccerBot Python Module Functions</h2>

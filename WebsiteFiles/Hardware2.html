@@ -57,7 +57,7 @@
 
 										<hr class="major pdf-exclude" />
 										<h2>Understanding Motors</h2>
-										<p>In this section we are going to discuss motor specifications and motor curves. We need to understand the basic motor specifications their translation to drawing motor curves. These motor curves will then be very useful in helping you select an appropriate motor for your application. The first motor specifications we are going to look at are the nominal voltage, the no load speed and the stall torque;</p>
+										<p>In this section we are going to discuss motor specifications and motor curves. We need to understand the basic motor specifications and how they translate to drawing motor curves. These motor curves will then be very useful in helping you select an appropriate motor for your application. The first motor specifications we are going to look at are the nominal voltage, the no load speed and the stall torque;</p>
 
 										<ul>
 											<li>The nominal voltage is the recommend voltage the motor should operate at. </li>
@@ -161,7 +161,7 @@
 &omega;<sub>max</sub> = (1&frasl;&eta;) * v<sub>max</sub> * r<sub>w</sub>					# Equation 1.3</code></pre> -->
 
 										<h3>Choosing Initial Design Parameters and Calculating Motor Values</h3>
-										<p>We will now work out 4 parameters, using Equations 1.1, 1.2 and 1.3, that will help us select a motor. These parameters are:</p>
+										<p>We will now work out 4 parameters, using Equations 2.1, 2.2 and 2.3, that will help us select a motor. These parameters are:</p>
 
 										<ul>
 											<li>The motor torque required to overcome friction (i.e. acceleration equals 0). This is the required torque to maintain a given speed. We will call this the Friction Torque.</li>
@@ -252,7 +252,7 @@
 
 										<hr class="major pdf-exclude" />
 										<h2>Kicker Design</h2>
-										<p>To design a kicker we need to develop a mathematical model. We can then use this mathematical model to help us select certain components and properties of the kicker system. Before we start developing a mathematical model we need to understand what quantity we are trying to model, and what quantities we either know or can choose. For a soccer bot kicker system, we are trying to design for a required ball velocity, and our known quantites, or ones that we can choose, are the mass of the ball, the mass of the kicker plate, and the force that we can apply to the kicker. So we need develop a mathematical model that represents the ball velocity in terms of these quantites; there may be some others that appear while we develop the equation.</p>
+										<p>To design a kicker we need to develop a mathematical model. We can then use this mathematical model to help us select certain components and properties of the kicker system. Before we start developing a mathematical model we need to understand what quantity we are trying to model, and what quantities we either know or can choose. For a soccer bot kicker system, we are trying to design for a required ball velocity, and our known quantites, or ones that we can choose, are the mass of the ball, the mass of the kicker plate, and the force that we can apply to the kicker. So we need to develop a mathematical model that represents the ball velocity in terms of these quantites; there may be some others that appear while we develop the equation.</p>
 
 										<p>To start designing our mathematical model we need to assume that the collision between the kicker plate and the ball is elastic. You could assume that it is an inellastic collision, but that makes it much harder to model. In an elastic collision both momentum and energy are conserved. Furthermore, if we assume that only kinetic energy is transferred during the collision and that there are no other forms of energy present, such as heat or noise, then we can write the following equations:</p>
 

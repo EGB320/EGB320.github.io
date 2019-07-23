@@ -64,12 +64,12 @@
 
 										<p><b>StopSimulator()</b>: The StopSimulator function stops the VREP simulator. This is the same as manually pressing the Stop button within VREP.</p>
 
-										<p><b>SetTargetVelocities(x_dot, y_dot, theta_dot)</b>: The SetTargetVelocities function sets the robot's linear speed in the x and y direction with respect to the robot's coordinate frame and the robot's rotation velocity. The linear speeds, x_dot and y_dot, are in m/s while the rotation velocity, theta_dot, is in rad/s. Setting the y_dot velocity to a non-zero value while using a differential drive robot is impossible, and will simply be reset to 0. The maximum and minimum values you can set are based on the robot parameters, see <a href="#RobotParameters">Robot Parameters</a>. Only ball-obstacle occlusion is currently implemented. Example function usage:</p>
+										<p><b>SetTargetVelocities(x_dot, y_dot, theta_dot)</b>: The SetTargetVelocities function sets the robot's linear speed in the x and y direction with respect to the robot's coordinate frame and the robot's rotation velocity. The linear speeds, x_dot and y_dot, are in m/s while the rotation velocity, theta_dot, is in rad/s. Setting the y_dot velocity to a non-zero value while using a differential drive robot is impossible, and will simply be reset to 0. The maximum and minimum values you can set are based on the robot parameters, see <a href="#RobotParameters">Robot Parameters</a>. Example function usage:</p>
 
 										<pre><code># move the robot at a forward velocity of 0.1m/s with a rotational velocity of 0.5 rad/s.
 soccerBotSim.SetTargetVelocities(0.1, 0, 0.5)</code></pre>
 
-										<p><b>GetDetectedObjects()</b>: The GetDetectedObjects function takes no arguments and returns, as 4 variables in order, the range and bearing to the ball, the blue goal, the yellow goal, and any obstacles if they are within the camera's field of view (FOV). The range and bearing is returned as a 2 element array. If the object is not within the field of view that respective return variable will be set to none. How far the away the objects can be detected is based on the robot parameters, see <a href="#RobotParameters">Robot Parameters</a>. Example function usage:<p>
+										<p><b>GetDetectedObjects()</b>: The GetDetectedObjects function takes no arguments and returns, as 4 variables in order, the range and bearing to the ball, the blue goal, the yellow goal, and any obstacles if they are within the camera's field of view (FOV). The range and bearing is returned as a 2 element array. If the object is not within the field of view that respective return variable will be set to none. How far the away the objects can be detected is based on the robot parameters, see <a href="#RobotParameters">Robot Parameters</a>. Only ball-obstacle occlusion is currently implemented. Example function usage:<p>
 
 										<pre><code>ballRB, blueRB, yellowRB, obstaclesRB = soccerBotSim.GetDetectedObjects()
 
@@ -111,7 +111,7 @@ if soccerBotSim.BallInDribbler() == True:
 	soccerBotSim.KickBall(0.5)</code></pre>
 
 
-										<p><b>UpdateObjectPositions()</b>: The UpdateObjectPositions function does two things. Firstly it updates internal class variables holding the position of the various object within the scene (i.e. ball and goals). Secondly it updates the position of the ball, by moving it back the center of the arena when a goal is score as well as emulating the dribbler by randomly "releasing" the ball. How often the ball is randomly released from the "dribbler" is based on a passed robot parameter. <b><em>This function should be called within every loop</em></b>.</p>
+										<p><b>UpdateObjectPositions()</b>: The UpdateObjectPositions function does two things. Firstly it updates internal class variables holding the position of the various object within the scene (i.e. ball and goals). Secondly it updates the position of the ball, by moving it back the center of the arena when a goal is score as well as emulating the dribbler by randomly "releasing" the ball. How often the ball is randomly released from the "dribbler" is based on a passed robot parameter. <b><em>This function should be called once within each iteration of the main code loop</em></b>.</p>
 
 										<pre><code> while True:
 	 # Navigation/AI Code - Get detected objects, and set robot velocities etc.

@@ -54,9 +54,11 @@
 
 										<p>This article discusses how you setup the Raspberry Pi hardware for the EGB320 design project. We recommend you read the <a href="GeneralHardwareIntro.html">general introductory guide</a> before setting up your Raspberry Pi.</p>
 
+										<hr class="major pdf-exclude" />
 										<h2>Imaging your MicroSD Card</h2>
 										<p>The operating system for your Raspberry Pi will be hosted on a microSD card inserted into the bottom of the Pi. The MicroSD card included in your EGB320 kits comes blank; a clean platform for you to build upon. <b>You must image this microSD card prior to attempting to use your Pi.</b> It is up to you how you wish to set this up, however some installation processes can be very time consuming! To minimise your setup time, we have created an EGB320 Raspbian Jessie image for you to use, if you so choose. Instructions regarding how to image your MicroSD card can be found in the <a href="ImagingMicroSDCard.html">Imaging Your MicroSD Card</a> document.</p>
 
+										<hr class="major pdf-exclude" />
 										<h2>Installing Your MicroSD Card</h2>
 										<p>The pre-configured EGB320 Raspbian Jessie image you installed in the previous step contains;</p>
 										
@@ -76,6 +78,20 @@
 										<figure class="figure">
 	    										<img src="images/setup/RPi_SDCard.png" width="50%" alt = "Image Not Found" />
 	    										<figcaption>The Raspberry Pi with the MicroSD Card Inserted</figcaption>
+										</figure>
+
+										<hr class="major pdf-exclude" />
+										<h2>Attaching the GPIO Breakout Board (Optional)</h2>
+
+										<p>If you plan on directly attaching the screen to the GPIO pins and not via cables then we recommend you attach the small GPIO breakout board now. If you do not attach this small board and have the screen directly attached you will not be able to access the GPIO pins. The small GPIO breakout board should be connected to pins 29-40 inclusive, which are the GPIO pins located closest to the USB/ethernet ports.</p>
+    										
+										</figure>
+										<figure class="figure">
+											<img src="images/setup/Pi_with_GPIO_breakout.jpg" width="50%" alt="" />
+    										<figcaption>The GPIO breakout board attached to the Raspberry Pi.</figcaption>
+											<br/>
+											<img src="images/setup/Pi_with_GPIO_breakout_pinout.jpg" width="25%" alt="" />
+    										<figcaption>The pinout of the GPIO breakout board is 1 to 1 with the Raspberry Pi layout.</figcaption>
 										</figure>
 
 										<hr class="major pdf-exclude" />
@@ -100,7 +116,7 @@
     										<figcaption>The HDMI Touchscreen with Stand Offs Attached</figcaption>
 										</figure>
 										
-										<p>Next attach the screen's female header to the Raspberry Pi GPIO pins. The HDMI ports on the screen and Raspberry Pi should align. With the stand-offs in place the screen should only fit to the Raspberry Pi in one configuration. Now using the HDMI to HDMI adapter board connect the two HDMI ports. <b>Important:</b> if you do not align the pins correctly while attaching the screen, and proceed to power the Raspberry Pi, you can cause damage to the touch capabilities of the LCD screen. We will not be replacing any damaged touch screens.</p>
+										<p>Next attach the screen's female header to the Raspberry Pi GPIO pins. <b>The HDMI ports on the screen and Raspberry Pi should align</b>. With the stand-offs in place the screen should only fit to the Raspberry Pi in one configuration. Now using the HDMI to HDMI adapter board connect the two HDMI ports. <b><span class="blink_text">IMPORTANT:</span> if you do not align the pins correctly while attaching the screen, and proceed to power the Raspberry Pi, you can cause damage to the touch capabilities of the LCD screen. We will not be replacing any damaged touch screens.</b></p>
 
 										<figure class="figure">
 											<img src="images/setup/RPi_TouchScreen1.jpg" alt="Image Not Found" width="50%"/>
@@ -119,7 +135,7 @@
 
 										<p>To power the Raspberry Pi simply use the 5V Wall Power Supply and plug it into the micro USB connector onboard. A red LED near the micro USB port will light up, and if you have a screen attached it should show some activity. It may take a moment to boot up, especially when booting it for the first time.</p>
 
-										<p><b>Important:</b> the Raspberry Pi 3B requires a 5V power supply that can supply 2.5A and you should only ever supply power via the micro USB connector. Supplying power via the 3.3V and 5V rails within the GPIO pin header is risky, as it bypasses the protection circuitry. Additionally, you should always try to power down the Raspberry Pi properly (i.e. main menu -> shutdown). Only pull the power plug if the Raspberry Pi is not responding and you have no remaining options.</p>
+										<p><b><span class="blink_text">IMPORTANT:</span></b> the Raspberry Pi 3B requires a 5V power supply that can supply 2.5A and you should <b>only ever supply power via the micro USB connector</b>. Supplying power via the 3.3V and 5V rails within the GPIO pin header is risky, as it bypasses the protection circuitry. Additionally, you should always try to power down the Raspberry Pi properly (i.e. main menu -> shutdown). Only pull the power plug if the Raspberry Pi is not responding and you have no remaining options.</p>
 										
 
 										<hr class="major pdf-exclude" />
@@ -181,7 +197,11 @@
 										<hr class="major pdf-exclude" />
 										<h2>Reducing the Number of Touch Screen Pins</h2>
 
-										<p>The provided 5 inch touch screen comes with a 26-pin female connector. However, it does not actually require all 26 pins to operate correctly; in fact it only needs 9 pins in total. The touch screen requires power, ground, and the SPI serial communication pins. So if you require access to more GPIO pins, or want flexibility with the placement and orientation of the touch screen and Raspberry Pi, you can do so. The following figures and table display the required pin connections for the touch screen, and indicate the positioning of these pins on the Raspberry Pi. The BOARD numbering convention has been used, but you can convert to BCM if you wish using the provided Raspberry Pi pinout.</p>
+										<p>There are two methods of reducing the number of pins required by the touch screen.</p>
+
+										<p><b>Method 1 </b>- simply connect the screen to the Raspberry Pi using the HDMI and Mico USB. This will provide the screen with power and display, however the touch interface will not work. The touch interface requires the screen to communicate with the Raspberry Pi via SPI. Feel free to use a wireless/bluetooth keyboard instead of connecting the SPI.</p>
+
+										<p><b>Method 2 </b>- the provided 5 inch touch screen comes with a 26-pin female connector. However, it does not actually require all 26 pins to operate correctly; in fact it only needs 9 pins in total. The touch screen requires power, ground, and the SPI serial communication pins. So if you require access to more GPIO pins, or want flexibility with the placement and orientation of the touch screen and Raspberry Pi, you can do so. The following figures and table display the required pin connections for the touch screen, and indicate the positioning of these pins on the Raspberry Pi. The BOARD numbering convention has been used, but you can convert to BCM if you wish using the provided Raspberry Pi pinout.</p>
 
 
 										<figure class="figure">

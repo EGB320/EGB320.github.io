@@ -87,7 +87,7 @@
 											<li> 1 330ohm resistor</li>
 											<li> 1 breadboard</li>
 											<li> 2 male to female jumper cables</li>
-											<li> 1 right-angled header</li>
+											<li> 1 GPIO breakout board</li>
 										</ul>
 										
 										<h3 style="padding: 0px; margin-bottom: 3px; margin-top: 3px">The LED Circuit Setup</h3>
@@ -98,19 +98,19 @@
 										</figure>
 
 										<h3 style="padding: 0px; margin-bottom: 3px; margin-top: 3px">Connecting the Hardware</h3>
-										First, we must connect the LED to the Raspberry Pi. If you are currently using the provided screen, you will need to disconnect the screen and connect your right-angled header in order to access the required pins. The right-angled header needs to be aligned to cover pins 29-40, inclusive. In this example, we will be using GPIO21 (BCM or pin 40 BOARD) and the ground pin located directly next it, so you will need to plug a jumper cable into each of the corresponding pins in the right-angled header. After connecting the jumper cables, you may plug your HDML screen back in.
+										First, we must connect the LED to the Raspberry Pi. If you are currently using the provided screen and it is directly attached to your Raspberry Pi via the GPIO pins, you will need to ensure the GPIO breakout board is  also connected (see the <a href="SettingUpTheRaspberryPi.html">Setting Up The Raspberry Pi</a> guide). The GPIO breakout board needs to be aligned to cover pins 29-40, inclusive. In this example, we will be using GPIO21 (BCM or pin 40 BOARD) and the ground pin located directly next it, so you will need to plug a jumper cable into each of the corresponding pins in the GPIO breakout board.
 										<figure class="figure">
-	    										<img src="images/WiringLEDToPi.JPG" width="30%" alt="Image Not Found" />
+	    										<img src="images/gpio_python/WiringLEDToPi.jpg" width="30%" alt="Image Not Found" />
 	    										<figcaption>Raspberry Pi Pin Setup for LED Activity</figcaption>
 										</figure>
 										Using your breadboard, wire up the LED and resistor as shown below;
 										<figure class="figure">
-	    										<img src="images/LEDOff.JPG" width="30%" alt="Image Not Found" />
+	    										<img src="images/gpio_python/LEDOff.jpg" width="30%" alt="Image Not Found" />
 	    										<figcaption>Breadboard Setup for LED Activity</figcaption>
 										</figure>
 										Your entire setup should look like this;
 										<figure class="figure">
-	    										<img src="images/LEDSetup1.JPG" width="40%" alt="Image Not Found" />
+	    										<img src="images/gpio_python/LEDSetup1.jpg" width="40%" alt="Image Not Found" />
 	    										<figcaption>Entire Setup for LED Activity</figcaption>
 										</figure>
 										Now connect your Raspberry Pi to the power supply, and attach a USB keyboard and mouse. 
@@ -136,13 +136,13 @@ GPIO.cleanup()				# Exit the GPIO session cleanly</code></pre>
 										Run your script by clicking the green arrow "play" button at the top of the Spyder UI. The expected output from the program is an LED which turns on for 5 seconds, then turns off.
 
 										<figure class="figure">
-	    										<img src="images/LEDOn.JPG" width="40%" alt="Image Not Found" />
+	    										<img src="images/gpio_python/LEDOn.JPG" width="40%" alt="Image Not Found" />
 	    										<figcaption>The Result of the GPIO LED Control Code</figcaption>
 										</figure>
 
 										<h3 style="padding: 0px; margin-bottom: 3px; margin-top: 10px">Other Examples</h3>
 										<h4>Software PWM</h4>
-										This example demonstrates how to perform software PWM to flash an LED. To complete this example, may keep the same LED circuit design as constructed in the previous activity.
+										This example demonstrates how to perform software PWM to flash an LED. To complete this example, you may keep the same LED circuit design as constructed in the previous activity.
 										<pre><code>import RPi.GPIO as GPIO 			# Import GPIO module
  
 GPIO.setmode(GPIO.BCM)				# Set the GPIO pin naming convention
@@ -158,7 +158,7 @@ GPIO.cleanup()					# Exit the GPIO session cleanly</code></pre>
 
 										<h4>Using a Switch</h4>
 										This example demonstrates how to turn your LED on while a button is held down.
-										You will first need to connect the circuit as presented in the schematic below.
+										You will first need to connect the circuit as presented in the schematic below. We have connected the button to GPIO20 on the Raspberry Pi.
 										<figure class="figure">
 	    										<img src="images/gpio_python/LED_ButtonSchematic.png" width="25%" alt="Image Not Found" />
 	    										<figcaption>The Button to LED Circuit Schematic</figcaption>
