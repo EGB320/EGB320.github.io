@@ -56,23 +56,23 @@
 
 										<hr class="major pdf-exclude" />
 										<h2>Imaging your MicroSD Card</h2>
-										<p>The operating system for your Raspberry Pi will be hosted on a microSD card inserted into the bottom of the Pi. The MicroSD card included in your EGB320 kits comes blank; a clean platform for you to build upon. <b>You must image this microSD card prior to attempting to use your Pi.</b> It is up to you how you wish to set this up, however some installation processes can be very time consuming! To minimise your setup time, we have created an EGB320 Raspbian Jessie image for you to use, if you so choose. Instructions regarding how to image your MicroSD card can be found in the <a href="ImagingMicroSDCard.html">Imaging Your MicroSD Card</a> document.</p>
+										<p>The operating system for your Raspberry Pi will be hosted on a microSD card inserted into the bottom of the Pi. The microSD card included in your EGB320 kits comes pre-installed with an EGB320 Raspbian image. <b>The microSD card must have a valid image for the Raspberry Pi to operate correctly.</b> Instructions regarding how to image your MicroSD card can be found in the <a href="">Imaging Your MicroSD Card</a> guide.</p>
 
 										<hr class="major pdf-exclude" />
 										<h2>Installing Your MicroSD Card</h2>
-										<p>The pre-configured EGB320 Raspbian Jessie image you installed in the previous step contains;</p>
+										<p>The pre-configured EGB320 Raspbian image you installed in the previous step contains;</p>
 										
 										<ul>
 											<li>OpenCV 3,</li>
-											<li>Python 2.7,</li>
-											<li>Python code editing and compiling environments,</li>
-											<li>The LCD touchscreen drivers,</li>
-											<li>A QUT WiFi configuration script, and</li>
-											<li>A demonstration python script for the camera</li>
+											<li>Python 3,</li>
+											<li>Python code editing and compiling environments (Code-OSS similar to VSCode),</li>
+											<li>LCD Screen Management,</li>
+											<li>Network Manager, and</li>
+											<li>A demonstration Python3 script for the camera</li>
 										</ul>
 
 
-										<p>You should have already installed the Raspbian image in the previous step. If you have not already inserted your microSD card, simply insert it into the microSD slot located on the right hand side of the Raspberry Pi in the following image.</p>
+										<p>Your microSD card should have come pre-installed with the EGB320 Raspbian image. If the microSD card is blank please look at the <a href="ImagingMicroSDCard.html">Imaging Your MicroSD Card</a> guide. If you have not already inserted your microSD card, simply insert it into the microSD slot located on the right hand side of the Raspberry Pi in the following image.</p>
 
 
 										<figure class="figure">
@@ -144,11 +144,11 @@
 
 										<p>To get the Raspberry Pi to display correctly on the LCD screen, run the following command in a terminal. This command will cause the Raspberry Pi to reboot.</p>
 
-										<pre><code>sudo ./LCD-show/LCD5-show</code></pre>
+										<pre><code>sudo LCD5-show</code></pre>
 
 										<p>To get the Raspberry Pi to display correctly on a standard HDMI desktop monitor run the following command within a terminal.</p>
 
-										<pre><code>sudo ./LCD-show/LCD-hdmi</code></pre>
+										<pre><code>sudo LCD-hdmi</code></pre>
 										<div class="html2pdf__page-break"></div>
 									</div>
 									
