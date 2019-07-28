@@ -81,7 +81,7 @@
 										<hr class="major pdf-exclude" />
 										<h2>GPIO Activity</h2>
 										<h3 style="padding: 0px; margin-bottom: 3px; margin-top: 3px">Required Components</h3>
-										<p style="padding: 0px; margin-bottom: 0px">To help you learn how the GPIO pins work, the following example will step you through the process of controlling an LED with the Raspberry Pi. To complete this example, you will need the following;
+										<p style="padding: 0px; margin-bottom: 0px">To help you learn how the GPIO pins work, the following example will step you through the process of controlling an LED with the Raspberry Pi. To complete this example, you will need the following;</p>
 										<ul style="margin-left: 35px; padding: 10px; margin-bottom: 0px">
 											<li> 1 LED</li>
 											<li> 1 330ohm resistor</li>
@@ -116,12 +116,7 @@
 										Now connect your Raspberry Pi to the power supply, and attach a USB keyboard and mouse. 
 
 										<h3 style="padding: 0px; margin-bottom: 3px; margin-top: 10px">Programming Using GPIO</h3>
-										Now that you have connected an LED to your Raspberry Pi, the next step is to write some software to control the input and output signals sent from the Pi to the LED circuit. In this example, we will write our script using code (a linux version of Visual Studio Code), however you may use any text editor and terminal emulator you like to write and run your scripts.
-
-										Open code by either entering the command line input;
-
-										<pre style="margin-top: 10px; margin-bottom: 10px"><code>code</code></pre>
-										or by clicking the shortcut on your desktop.
+										<p>Now that you have connected an LED to your Raspberry Pi, the next step is to write some software to control the input and output signals sent from the Pi to the LED circuit. Open up a text editor on the Raspberry Pi, GEdit for example, and write the following code. Feel free to install any other text editor on the Raspberry Pi.</p>
 										
 										The following example code should get you started with interfacing between the Raspberry Pi and an LED connected to pin 21;
 
@@ -133,7 +128,10 @@ GPIO.output(21,GPIO.HIGH) 		# Set GPIO pin 21 to digital high (on)
 time.sleep(5)				# Wait for 5 seconds
 GPIO.output(21,GPIO.LOW)		# Set GPIO pin 21 to digital low (off)
 GPIO.cleanup()				# Exit the GPIO session cleanly</code></pre>
-										Run your script by clicking the green arrow "play" button at the top of the spyder UI. The expected output from the program is an LED which turns on for 5 seconds, then turns off.
+
+										<p>To run your script you will need to open up a terminal and then CD to the directory where your saved your python script. Once you have CD to the directory you can run the script by running the following command within the terminal: <!-- Run your script by clicking the green arrow "play" button at the top of the spyder UI. The expected output from the program is an LED which turns on for 5 seconds, then turns off. --></p>
+
+										<pre style="margin-top: 5px; margin-bottom: 0px"><code>python3 &lang;filename.py&rang;</code></pre>
 
 										<figure class="figure">
 	    										<img src="images/gpio_python/LEDOn.JPG" width="40%" alt="Image Not Found" />
@@ -151,7 +149,7 @@ GPIO.setup(21, GPIO.OUT)			# Set our GPIO pin to output
 pwm21 = GPIO.PWM(21, 0.5)			# Initiate the PWM signal
 pwm21.start(50)					# Start a PWM signal with duty cycle at 50%
 
-raw_input('Press a key to stop:')		# Kill on keypress
+input('Press a key to stop:')		# Kill on keypress
 
 pwm21.stop()					# Stop the PWM signal
 GPIO.cleanup()					# Exit the GPIO session cleanly</code></pre>
