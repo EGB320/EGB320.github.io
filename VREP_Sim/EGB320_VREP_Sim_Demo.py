@@ -4,16 +4,36 @@
 # will also include the soccerbot_lib module which includes math, time, numpy (as np) and vrep python modules
 from HelperFuncs import *
 
+# SET ROBOT PARAMETERS
+robotParameters = RobotParameters()
+
+# Drive Parameters
+robotParameters.driveType = 'differential'
+robotParameters.minimumLinearSpeed = 0.0  	# minimum speed at which your robot can move forward in m/s
+robotParameters.maximumLinearSpeed = 0.5 	# maximum speed at which your robot can move forward in m/s
+robotParameters.driveSystemQuality = 1	# specifies how good your drive system is from 0 to 1 (with 1 being able to drive in a perfectly straight line when a told to do so)
+
+# Camera Parameters
+robotParameters.cameraOrientation = 'landscape' # specifies the orientation of the camera, either landscape or portrait
+robotParameters.cameraDistanceFromRobotCenter = 0.1 # distance between the camera and the center of the robot in the direction of the kicker/dribbler in metres
+robotParameters.cameraHeightFromFloor = 0.03 # height of the camera relative to the floor in metres
+robotParameters.cameraTilt = 0. # tilt of the camera in radians
+
+# Vision Processing Parameters
+robotParameters.maxBallDetectionDistance = 1 # the maximum distance away that you can detect the ball in metres
+robotParameters.maxGoalDetectionDistance = 2.5 # the maximum distance away that you can detect the goals in metres
+robotParameters.maxObstacleDetectionDistance = 1.5 # the maximum distance away that you can detect the obstacles in metres
+
+# Dribbler Parameters
+robotParameters.dribblerQuality = 1 # specifies how good your dribbler is from 0 to 1.0 (with 1.0 being awesome and 0 being non-existent)
+
 
 # SET SCENE PARAMETERS
 sceneParameters = SceneParameters()
 sceneParameters.ballStartingPosition = [0.3, 0] # starting position of the ball [x, y] (in metres)
-sceneParameters.obstacle0_StartingPosition = -1  # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
-sceneParameters.obstacle1_StartingPosition = -1   # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
-sceneParameters.obstacle2_StartingPosition = -1   # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
-
-
-
+sceneParameters.obstacle0_StartingPosition = -1  # starting position of obstacle 0 [x, y] (in metres), -1 if want to use current vrep position, or none if not wanted in the scene
+sceneParameters.obstacle1_StartingPosition = -1   # starting position of obstacle 1 [x, y] (in metres), -1 if want to use current vrep position, or none if not wanted in the scene
+sceneParameters.obstacle2_StartingPosition = -1   # starting position of obstacle 2 [x, y] (in metres), -1 if want to use current vrep position, or none if not wanted in the scene
 
 
 # MAIN SCRIPT
@@ -58,7 +78,9 @@ if __name__ == '__main__':
 
 		while True:
 
+			# Get object positions and transform from range bearings from camera pose to robot body pose
 			ballRB, blueGoalRB, yellowGoalRB, obstaclesRB = soccerBotSim.GetDetectedObjects()
+			ballRB, blueGoalRB, yellowGoalRB, obstaclesRB = TransformRangeBearingsFromCameraToRobot(robotParameters, ballRB, blueGoalRB, yellowGoalRB, obstaclesRB)
 
 			if goal == 'blue':
 				goalRB = blueGoalRB
@@ -67,13 +89,13 @@ if __name__ == '__main__':
 
 			if robotState == RobotStates.BALL_SEARCH_ROTATE:
 				linearSpeedLimits = [0.03, 0.3]
-				rotationalSpeedLimits = [0.2, 0.8]
+				rotationalSpeedLimits = [0.1, 0.8]
 				targetVel, startTime, robotState = BallSearchRotate(ballRB, soccerBotSim.BallInDribbler(), targetVel, startTime, robotState)
 
 
 			elif robotState == RobotStates.BALL_SEARCH_MOVE_TO_POINT:
 				linearSpeedLimits = [0.03, 0.3]
-				rotationalSpeedLimits = [0.2, 0.8]
+				rotationalSpeedLimits = [0.1, 0.8]
 				
 
 			elif robotState == RobotStates.MOVE_TO_BALL:

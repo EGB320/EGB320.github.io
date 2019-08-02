@@ -132,18 +132,18 @@ D<sub>boost</sub> = (V<sub>out</sub> - V<sub>input</sub>) &frasl; V<sub>out</sub
 	    										<figcaption>Formula to Select an Inductor for the RichTek Regulator</figcaption>
 										</figure>
 										
-										<p>For our scenario, we have V<sub>out</sub> equal to 5V, V<sub>in</sub> can be anywhere between 6.4 to 8.4V (we will use the nominal battery voltage of 7.4V though), a switching frequency (f<sub>sw</sub>) of 500kHz and a ripple current (&Delta;I) of 1.2A. Based on these values, using the equation above, we can calculate the inductor value to be 4.0uH.</p>
+										<p>For our scenario, we have V<sub>out</sub> equal to 5V, V<sub>in</sub> can be anywhere between 6.4 to 8.4V (we will use the nominal battery voltage of 7.4V though), a switching frequency (f<sub>sw</sub>) of 500kHz and a ripple current (&Delta;I) of 1.2A. Based on these values, using the equation above, we can calculate the inductor value to be 2.7uH.</p>
 
-										<p>Now we can determine the peak inductor current. This is important to know as we need to select an inductor with a saturation current above this value, and we must ensure the current limit of the IC is below this value (the table on page 6 shows the current limit for this particular IC). To calculate the inductor peak current, the datasheet provides us with the following formula.</p>
+										<p>Now we can determine the peak inductor current. This is important to know as we need to select an inductor with a saturation current above this value, and we must ensure the IC can handle this peak current too (the table on page 6 shows the current limit for this particular IC). To calculate the inductor peak current, the datasheet provides us with the following formula.</p>
 
 										<figure class="figure">
 	    										<img src="images/Hardware1/RichTek_InductorPeak.png" width="30%" alt="Image Not Found" />
 	    										<figcaption>Formula to Determine the Peak Inductor Current</figcaption>
 										</figure>
 
-										<p>Using this formula, we can determine the peak current for our example circuit to be 4.6 Amps. We need to double check that this value is less than the IC current limit, which it is, so we can continue on with our design.</p>
+										<p>Using this formula, we can determine the peak current for our example circuit to be 4.6 Amps (Iout max was set to 4 Amps as per page 1 of the datasheet). We need to double check that this value is less than the IC current limit, which it is, so we can continue on with our design.</p>
 
-										<p>We will now choose an inductor with a value of approximately 4uH, and ensure that its saturation current is greater than 4.6 Amps. For the purposes of this example, we went and found the following <a target="_blank" href="https://www.digikey.com.au/product-detail/en/pulse-electronics-power/PA4342.402NLT/553-3437-2-ND/5641799">inductor</a>. This is a 4uH inductor with a current rating of 10A and a saturation current of 18A, which should be fine for our application.</p>
+										<p>We will now choose an inductor with a value of approximately 2.7uH, and ensure that its saturation current is greater than 4.6 Amps. For the purposes of this example, we went and found the following <a target="_blank" href="https://www.digikey.com.au/product-detail/en/kemet/SBC4-2R7-662/399-18923-ND/5819263">inductor</a>. This is a 2.7uH inductor with a current rating of 6.6A and a saturation current of 9.6A, which should be fine for our application.</p>
 
 										<p><b class="blink_text">Important:</b> If you select an inductor with a value that is not exactly what you calculated, you will need to go back and recalculate the inductor ripple and peak current to ensure these values are within the limits.</p>
 
@@ -173,7 +173,7 @@ D<sub>boost</sub> = (V<sub>out</sub> - V<sub>input</sub>) &frasl; V<sub>out</sub
 
 										Using the above equations, we can calculate our output ripple voltage to be approximately 37.2mV.  This value will be fine for our application, so we will proceed to check the transient voltages.
 
-										</p>Firstly, we calculate the maximum duty cycle (D<sub>max</sub>) to be 0.871. The value for t<sub>off(min)</sub> can be found in the electrical characteristics table. This then leads us to determine the value for V<sub>sag</sub> and V<sub>soar</sub> to be 495mV and 56.8mV respectively. These 3 values were determined using the following formulas with a value of 2.5A used for &Delta;I<sub>out</sub>. We used 2.5A as this is the maximum current draw for the Raspberry Pi 3, and this would be the worst case load change for our system. V<sub>sag</sub> and V<sub>soar</sub> represent how much the voltage would change when the load changes. V<sub>sag</sub> is how much the ouput voltage would change when the load is increased, and V<sub>soar</sub> is how much it would change when the load is decreased. The values we computed are within spec and should not harm the Raspberry Pi during the worst case scenario.</p>
+										</p>Firstly, we calculate the maximum duty cycle (D<sub>max</sub>) to be 0.871. The value for t<sub>off(min)</sub> can be found in the electrical characteristics table. This then leads us to determine the value for V<sub>sag</sub> and V<sub>soar</sub> to be 334mV and 38.4mV respectively. These 3 values were determined using the following formulas with a value of 2.5A used for &Delta;I<sub>out</sub>. We used 2.5A as this is the maximum current draw for the Raspberry Pi 3, and this would be the worst case load change for our system. V<sub>sag</sub> and V<sub>soar</sub> represent how much the voltage would change when the load changes. V<sub>sag</sub> is how much the ouput voltage would change when the load is increased, and V<sub>soar</sub> is how much it would change when the load is decreased. The values we computed are within spec and should not harm the Raspberry Pi during the worst case scenario.</p>
 
 										<figure class="figure">
 	    										<img src="images/Hardware1/RichTek_DmaxCalculation.png" width="40%" alt="Image Not Found" />

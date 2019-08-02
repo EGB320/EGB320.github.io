@@ -12,29 +12,6 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
 
-# SET ROBOT PARAMETERS
-robotParameters = RobotParameters()
-
-# Drive Parameters
-robotParameters.driveType = 'omni'
-robotParameters.minimumLinearSpeed = 0.0  	# minimum speed at which your robot can move forward in m/s
-robotParameters.maximumLinearSpeed = 0.5 	# maximum speed at which your robot can move forward in m/s
-robotParameters.driveSystemQuality = 1	# specifies how good your drive system is from 0 to 1 (with 1 being able to drive in a perfectly straight line when a told to do so)
-
-# Camera Parameters
-robotParameters.cameraOrientation = 'landscape' # specifies the orientation of the camera, either landscape or portrait
-robotParameters.cameraDistanceFromRobotCenter = 0.1 # distance between the camera and the center of the robot in the direction of the kicker/dribbler in metres
-robotParameters.cameraHeightFromFloor = 0.03 # height of the camera relative to the floor in metres
-robotParameters.cameraTilt = 0. # tilt of the camera in radians
-
-# Vision Processing Parameters
-robotParameters.maxBallDetectionDistance = 1 # the maximum distance away that you can detect the ball in metres
-robotParameters.maxGoalDetectionDistance = 2.5 # the maximum distance away that you can detect the goals in metres
-robotParameters.maxObstacleDetectionDistance = 1.5 # the maximum distance away that you can detect the obstacles in metres
-
-# Dribbler Parameters
-robotParameters.dribblerQuality = 1 # specifies how good your dribbler is from 0 to 1.0 (with 1.0 being awesome and 0 being non-existent)
-
 
 # ROBOT STATES
 class RobotStates(Enum):
@@ -167,7 +144,6 @@ def PlotRangeAndBearings(figHandle, ballRBHandle, blueGoalRBHandle, yellowGoalRB
 	obstacleRBHandles = None
 
 
-
 	# Plot lines
 	if ballRB != None:
 		x = [robotPose[0], robotPose[0]+ballRB[0]*math.cos(ballRB[1]+robotPose[5])]
@@ -183,7 +159,6 @@ def PlotRangeAndBearings(figHandle, ballRBHandle, blueGoalRBHandle, yellowGoalRB
 		x = [robotPose[0], robotPose[0]+yellowGoalRB[0]*math.cos(yellowGoalRB[1]+robotPose[5])]
 		y = [robotPose[1], robotPose[1]+yellowGoalRB[0]*math.sin(yellowGoalRB[1]+robotPose[5])]
 		yellowGoalRBHandle = plt.plot(x, y, '--y')
-
 
 	if obstaclesRB != None:
 		obstacleRBHandles = []
@@ -233,6 +208,34 @@ def PlotTargetVelocity(figHandle, velocityHandle, targetVel, robotPose):
 
 	return figHandle, velocityHandle
 
+
+def TransformRangeBearingsFromCameraToRobot(robotParameters, ballRangeBearing, blueGoalRangeBearing, yellowGoalRangeBearing, obstaclesRangeBearing):
+	if ballRangeBearing != None:
+		x = ballRangeBearing[0]*math.cos(ballRangeBearing[1]) + robotParameters.cameraDistanceFromRobotCenter
+		y = ballRangeBearing[0]*math.sin(ballRangeBearing[1])
+		ballRangeBearing[0] = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
+		ballRangeBearing[1] = math.atan2(y,x)
+
+	if blueGoalRangeBearing != None:
+		x = blueGoalRangeBearing[0]*math.cos(blueGoalRangeBearing[1]) + robotParameters.cameraDistanceFromRobotCenter
+		y = blueGoalRangeBearing[0]*math.sin(blueGoalRangeBearing[1])
+		blueGoalRangeBearing[0] = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
+		blueGoalRangeBearing[1] = math.atan2(y,x)
+
+	if yellowGoalRangeBearing != None:
+		x = yellowGoalRangeBearing[0]*math.cos(yellowGoalRangeBearing[1]) + robotParameters.cameraDistanceFromRobotCenter
+		y = yellowGoalRangeBearing[0]*math.sin(yellowGoalRangeBearing[1])
+		yellowGoalRangeBearing[0] = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
+		yellowGoalRangeBearing[1] = math.atan2(y,x)
+
+	if obstaclesRangeBearing != None:
+		for idx, obsRB in enumerate(obstaclesRangeBearing):
+			x = obsRB[0]*math.cos(obsRB[1]) + robotParameters.cameraDistanceFromRobotCenter
+			y = obsRB[0]*math.sin(obsRB[1])
+			obstaclesRangeBearing[idx][0] = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
+			obstaclesRangeBearing[idx][1] = math.atan2(y,x)
+
+	return ballRangeBearing, blueGoalRangeBearing, yellowGoalRangeBearing, obstaclesRangeBearing
 
 
 def BallSearchRotate(ballRB, ballInDribbler, targetVel, startTime, robotState):
@@ -305,7 +308,6 @@ def MoveToBall(ballRB, obstaclesRB, ballInDribbler, targetVel, robotState, linea
 	return targetVel, robotState
 
 
-
 def MoveToGoal(goalRB, obstaclesRB, ballInDribbler, targetVel, robotState, linearGain, rotationalGain, linearSpeedLimits, rotationalSpeedLimits):
 	if ballInDribbler == False:
 		robotState = RobotStates.BALL_SEARCH_ROTATE
@@ -344,7 +346,6 @@ def MoveToGoal(goalRB, obstaclesRB, ballInDribbler, targetVel, robotState, linea
 	targetVel[1] = linearGain * linearVelocityScale * vectorComponents[1]
 
 	return targetVel, robotState
-
 
 
 def ComputeRepulsiveVectorComponents(obstaclesRB):

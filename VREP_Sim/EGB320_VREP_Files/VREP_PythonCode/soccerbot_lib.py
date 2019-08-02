@@ -422,12 +422,12 @@ class VREP_SoccerBot(object):
 			print('Failed to get Motor object handles. Terminating Program. Error Codes %d, %d, %d'%(errorCode1, errorCode2, errorCode3))
 			sys.exit(-1)
 
-		# errorCode = self.GetdribblerMotorHandle()
+		# errorCode = self.GetDribblerMotorHandle()
 		# if errorCode != 0:
 		# 	print('Failed to get Dribbler object handle. Terminating Program. Error Code %d'%(errorCode))
 		# 	sys.exit(-1)
 
-		errorCode = self.GetkickerHandle()
+		errorCode = self.GetKickerHandle()
 		if errorCode != 0:
 			print('Failed to get Kicker object handle. Terminating Program. Error Code %d'%(errorCode))
 			sys.exit(-1)
@@ -484,13 +484,13 @@ class VREP_SoccerBot(object):
 
 
 	# Get VREP Dribbler Handle
-	def GetdribblerMotorHandle(self):
+	def GetDribblerMotorHandle(self):
 		errorCode, self.dribblerMotorHandle = vrep.simxGetObjectHandle(self.clientID, 'DribblerMotor', vrep.simx_opmode_oneshot_wait)
 		return errorCode
 			
 
 	# Get VREP Kicker Handle
-	def GetkickerHandle(self):
+	def GetKickerHandle(self):
 		errorCode, self.kickerHandle = vrep.simxGetObjectHandle(self.clientID, 'Kicker', vrep.simx_opmode_oneshot_wait)
 		return errorCode
 
