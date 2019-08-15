@@ -158,10 +158,6 @@
 										<h2>Configuring and Testing The Raspberry Pi Camera</h2>
 										<p>To be able to use the Rasberry Pi Camera, you will need to ensure the camera module is enabled. To do this click on the Raspberry Pi Icon which can be found in the top left corner. Then in the menu select Preferences -> Raspberry Pi Configuration. Within the Raspberry Pi Configuration Display, go to the Interfaces tab and ensure that the Camera is enabled.</p>
 										
-										<p>To test your camera is working open up a terminal (CTRL+ALT+T) and run the following command. This will run a Python script that should show you a live feed of the camera.</p>
-
-										<pre><code>python3 test.py</code></pre>
-
 										<figure class="figure">
 											<div class="row gtr-50 gtr-uniform">
 												<div class="col-5" style="margin-left: 5%;">
@@ -175,7 +171,14 @@
 											</div>
 										</figure>
 
+										<p>To test your camera is working open up a terminal (CTRL+ALT+T) and run the following command. This will run a Python script that should show you a live feed of the camera.</p>
+
+										<pre><code>python3 test.py</code></pre>
+
+										<p>If this doesn't work try running the raspberry config with admin privileges by running the following command in a terminal. </p>
+										<pre><code> sudo raspi-config </code></pre>
 										
+										<p> If the test script works you should see a window similar to the one in the figure below.</p>
 
 										<figure class="figure">
 											<img src="images/setup/camera_test_demo.JPG" alt="Image Not Found" width="55%"/>
@@ -193,8 +196,40 @@
 										<!-- <pre><code>sudo ./Desktop/ConnectToQUTWifi.sh</code></pre>
 
 										<p>To connect to any other WiFi network simply attach the Raspberry Pi to a display and connect to your desired network as you would on a standard computer. The network interfaces icon can be found on the top right of the screen.</p> -->
+										<hr class="major pdf-exclude" />
+										<h2>Interfacing with the Raspberry Pi via a Windows Computer</h2>
+										<p> A typical way to communicate with a Linux system via an external computer is via SSH. However, SSH is not straightforward to use on a windows computer. <b>MobaXterm</b> is a software package which can run SSH in a windows OS envrironment (and do many other things). </p>
+
+										<ul>
+											<li>Ensure the external computer is on the same network as the raspberry pi* </li>
+											<li>Open MobaXterm </li>
+											<li>Click the new session button up the top left</li>
+											<li>Click SSH in the top left of your popup window</li>
+											<li>Obtain your ip address of your pi (type ifconfig in a terminal on your pi, should be under WLAN0 if using wifi) </li>
+											<li>Enter your pi's ip address in the mobaxterm prompt window </li>
+											<li>Click "specify username" and type pi as the username</li>
+											<li>Press enter and enter the password (default is raspberry)</li>
+										</ul>
+
+										<p>*note if you are on QUT WiFi you may need to run the QUT VPN service (Cisco anyconnect client) and connect to sas.qut.edu.au</p>
+										<figure class="figure">
+												<div class="row gtr-50 gtr-uniform">
+													<div class="col-5" style="margin-left: 5%;">
+														<span class="image fit"><img src="images/setup/mobaxterm.jpg" alt="Image Not Found" width="50%"/><figcaption>Creating a new session</figcaption></span>
+														
+													</div>
+													<div class="col-5" style="margin-left: 5%;">
+														<span class="image fit"><img src="images/setup/mobaxterm_new_session.png" alt="Image Not Found" width="50%"/><figcaption>adding ip and username</figcaption></span>
+	
+													</div>
+												</div>
+										</figure>
+
+										
 
 										<hr class="major pdf-exclude" />
+
+							
 										<h2>Reducing the Number of Touch Screen Pins</h2>
 
 										<p>There are two methods of reducing the number of pins required by the touch screen.</p>

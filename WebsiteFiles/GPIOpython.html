@@ -118,6 +118,11 @@
 										<h3 style="padding: 0px; margin-bottom: 3px; margin-top: 10px">Programming Using GPIO</h3>
 										<p>Now that you have connected an LED to your Raspberry Pi, the next step is to write some software to control the input and output signals sent from the Pi to the LED circuit. Open up a text editor on the Raspberry Pi, GEdit for example, and write the following code. Feel free to install any other text editor on the Raspberry Pi.</p>
 										
+										<p> A recommended python development environment that is supported on a raspberry pi is Spyder. To install this software on your pi, ensure your pi has internet and run the following code in a terminal (CTL+ALT+T to open):</p>
+										<pre><code>sudo apt-get install spyder3</code></pre>
+
+										<p>Once installed you should be able to open spyder via the terminal by running "spyder3" as a command or via the pi menu -> programming -> spyder3 </p>
+										
 										The following example code should get you started with interfacing between the Raspberry Pi and an LED connected to pin 21;
 
 										<pre style="margin-top: 5px; margin-bottom: 0px"><code>import RPi.GPIO as GPIO			# Import the GPIO module
