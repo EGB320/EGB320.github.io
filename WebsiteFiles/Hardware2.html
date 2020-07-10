@@ -249,56 +249,7 @@
 
 										<p>However, this means that we need an additional amount of torque, as we cannot get a speed boost without giving something extra somewhere else. How much extra torque do we need? Well, it will be equal to approximately 15%. So you would compute your friction and acceleration torques as you would for a differential drive and then add on an extra 15%. Remember this is only for a 3 wheel omnidirectional system, for a 4 wheel system it is different.</p>
 
-<!--
-										<hr class="major pdf-exclude" />
-										<h2>Kicker Design</h2>
-										<p>To design a kicker we need to develop a mathematical model. We can then use this mathematical model to help us select certain components and properties of the kicker system. Before we start developing a mathematical model we need to understand what quantity we are trying to model, and what quantities we either know or can choose. For a soccer bot kicker system, we are trying to design for a required ball velocity, and our known quantites, or ones that we can choose, are the mass of the ball, the mass of the kicker plate, and the force that we can apply to the kicker. So we need to develop a mathematical model that represents the ball velocity in terms of these quantites; there may be some others that appear while we develop the equation.</p>
 
-										<p>To start designing our mathematical model we need to assume that the collision between the kicker plate and the ball is elastic. You could assume that it is an inellastic collision, but that makes it much harder to model. In an elastic collision both momentum and energy are conserved. Furthermore, if we assume that only kinetic energy is transferred during the collision and that there are no other forms of energy present, such as heat or noise, then we can write the following equations:</p>
-
-										<pre><code># Conservation of Momentum
-m<sub>k</sub>v<sub>ki</sub> = m<sub>k</sub>v<sub>ki</sub> + m<sub>k</sub>v<sub>b</sub>				# Initial velocity of the ball is 0, so removed term from LHS 
-
-# Conservation of Enery
-E<sub>ki</sub> = E<sub>kf</sub> + E<sub>b</sub>				
-0.5*m<sub>k</sub>v<sub>ki</sub><sup>2</sup> = 0.5*m<sub>k</sub>v<sub>kf</sub><sup>2</sup> + 0.5*m<sub>k</sub>v<sub>f</sub><sup>2</sup> 		# Remember that kinetic energy = 0.5*m*v<sup>2</sup>
-
-# Where
-v<sub>ki</sub> = the velocity of the kicker right before impact
-v<sub>kf</sub> = the velocity of the kicker after the impact
-v<sub>b </sub> = the velocity of the ball after the impact
-m<sub>k </sub> = the mass of the kicker
-m<sub>b </sub> = the mass of the ball
-</code></pre>
-
-										<p>We can then perform simultaneous equations to remove the unknown and unwanted term of v<sub>kf</sub>. We can leave the v<sub>ki</sub> in for now as we can change this into known quantities later on. The result of performing simultaneous equations leads to the following equation (we are not going to show the derivation):</p>
-
-										<pre><code>v<sub>b</sub> = (2m<sub>k</sub> * v<sub>ki</sub>) / (m<sub>k</sub> + m<sub>b</sub>)		# Equation 3.1</code></pre>
-
-										<p>The final step in developing our mathematical model is to substitute the velocity of the kicker right before the collision (v<sub>ki</sub>) into known quantities. Well using one of the equations of motion we can find the v<sub>ki</sub> in terms of its mass, the force applied to the kicker plate, and the distance the kicker plate travels.</p>
-
-										<pre><code># Equation of Motion
-v<sub>ki</sub><sup>2</sup> = v<sub>0</sub><sup>2</sup> + 2a<sub>k</sub>d
-
-# Newton's Second Law
-F = m<sub>k</sub>a<sub>k</sub>
-
-# Assuming the kicker plate starts at rest then v<sub>0</sub> will equal zero. Subsituting, we find
-v<sub>ki</sub> = &radic;(2Fd &frasl; m<sub>k</sub>)
-</code></pre>
-
-										<p>We can then substitute this into equation 2.1 to find the velocity of the ball after the kick given the mass of the kicker plate, the mass of the ball, the force applied to the kicker and the distance the kicker plate travels prior to kicking the ball.</p>
-
-										<pre><code>v<sub>b</sub> = (2m<sub>k</sub> * &radic;(2Fd &frasl; m<sub>k</sub>)) / (m<sub>k</sub> + m<sub>b</sub>)</code></pre>
-
-										<p>This is a starting point to a mathematical model for a kicker system. Depending on the style of kicker system you wish to design the mathematical model of the force applied will change. This is something you are going to have to investigate yourself but the teaching team are here to help. However, one of the most important things when designing a kicker is to perform impedance matching. 
-
-										<p>Impedance matching is when you match the impedance of your output with the impedance of your input to maximize power transfer. For a kicker system, matching impedances means ensuring that the mass of the kicker plate equals the mass of the golf ball. To demonstrate this, we can use the mathematical model we developed and can plot a graph of ball velocity vs kicker mass assuming a constant force is applied. If you complete this for your own system, you will get a graph like the figure below. As you can see, it has a distinctive peak velocity which occurs when the mass of the kicker matches the mass of the ball.</p>
-
-										<figure class="figure">
-    										<img src="images/Hardware2/ImpedanceMatching.png" width="70%" alt="Image Not Found" />
-    										<figcaption>Impedence Matching for Maximum Velocity</figcaption>
-										</figure>-->
 
 
 								</section>
