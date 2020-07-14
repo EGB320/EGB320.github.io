@@ -2,7 +2,7 @@
 
 # import HelperFuncs module - this sets up the robot parameters and includes helper functions
 # will also include the soccerbot_lib module which includes math, time, numpy (as np) and vrep python modules
-from HelperFuncs import *
+from LunarHelperFuncs import *
 
 # SET ROBOT PARAMETERS
 robotParameters = RobotParameters()
@@ -63,7 +63,6 @@ if __name__ == '__main__':
 		# helper variables
 		startTime = None
 		searchPoint = 2
-		goal = 'blue'
 
 		# Figure Handles
 		figHandle = None
@@ -72,20 +71,14 @@ if __name__ == '__main__':
 		obstacleHandles = [None, None, None]
 		velocityHandle = None
 		ballRBHandle = None
-		blueGoalRBHandle = None
-		yellowGoalRBHandle = None
+        landerRBHandle = None
 		obstacleRBHandles = None
 
 		while True:
 
 			# Get object positions and transform from range bearings from camera pose to robot body pose
-			ballRB, blueGoalRB, yellowGoalRB, obstaclesRB = soccerBotSim.GetDetectedObjects()
-			ballRB, blueGoalRB, yellowGoalRB, obstaclesRB = TransformRangeBearingsFromCameraToRobot(robotParameters, ballRB, blueGoalRB, yellowGoalRB, obstaclesRB)
-
-			if goal == 'blue':
-				goalRB = blueGoalRB
-			else:
-				goalRB = yellowGoalRB
+			ballRB, landerRB, obstaclesRB = soccerBotSim.GetDetectedObjects()
+			ballRB, landerRB, obstaclesRB = TransformRangeBearingsFromCameraToRobot(robotParameters, ballRB, landerRB, obstaclesRB)
 
 			if robotState == RobotStates.BALL_SEARCH_ROTATE:
 				linearSpeedLimits = [0.03, 0.3]
@@ -103,10 +96,10 @@ if __name__ == '__main__':
 				rotationalSpeedLimits = [0.1, 0.8]
 				targetVel, robotState = MoveToBall(ballRB, obstaclesRB, soccerBotSim.BallInDribbler(), targetVel, robotState, linearGain, rotationGain, linearSpeedLimits, rotationalSpeedLimits)
 
-			elif robotState == RobotStates.MOVE_TO_GOAL:
+			elif robotState == RobotStates.MOVE_TO_LANDER:
 				linearSpeedLimits = [0.03, 0.15]
 				rotationalSpeedLimits = [0.1, 0.3]
-				targetVel, robotState = MoveToGoal(goalRB, obstaclesRB, soccerBotSim.BallInDribbler(), targetVel, robotState, linearGain, rotationGain, linearSpeedLimits, rotationalSpeedLimits)
+				targetVel, robotState = MoveToTarget(landerRB, obstaclesRB, soccerBotSim.BallInDribbler(), targetVel, robotState, linearGain, rotationGain, linearSpeedLimits, rotationalSpeedLimits)
 
 			elif robotState == RobotStates.ATTEMPT_KICK:
 				if soccerBotSim.BallInDribbler():

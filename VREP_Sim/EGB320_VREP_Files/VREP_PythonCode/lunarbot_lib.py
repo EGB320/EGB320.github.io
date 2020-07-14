@@ -142,8 +142,7 @@ class VREP_SoccerBot(object):
 	def GetDetectedObjects(self):
 		# Variables used to return range and bearing to the objects
 		ballRangeBearing = None
-		blueGoalRangeBearing = None
-		yellowGoalRangeBearing = None
+		landerRangeBearing = None
 		obstaclesRangeBearing = None
 
 		# variables used to check for occlusion between obstacle and ball
@@ -159,17 +158,10 @@ class VREP_SoccerBot(object):
 					ballRangeBearing = [_range, _bearing]
 
 			# check to see if blue goal is in field of view
-			if self.blueGoalPosition != None:
-				inFOV, _range, _bearing = self.ObjectInCameraFOV(self.blueGoalPosition, self.robotParameters.maxGoalDetectionDistance)
+			if self.landerPosition != None:
+				inFOV, _range, _bearing = self.ObjectInCameraFOV(self.landerPosition, self.robotParameters.maxGoalDetectionDistance)
 				if inFOV == True:
-					blueGoalRangeBearing = [_range, _bearing]
-
-			# check to see if yellow goal is in field of view
-			if self.yellowGoalPosition != None:
-				inFOV, _range, _bearing = self.ObjectInCameraFOV(self.yellowGoalPosition, self.robotParameters.maxGoalDetectionDistance)
-				if inFOV == True:
-					yellowGoalRangeBearing = [_range, _bearing]
-
+					landerRangeBearing = [_range, _bearing]
 
 			# check to see which obstacles are within the field of view
 			for index, obstaclePosition in enumerate(self.obstaclePositions):
@@ -205,7 +197,7 @@ class VREP_SoccerBot(object):
 						ballRangeBearing = None
 						break
 
-		return ballRangeBearing, blueGoalRangeBearing, yellowGoalRangeBearing, obstaclesRangeBearing
+		return ballRangeBearing, landerRangeBearing, obstaclesRangeBearing
 
 	
 	# Gets the Range and Bearing to the wall(s)
@@ -437,10 +429,10 @@ class VREP_SoccerBot(object):
 			print('Failed to get Ball object handle. Terminating Program. Error Code %d'%(errorCode))
 			sys.exit(-1)
 
-		# blueErrorCode, yellowErrorCode = self.GetGoalHandles()
-		# if blueErrorCode != 0 or yellowErrorCode != 0:
-		# 	print('Failed to get Motor object handles. Terminating Program. Error Codes %d, %d'%(blueErrorCode, yellowErrorCode))
-		# 	sys.exit(-1)
+		landerErrorCode = self.GetLanderHandle()
+		if landerErrorCode != 0:
+			print('Failed to get Motor object handles. Terminating Program. Error Codes %d'%(landerErrorCode))
+			sys.exit(-1)
 
 		obs0ErrorCode, obs1ErrorCode, obs2ErrorCode = self.GetObstacleHandles()
 		if obs0ErrorCode != 0 or obs1ErrorCode != 0 or obs2ErrorCode != 0:
@@ -496,10 +488,9 @@ class VREP_SoccerBot(object):
 
 
 	# Get VREP Goal Handles
-	def GetGoalHandles(self):
-		blueErrorCode, self.blueGoalHandle = vrep.simxGetObjectHandle(self.clientID, 'BlueGoal', vrep.simx_opmode_oneshot_wait)
-		yellowErrorCode, self.yellowGoalHandle = vrep.simxGetObjectHandle(self.clientID, 'YellowGoal', vrep.simx_opmode_oneshot_wait)	
-		return blueErrorCode, yellowErrorCode
+	def GetLanderHandle(self):
+		landerErrorCode, self.landerHandle = vrep.simxGetObjectHandle(self.clientID, 'Lander', vrep.simx_opmode_oneshot_wait)	
+		return landerErrorCode
 
 
 	# Get VREP Ball Handle
@@ -645,12 +636,9 @@ class VREP_SoccerBot(object):
 		if self.ballPosition != None:
 			print("Ball Position (x,y,z): %0.4f, %0.4f, %0.4f"%(self.ballPosition[0], self.ballPosition[1], self.ballPosition[2]))
 			
-		if self.blueGoalPosition != None:
-			print("Blue Goal Position (x,y,z): %0.4f, %0.4f, %0.4f"%(self.blueGoalPosition[0], self.blueGoalPosition[1], self.blueGoalPosition[2]))
+		if self.landerPosition != None:
+			print("Blue Goal Position (x,y,z): %0.4f, %0.4f, %0.4f"%(self.landerPosition[0], self.landerPosition[1], self.landerPosition[2]))
 			
-		if self.yellowGoalPosition != None:
-			print("Yellow Goal Position (x,y,z): %0.4f, %0.4f, %0.4f"%(self.yellowGoalPosition[0], self.yellowGoalPosition[1], self.yellowGoalPosition[2]))
-
 		for index, obstacle in enumerate(self.obstaclePositions):
 			if obstacle != None:
 				print("Obstacle %d Position (x,y,z): %0.4f, %0.4f, %0.4f"%(index, obstacle[0], obstacle[1], obstacle[2]))
@@ -663,8 +651,7 @@ class VREP_SoccerBot(object):
 		self.robotPose = None
 		self.cameraPose = None
 		self.ballPosition = None
-		self.blueGoalPosition = None
-		self.yellowGoalPosition = None
+		self.landerGoalPosition = None
 		self.obstaclePositions = [None, None, None]
 
 		# GET 2D ROBOT POSE
@@ -684,15 +671,11 @@ class VREP_SoccerBot(object):
 		if errorCode == 0:
 			self.ballPosition = ballPosition
 
-		# blue goal position
-		errorCode, blueGoalPosition = vrep.simxGetObjectPosition(self.clientID, self.blueGoalHandle, -1, vrep.simx_opmode_buffer)
+		# lander position
+		errorCode, landerPosition = vrep.simxGetObjectPosition(self.clientID, self.landerHandle, -1, vrep.simx_opmode_buffer)
 		if errorCode == 0:
-			self.blueGoalPosition = blueGoalPosition
+			self.landerPosition = landerPosition
 
-		# yellow goal position
-		errorCode, yellowGoalPosition = vrep.simxGetObjectPosition(self.clientID, self.yellowGoalHandle, -1, vrep.simx_opmode_buffer)
-		if errorCode == 0:
-			self.yellowGoalPosition = yellowGoalPosition
 
 		# obstacle positions
 		obstaclePositions = [None, None, None]
@@ -740,29 +723,24 @@ class VREP_SoccerBot(object):
 	# Update the ball
 	def UpdateBall(self):
 		if self.ballPosition != None:
-			if self.PointInsideArena(self.ballPosition) == False:
-				# ball is in a goal, lets reset it to the center of the arena, and hope the robot isn't there
-				vrep.simxSetObjectPosition(self.clientID, self.ballHandle, -1, [0,0,0.725], vrep.simx_opmode_oneshot_wait)
 
-			elif self.PointInsideArena(self.ballPosition) == True:
-				# get range to ball from the robot
-				ballDist = self.DribblerToBallDistance()
+            ballDist = self.DribblerToBallDistance()
 
-				# See if need to connect/disconnect ball from robot
-				if ballDist != None and ballDist < 0.03 and self.ballConnectedToRobot == False:
-					# make physical connection between ball and robot to simulate dribbler
-					vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndBall',[1],[],[],bytearray(),vrep.simx_opmode_blocking)
-					self.ballConnectedToRobot = True
+            # See if need to connect/disconnect ball from robot
+            if ballDist != None and ballDist < 0.03 and self.ballConnectedToRobot == False:
+                # make physical connection between ball and robot to simulate dribbler
+                vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndBall',[1],[],[],bytearray(),vrep.simx_opmode_blocking)
+                self.ballConnectedToRobot = True
 
-				elif self.ballConnectedToRobot == True:
-					# random chance to disconnect
-					if np.random.rand() > self.robotParameters.dribblerQuality:
-						# terminate connection between ball and robot to simulate dribbler
-						vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndBall',[0],[],[],bytearray(),vrep.simx_opmode_blocking)
-						self.ballConnectedToRobot = False
+            elif self.ballConnectedToRobot == True:
+                # random chance to disconnect
+                if np.random.rand() > self.robotParameters.dribblerQuality:
+                    # terminate connection between ball and robot to simulate dribbler
+                    vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndBall',[0],[],[],bytearray(),vrep.simx_opmode_blocking)
+                    self.ballConnectedToRobot = False
 
-				elif ballDist != None and ballDist > 0.03:
-					self.ballConnectedToRobot = False
+            elif ballDist != None and ballDist > 0.03:
+                self.ballConnectedToRobot = False
 
 	
 	# Gets the range and bearing to a corner that is within the camera's field of view.
@@ -1009,7 +987,7 @@ class RobotParameters(object):
 
 		# Vision Processing Parameters
 		self.maxBallDetectionDistance = 1 # the maximum distance away that you can detect the ball in metres
-		self.maxGoalDetectionDistance = 2.5 # the maximum distance away that you can detect the goals in metres
+		self.maxLanderDetectionDistance = 2.5 # the maximum distance away that you can detect the goals in metres
 		self.maxObstacleDetectionDistance = 1.5 # the maximum distance away that you can detect the obstacles in metres
 		self.minWallDetectionDistance = 0.1 # the minimum distance away from a wall that you have to be to be able to detect it
 

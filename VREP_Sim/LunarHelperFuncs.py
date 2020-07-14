@@ -98,7 +98,7 @@ def PlotArenaAndObjects(figHandle, robotHandle, ballHandle, obstacleHandles, rob
 	return figHandle, robotHandle, ballHandle, obstacleHandles
 
 
-def PlotRangeAndBearings(figHandle, ballRBHandle, obstacleRBHandles, robotPose, ballRB, obstaclesRB):
+def PlotRangeAndBearings(figHandle, ballRBHandle, landerRBHandle, obstacleRBHandles, robotPose, ballRB, obstaclesRB):
 	if figHandle == None:
 		# create figure handle
 		figHandle = plt.figure(1)
@@ -183,7 +183,7 @@ def PlotTargetVelocity(figHandle, velocityHandle, targetVel, robotPose):
 	return figHandle, velocityHandle
 
 
-def TransformRangeBearingsFromCameraToRobot(robotParameters, ballRangeBearing, obstaclesRangeBearing):
+def TransformRangeBearingsFromCameraToRobot(robotParameters, ballRangeBearing, landerRangeBearing, obstaclesRangeBearing):
 	if ballRangeBearing != None:
 		x = ballRangeBearing[0]*math.cos(ballRangeBearing[1]) + robotParameters.cameraDistanceFromRobotCenter
 		y = ballRangeBearing[0]*math.sin(ballRangeBearing[1])
@@ -197,7 +197,14 @@ def TransformRangeBearingsFromCameraToRobot(robotParameters, ballRangeBearing, o
 			obstaclesRangeBearing[idx][0] = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
 			obstaclesRangeBearing[idx][1] = math.atan2(y,x)
 
-	return ballRangeBearing, obstaclesRangeBearing
+
+    if landerRangeBearing != None:
+		x = landerRangeBearing[0]*math.cos(landerRangeBearing[1]) + robotParameters.cameraDistanceFromRobotCenter
+		y = landerRangeBearing[0]*math.sin(landerRangeBearing[1])
+		landerRangeBearing[0] = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
+		landerRangeBearing[1] = math.atan2(y,x)
+
+	return ballRangeBearing, landerRangeBearing, obstaclesRangeBearing
 
 
 def BallSearchRotate(ballRB, ballInDribbler, targetVel, startTime, robotState):

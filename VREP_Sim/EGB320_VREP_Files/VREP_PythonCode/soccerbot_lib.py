@@ -105,8 +105,8 @@ class VREP_SoccerBot(object):
 		vrep.simxGetObjectOrientation(self.clientID, self.robotHandle, -1, vrep.simx_opmode_streaming)
 		vrep.simxGetObjectPosition(self.clientID, self.cameraHandle, -1, vrep.simx_opmode_streaming)
 		vrep.simxGetObjectPosition(self.clientID, self.ballHandle, -1, vrep.simx_opmode_streaming)
-		# vrep.simxGetObjectPosition(self.clientID, self.blueGoalHandle, -1, vrep.simx_opmode_streaming)
-		# vrep.simxGetObjectPosition(self.clientID, self.yellowGoalHandle, -1, vrep.simx_opmode_streaming)
+		vrep.simxGetObjectPosition(self.clientID, self.blueGoalHandle, -1, vrep.simx_opmode_streaming)
+		vrep.simxGetObjectPosition(self.clientID, self.yellowGoalHandle, -1, vrep.simx_opmode_streaming)
 		for handle in self.obstacleHandles:
 			vrep.simxGetObjectPosition(self.clientID, handle, -1, vrep.simx_opmode_streaming)
 
@@ -127,8 +127,8 @@ class VREP_SoccerBot(object):
 		vrep.simxGetObjectOrientation(self.clientID, self.robotHandle, -1, vrep.simx_opmode_discontinue)
 		vrep.simxGetObjectPosition(self.clientID, self.cameraHandle, -1, vrep.simx_opmode_discontinue)
 		vrep.simxGetObjectPosition(self.clientID, self.ballHandle, -1, vrep.simx_opmode_discontinue)
-		# vrep.simxGetObjectPosition(self.clientID, self.blueGoalHandle, -1, vrep.simx_opmode_discontinue)
-		# vrep.simxGetObjectPosition(self.clientID, self.yellowGoalHandle, -1, vrep.simx_opmode_discontinue)
+		vrep.simxGetObjectPosition(self.clientID, self.blueGoalHandle, -1, vrep.simx_opmode_discontinue)
+		vrep.simxGetObjectPosition(self.clientID, self.yellowGoalHandle, -1, vrep.simx_opmode_discontinue)
 		for handle in self.obstacleHandles:
 			vrep.simxGetObjectPosition(self.clientID, handle, -1, vrep.simx_opmode_discontinue)
 
@@ -437,10 +437,10 @@ class VREP_SoccerBot(object):
 			print('Failed to get Ball object handle. Terminating Program. Error Code %d'%(errorCode))
 			sys.exit(-1)
 
-		# blueErrorCode, yellowErrorCode = self.GetGoalHandles()
-		# if blueErrorCode != 0 or yellowErrorCode != 0:
-		# 	print('Failed to get Motor object handles. Terminating Program. Error Codes %d, %d'%(blueErrorCode, yellowErrorCode))
-		# 	sys.exit(-1)
+		blueErrorCode, yellowErrorCode = self.GetGoalHandles()
+		if blueErrorCode != 0 or yellowErrorCode != 0:
+			print('Failed to get Motor object handles. Terminating Program. Error Codes %d, %d'%(blueErrorCode, yellowErrorCode))
+			sys.exit(-1)
 
 		obs0ErrorCode, obs1ErrorCode, obs2ErrorCode = self.GetObstacleHandles()
 		if obs0ErrorCode != 0 or obs1ErrorCode != 0 or obs2ErrorCode != 0:
