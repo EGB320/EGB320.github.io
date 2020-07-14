@@ -6,7 +6,7 @@ import sys
 sys.path.insert(0, 'c:/Users/Chris/Documents/GitHub/EGB320.github.io/VREP_Sim/EGB320_VREP_Files/VREP_PythonCode')
 
 # import the soccer bot module - this will include math, time, numpy (as np) and vrep python modules
-from soccerbot_lib import *
+from lunarbot_lib import *
 from enum import Enum
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
@@ -17,14 +17,14 @@ import matplotlib.patches as patches
 class RobotStates(Enum):
 	BALL_SEARCH_ROTATE = 0
 	BALL_SEARCH_MOVE_TO_POINT = 1
-	MOVE_TO_BALL = 2
-	MOVE_TO_GOAL = 3
+	MOVE_TO_SAMPLE = 2
+	MOVE_TO_LANDER = 3
 	ATTEMPT_KICK = 4
 
 
 
 # HELPER FUNCTIONS
-def PrintObjectRangeBearings(ballRangeBearing, blueGoalRangeBearing, yellowGoalRangeBearing, obstaclesRangeBearing):
+def PrintObjectRangeBearings(ballRangeBearing, obstaclesRangeBearing):
 	print("\n\n***** OBJECT RANGE-BEARINGS *****")
 
 	if ballRangeBearing != None:
@@ -32,16 +32,6 @@ def PrintObjectRangeBearings(ballRangeBearing, blueGoalRangeBearing, yellowGoalR
 	else:
 		print("Ball Position (r,b): Not Detected")
 			
-	if blueGoalRangeBearing != None:
-		print("Blue Goal Position (r,b): %0.4f, %0.4f"%(blueGoalRangeBearing[0], blueGoalRangeBearing[1]))
-	else:
-		print("Blue Goal Position (r,b): Not Detected")
-		
-	if yellowGoalRangeBearing != None:
-		print("Yellow Goal Position (r,b): %0.4f, %0.4f"%(yellowGoalRangeBearing[0], yellowGoalRangeBearing[1]))
-	else:
-		print("Yellow Goal Position (r,b): Not Detected")
-
 	if obstaclesRangeBearing != None:
 		for obstacle in obstaclesRangeBearing:
 			if obstacle != None:
@@ -108,7 +98,7 @@ def PlotArenaAndObjects(figHandle, robotHandle, ballHandle, obstacleHandles, rob
 	return figHandle, robotHandle, ballHandle, obstacleHandles
 
 
-def PlotRangeAndBearings(figHandle, ballRBHandle, blueGoalRBHandle, yellowGoalRBHandle, obstacleRBHandles, robotPose, ballRB, blueGoalRB, yellowGoalRB, obstaclesRB):
+def PlotRangeAndBearings(figHandle, ballRBHandle, obstacleRBHandles, robotPose, ballRB, obstaclesRB):
 	if figHandle == None:
 		# create figure handle
 		figHandle = plt.figure(1)
@@ -132,12 +122,6 @@ def PlotRangeAndBearings(figHandle, ballRBHandle, blueGoalRBHandle, yellowGoalRB
 	if ballRBHandle != None and ballRBHandle != []:
 		ballRBHandle.pop(0).remove()
 
-	if blueGoalRBHandle != None and blueGoalRBHandle != []:
-		blueGoalRBHandle.pop(0).remove()
-
-	if yellowGoalRBHandle != None and yellowGoalRBHandle != []:
-		yellowGoalRBHandle.pop(0).remove()
-
 	if obstacleRBHandles != None:
 		for handle in obstacleRBHandles:
 			handle.pop(0).remove()
@@ -150,16 +134,6 @@ def PlotRangeAndBearings(figHandle, ballRBHandle, blueGoalRBHandle, yellowGoalRB
 		y = [robotPose[1], robotPose[1]+ballRB[0]*math.sin(ballRB[1]+robotPose[5])]
 		ballRBHandle = plt.plot(x, y, '--r')
 
-	if blueGoalRB != None:
-		x = [robotPose[0], robotPose[0]+blueGoalRB[0]*math.cos(blueGoalRB[1]+robotPose[5])]
-		y = [robotPose[1], robotPose[1]+blueGoalRB[0]*math.sin(blueGoalRB[1]+robotPose[5])]
-		blueGoalRBHandle = plt.plot(x, y, '--b')
-
-	if yellowGoalRB != None:
-		x = [robotPose[0], robotPose[0]+yellowGoalRB[0]*math.cos(yellowGoalRB[1]+robotPose[5])]
-		y = [robotPose[1], robotPose[1]+yellowGoalRB[0]*math.sin(yellowGoalRB[1]+robotPose[5])]
-		yellowGoalRBHandle = plt.plot(x, y, '--y')
-
 	if obstaclesRB != None:
 		obstacleRBHandles = []
 		for obsRB in obstaclesRB:
@@ -169,7 +143,7 @@ def PlotRangeAndBearings(figHandle, ballRBHandle, blueGoalRBHandle, yellowGoalRB
 			obstacleRBHandles.append(handle)
 
 
-	return figHandle, ballRBHandle, blueGoalRBHandle, yellowGoalRBHandle, obstacleRBHandles
+	return figHandle, ballRBHandle, obstacleRBHandles
 
 
 def PlotTargetVelocity(figHandle, velocityHandle, targetVel, robotPose):
@@ -209,24 +183,12 @@ def PlotTargetVelocity(figHandle, velocityHandle, targetVel, robotPose):
 	return figHandle, velocityHandle
 
 
-def TransformRangeBearingsFromCameraToRobot(robotParameters, ballRangeBearing, blueGoalRangeBearing, yellowGoalRangeBearing, obstaclesRangeBearing):
+def TransformRangeBearingsFromCameraToRobot(robotParameters, ballRangeBearing, obstaclesRangeBearing):
 	if ballRangeBearing != None:
 		x = ballRangeBearing[0]*math.cos(ballRangeBearing[1]) + robotParameters.cameraDistanceFromRobotCenter
 		y = ballRangeBearing[0]*math.sin(ballRangeBearing[1])
 		ballRangeBearing[0] = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
 		ballRangeBearing[1] = math.atan2(y,x)
-
-	if blueGoalRangeBearing != None:
-		x = blueGoalRangeBearing[0]*math.cos(blueGoalRangeBearing[1]) + robotParameters.cameraDistanceFromRobotCenter
-		y = blueGoalRangeBearing[0]*math.sin(blueGoalRangeBearing[1])
-		blueGoalRangeBearing[0] = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
-		blueGoalRangeBearing[1] = math.atan2(y,x)
-
-	if yellowGoalRangeBearing != None:
-		x = yellowGoalRangeBearing[0]*math.cos(yellowGoalRangeBearing[1]) + robotParameters.cameraDistanceFromRobotCenter
-		y = yellowGoalRangeBearing[0]*math.sin(yellowGoalRangeBearing[1])
-		yellowGoalRangeBearing[0] = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
-		yellowGoalRangeBearing[1] = math.atan2(y,x)
 
 	if obstaclesRangeBearing != None:
 		for idx, obsRB in enumerate(obstaclesRangeBearing):
@@ -235,13 +197,13 @@ def TransformRangeBearingsFromCameraToRobot(robotParameters, ballRangeBearing, b
 			obstaclesRangeBearing[idx][0] = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
 			obstaclesRangeBearing[idx][1] = math.atan2(y,x)
 
-	return ballRangeBearing, blueGoalRangeBearing, yellowGoalRangeBearing, obstaclesRangeBearing
+	return ballRangeBearing, obstaclesRangeBearing
 
 
 def BallSearchRotate(ballRB, ballInDribbler, targetVel, startTime, robotState):
 	# check to make sure ball is not in the dribbler
 	if ballInDribbler:
-		robotState = RobotStates.MOVE_TO_GOAL
+		robotState = RobotStates.MOVE_TO_LANDER
 		targetVel = [0, 0, 0]
 		startTime = None
 		return targetVel, startTime, robotState 
@@ -249,7 +211,7 @@ def BallSearchRotate(ballRB, ballInDribbler, targetVel, startTime, robotState):
 	# Check to see if ball is in FOV
 	if ballRB != None:
 		# ball is in view change state to move towards ball
-		robotState = RobotStates.MOVE_TO_BALL
+		robotState = RobotStates.MOVE_TO_SAMPLE
 		targetVel = [0, 0, 0]
 		startTime = None
 		return targetVel, startTime, robotState 
@@ -273,7 +235,7 @@ def BallSearchRotate(ballRB, ballInDribbler, targetVel, startTime, robotState):
 def MoveToBall(ballRB, obstaclesRB, ballInDribbler, targetVel, robotState, linearGain, rotationalGain, linearSpeedLimits, rotationalSpeedLimits):
 	# check to see if ball is in dribbler
 	if ballInDribbler:
-		robotState = RobotStates.MOVE_TO_GOAL
+		robotState = RobotStates.MOVE_TO_LANDER
 		targetVel = [linearSpeedLimits[0], 0, 0]
 		return targetVel, robotState
 
@@ -308,29 +270,30 @@ def MoveToBall(ballRB, obstaclesRB, ballInDribbler, targetVel, robotState, linea
 	return targetVel, robotState
 
 
-def MoveToGoal(goalRB, obstaclesRB, ballInDribbler, targetVel, robotState, linearGain, rotationalGain, linearSpeedLimits, rotationalSpeedLimits):
-	if ballInDribbler == False:
+def MoveToTarget(targetRB, obstaclesRB, ballInDribbler, targetVel, robotState, linearGain, rotationalGain, linearSpeedLimits, rotationalSpeedLimits):
+	
+    if ballInDribbler == False:
 		robotState = RobotStates.BALL_SEARCH_ROTATE
 		targetVel = [0, 0, 0.4]
 		return targetVel, robotState
 
 
-	if goalRB == None:
+	if targetRB == None:
 		targetVel = [0, 0, 0.2]
 		return targetVel, robotState
 
-
-	if abs(goalRB[1]) < math.radians(10) and goalRB[0] < 0.7:
-		robotState = RobotStates.ATTEMPT_KICK
-		return targetVel, robotState
+    #logic for changing into kick state
+	# if abs(targetRB[1]) < math.radians(10) and targetRB[0] < 0.7:
+	# 	robotState = RobotStates.ATTEMPT_KICK
+	# 	return targetVel, robotState
 
 
 	# get repulsive vector
 	vectorComponents = ComputeRepulsiveVectorComponents(obstaclesRB)
 
 	# add on attractive component
-	vectorComponents[0] = vectorComponents[0] + goalRB[0]*math.cos(goalRB[1])
-	vectorComponents[1] = vectorComponents[1] + goalRB[0]*math.sin(goalRB[1])
+	vectorComponents[0] = vectorComponents[0] + targetRB[0]*math.cos(targetRB[1])
+	vectorComponents[1] = vectorComponents[1] + targetRB[0]*math.sin(targetRB[1])
 
 	# vector in terms of magnitude and direction
 	vector = [0, 0]
