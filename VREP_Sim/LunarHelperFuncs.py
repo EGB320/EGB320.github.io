@@ -19,7 +19,7 @@ class RobotStates(Enum):
 	BALL_SEARCH_MOVE_TO_POINT = 1
 	MOVE_TO_SAMPLE = 2
 	MOVE_TO_LANDER = 3
-	ATTEMPT_KICK = 4
+	DROP_SAMPLE = 4
 
 
 
@@ -51,8 +51,8 @@ def PlotArenaAndObjects(figHandle, robotHandle, ballHandle, obstacleHandles, rob
 
 		# create rectangle to represent field and add to the axis
 		plt.plot([-1, 1, 1, -1, -1], [-1, -1, 1, 1, -1], color='black')
-		plt.plot([-1.2, -1, -1, -1.2, -1.2], [-0.3, -0.3, 0.3, 0.3, -0.3], color='blue')
-		plt.plot([1.2, 1, 1, 1.2, 1.2], [-0.3, -0.3, 0.3, 0.3, -0.3], color='yellow')
+		# plt.plot([-1.2, -1, -1, -1.2, -1.2], [-0.3, -0.3, 0.3, 0.3, -0.3], color='blue')
+		plt.plot([-0.3, 0.3, 0.3, -0.3, -0.3], [-0.3, -0.3, 0.3, 0.3, -0.3], color='yellow')
 
 		# setup axis
 		axis = plt.gca()
@@ -98,7 +98,7 @@ def PlotArenaAndObjects(figHandle, robotHandle, ballHandle, obstacleHandles, rob
 	return figHandle, robotHandle, ballHandle, obstacleHandles
 
 
-def PlotRangeAndBearings(figHandle, ballRBHandle, landerRBHandle, obstacleRBHandles, robotPose, ballRB, obstaclesRB):
+def PlotRangeAndBearings(figHandle, ballRBHandle, obstacleRBHandles, robotPose, ballRB, obstaclesRB):
 	if figHandle == None:
 		# create figure handle
 		figHandle = plt.figure(1)
@@ -197,8 +197,7 @@ def TransformRangeBearingsFromCameraToRobot(robotParameters, ballRangeBearing, l
 			obstaclesRangeBearing[idx][0] = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
 			obstaclesRangeBearing[idx][1] = math.atan2(y,x)
 
-
-    if landerRangeBearing != None:
+	if landerRangeBearing != None:
 		x = landerRangeBearing[0]*math.cos(landerRangeBearing[1]) + robotParameters.cameraDistanceFromRobotCenter
 		y = landerRangeBearing[0]*math.sin(landerRangeBearing[1])
 		landerRangeBearing[0] = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
@@ -279,7 +278,7 @@ def MoveToBall(ballRB, obstaclesRB, ballInDribbler, targetVel, robotState, linea
 
 def MoveToTarget(targetRB, obstaclesRB, ballInDribbler, targetVel, robotState, linearGain, rotationalGain, linearSpeedLimits, rotationalSpeedLimits):
 	
-    if ballInDribbler == False:
+	if ballInDribbler == False:
 		robotState = RobotStates.BALL_SEARCH_ROTATE
 		targetVel = [0, 0, 0.4]
 		return targetVel, robotState
@@ -289,10 +288,10 @@ def MoveToTarget(targetRB, obstaclesRB, ballInDribbler, targetVel, robotState, l
 		targetVel = [0, 0, 0.2]
 		return targetVel, robotState
 
-    #logic for changing into kick state
-	# if abs(targetRB[1]) < math.radians(10) and targetRB[0] < 0.7:
-	# 	robotState = RobotStates.ATTEMPT_KICK
-	# 	return targetVel, robotState
+    #logic for changing into drop sample state
+	if abs(targetRB[1]) < math.radians(10) and targetRB[0] < 0.15:
+	 	robotState = RobotStates.DROP_SAMPLE
+	 	return targetVel, robotState
 
 
 	# get repulsive vector

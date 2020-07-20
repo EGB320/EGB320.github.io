@@ -42,7 +42,6 @@ class VREP_SoccerBot(object):
 		self.v180MotorHandle = None
 		self.v300MotorHandle = None
 		self.dribblerMotorHandle = None
-		self.kickerHandle = None
 		self.ballHandle = None
 		self.obstacleHandles = [None, None, None]
 		self.blueGoalHandle = None
@@ -105,6 +104,7 @@ class VREP_SoccerBot(object):
 		vrep.simxGetObjectOrientation(self.clientID, self.robotHandle, -1, vrep.simx_opmode_streaming)
 		vrep.simxGetObjectPosition(self.clientID, self.cameraHandle, -1, vrep.simx_opmode_streaming)
 		vrep.simxGetObjectPosition(self.clientID, self.ballHandle, -1, vrep.simx_opmode_streaming)
+		vrep.simxGetObjectPosition(self.clientID, self.landerHandle, -1, vrep.simx_opmode_streaming)
 		# vrep.simxGetObjectPosition(self.clientID, self.blueGoalHandle, -1, vrep.simx_opmode_streaming)
 		# vrep.simxGetObjectPosition(self.clientID, self.yellowGoalHandle, -1, vrep.simx_opmode_streaming)
 		for handle in self.obstacleHandles:
@@ -127,6 +127,7 @@ class VREP_SoccerBot(object):
 		vrep.simxGetObjectOrientation(self.clientID, self.robotHandle, -1, vrep.simx_opmode_discontinue)
 		vrep.simxGetObjectPosition(self.clientID, self.cameraHandle, -1, vrep.simx_opmode_discontinue)
 		vrep.simxGetObjectPosition(self.clientID, self.ballHandle, -1, vrep.simx_opmode_discontinue)
+		vrep.simxGetObjectPosition(self.clientID, self.landerHandle, -1, vrep.simx_opmode_discontinue)
 		# vrep.simxGetObjectPosition(self.clientID, self.blueGoalHandle, -1, vrep.simx_opmode_discontinue)
 		# vrep.simxGetObjectPosition(self.clientID, self.yellowGoalHandle, -1, vrep.simx_opmode_discontinue)
 		for handle in self.obstacleHandles:
@@ -326,28 +327,10 @@ class VREP_SoccerBot(object):
 		return self.ballConnectedToRobot
 
 	
-	# Will attempt to fire the kicker plate. The kick plate will not be fired if the kicker plate
-	# has not reset itself (will reset automatically with time, takes approximately 1 second).
-	# inputs:
-	#	kickSpeed - the velocity of the kicker
-	def KickBall(self, kickSpeed):
-		# check to make sure kicker has reset
-		errorCode, jointPosition = vrep.simxGetJointPosition(self.clientID, self.kickerHandle, vrep.simx_opmode_oneshot_wait)
-		if errorCode == 0 and jointPosition < 0.005:
-			# make sure to disconnect ball from robot
-			if self.ballConnectedToRobot:
-				vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndBall',[0],[],[],bytearray(),vrep.simx_opmode_blocking)
-				self.ballConnectedToRobot = False
-
-			# kick and wait short time to reset kicker position
-			vrep.simxSetJointTargetVelocity(self.clientID, self.kickerHandle, kickSpeed, vrep.simx_opmode_oneshot_wait)
-			vrep.simxSetJointPosition(self.clientID, self.kickerHandle, 0.04, vrep.simx_opmode_oneshot_wait)
-			time.sleep(0.04/kickSpeed)
-
-			# reset kicker position
-			vrep.simxSetJointTargetVelocity(self.clientID, self.kickerHandle, -0.05, vrep.simx_opmode_oneshot_wait)
-			vrep.simxSetJointPosition(self.clientID, self.kickerHandle, 0, vrep.simx_opmode_oneshot_wait)
-
+	def dropSample(self):
+		if self.ballConnectedToRobot:
+	 			vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndBall',[0],[],[],bytearray(),vrep.simx_opmode_blocking)
+	 			self.ballConnectedToRobot = False
 
 	# Update Ball Position - call this in every loop as to reset the ball position if in the goal
 	# this function also emulates your dribbler quality. Deprecated function should use UpdateObjectPositions instead.
@@ -419,11 +402,6 @@ class VREP_SoccerBot(object):
 		# 	print('Failed to get Dribbler object handle. Terminating Program. Error Code %d'%(errorCode))
 		# 	sys.exit(-1)
 
-		errorCode = self.GetKickerHandle()
-		if errorCode != 0:
-			print('Failed to get Kicker object handle. Terminating Program. Error Code %d'%(errorCode))
-			sys.exit(-1)
-
 		errorCode = self.GetBallHandle()
 		if errorCode != 0:
 			print('Failed to get Ball object handle. Terminating Program. Error Code %d'%(errorCode))
@@ -480,12 +458,6 @@ class VREP_SoccerBot(object):
 		errorCode, self.dribblerMotorHandle = vrep.simxGetObjectHandle(self.clientID, 'DribblerMotor', vrep.simx_opmode_oneshot_wait)
 		return errorCode
 			
-
-	# Get VREP Kicker Handle
-	def GetKickerHandle(self):
-		errorCode, self.kickerHandle = vrep.simxGetObjectHandle(self.clientID, 'Kicker', vrep.simx_opmode_oneshot_wait)
-		return errorCode
-
 
 	# Get VREP Goal Handles
 	def GetLanderHandle(self):
@@ -555,7 +527,7 @@ class VREP_SoccerBot(object):
 
 	# Sets the camera's pose
 	# Inputs:
-	#		x - distance between the camera and the center of the robot in the direction of the kicker/dribbler in metres
+	#		x - distance between the camera and the center of the robot in the direction of the front of the robot
 	#		z - height of the camera relative to the floor in metres
 	#		pitch - tilt of the camera in radians
 	def SetCameraPose(self, x, z, pitch):
@@ -584,7 +556,7 @@ class VREP_SoccerBot(object):
 		self.SetCameraPose(0, z, 0)
 
 
-	# Sets the distance between the camera and the center of the robot in the direction of the kicker/dribbler in metres
+	# Sets the distance between the camera and the center of the robot in the direction of front of the robot
 	def SetCameraOffsetFromRobotCentre(self, x):
 		self.SetCameraPose(x, 0, 0)
 
@@ -724,23 +696,23 @@ class VREP_SoccerBot(object):
 	def UpdateBall(self):
 		if self.ballPosition != None:
 
-            ballDist = self.DribblerToBallDistance()
+			ballDist = self.DribblerToBallDistance()
 
             # See if need to connect/disconnect ball from robot
-            if ballDist != None and ballDist < 0.03 and self.ballConnectedToRobot == False:
+			if ballDist != None and ballDist < 0.04 and self.ballConnectedToRobot == False:
                 # make physical connection between ball and robot to simulate dribbler
-                vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndBall',[1],[],[],bytearray(),vrep.simx_opmode_blocking)
-                self.ballConnectedToRobot = True
+				vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndBall',[1],[],[],bytearray(),vrep.simx_opmode_blocking)
+				self.ballConnectedToRobot = True
 
-            elif self.ballConnectedToRobot == True:
+			elif self.ballConnectedToRobot == True:
                 # random chance to disconnect
-                if np.random.rand() > self.robotParameters.dribblerQuality:
+				if np.random.rand() > self.robotParameters.dribblerQuality:
                     # terminate connection between ball and robot to simulate dribbler
-                    vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndBall',[0],[],[],bytearray(),vrep.simx_opmode_blocking)
-                    self.ballConnectedToRobot = False
+					vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndBall',[0],[],[],bytearray(),vrep.simx_opmode_blocking)
+					self.ballConnectedToRobot = False
 
-            elif ballDist != None and ballDist > 0.03:
-                self.ballConnectedToRobot = False
+			elif ballDist != None and ballDist > 0.04:
+				self.ballConnectedToRobot = False
 
 	
 	# Gets the range and bearing to a corner that is within the camera's field of view.
@@ -973,14 +945,15 @@ class RobotParameters(object):
 		# Drive/Wheel Parameters
 		self.driveType = 'differential'	# specifies the drive type ('differential' or 'omni')
 		self.wheelBase = 0.160 # This parameter cannot be changed
-		self.wheelRadius = 0.025 # This parameter cannot be changed
+		#self.wheelRadius = 0.025 # This parameter cannot be changed
+		self.wheelRadius = 0.05
 		self.minimumLinearSpeed = 0.0 	# minimum speed at which your robot can move forward in m/s
 		self.maximumLinearSpeed = 0.25 	# maximum speed at which your robot can move forward in m/s
 		self.driveSystemQuality = 1.0 # specifies how good your drive system is from 0 to 1 (with 1 being able to drive in a perfectly straight line when a told to do so)
 
 		# Camera Parameters
 		self.cameraOrientation = 'landscape' # specifies the orientation of the camera, either landscape or portrait
-		self.cameraDistanceFromRobotCenter = 0.1 # distance between the camera and the center of the robot in the direction of the kicker/dribbler in metres
+		self.cameraDistanceFromRobotCenter = 0.1 # distance between the camera and the center of the robot in the direction of the front of the robot
 		self.cameraHeightFromFloor = 0.1 # height of the camera relative to the floor in metres
 		self.cameraTilt = 0.0 # tilt of the camera in radians
 		self.cameraPerspectiveAngle = math.radians(60) # do not change this parameter
