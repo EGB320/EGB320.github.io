@@ -123,14 +123,14 @@
 										<h2>Controlling Your VREP Robot Using Python</h2>
 										<p>Interfacing to VREP with Python is quite trivial using VREP's Application Programming Interface (API). However, so you can concentrate on developing your navigation code we have created our own Python Module which simplifies it still. If you wish to know how to use the VREP API check out the <a target="_blank" href="http://www.coppeliarobotics.com/helpFiles/en/remoteApiFunctionsPython.htm">VREP Python API Documentation</a> and <a target="_blank" href="https://www.youtube.com/watch?v=Hk98gquFYuk">this tutorial</a>.</p>
 
-										<p>To open a connection to VREP using the EGB320 SoccerBot Python Module first create a new Python Script in the EGB320 VREP Python Code Folder. You need create your script in this directory as your script will be implicitly calling functions from the vrep.py, vrepConst.py and the remoteAPI files (.so for Linux, .dll for Windows, .dylib for Mac).</p>
+										<p>To open a connection to VREP using the EGB320 LunarBot Python Module first create a new Python Script in the EGB320 VREP Python Code Folder. You need create your script in this directory as your script will be implicitly calling functions from the vrep.py, vrepConst.py and the remoteAPI files (.so for Linux, .dll for Windows, .dylib for Mac).</p>
 
 										<p>Within your new script add the following code.</p>
 
 										<pre><code>#!/usr/bin/python
 
-# import the soccer bot module - this will include math, time, numpy (as np) and vrep python modules
-from soccerbot_lib import *
+# import the  bot module - this will include math, time, numpy (as np) and vrep python modules
+from roverbot_lib import *
 
 # SET SCENE PARAMETERS
 sceneParameters = SceneParameters()
@@ -145,16 +145,16 @@ if __name__ == '__main__':
 	# Wrap everything in a try except case that catches KeyboardInterrupts. 
 	# In the exception catch code attempt to Stop the VREP Simulator so don't have to Stop it manually when pressing CTRL+C
 	try:
-		soccerBotSim = VREP_SoccerBot('127.0.0.1', robotParameters, sceneParameters)
-		soccerBotSim.StartSimulator()
+		roverBotSim = VREP_RoverBot('127.0.0.1', robotParameters, sceneParameters)
+		roverBotSim.StartSimulator()
 
 		while True:
-			soccerBotSim.SetTargetVelocities(0.1, 0, 0)
-			soccerBotSim.UpdateObjectPositions() # needs to be called once within main code loop
+		roverBotSim.SetTargetVelocities(0.1, 0, 0)
+		roverBotSim.UpdateObjectPositions() # needs to be called once within main code loop
 
 	except KeyboardInterrupt as e:
 		# attempt to stop simulator so it restarts and don't have to manually press the Stop button in VREP 
-		soccerBotSim.StopSimulator()</code></pre>
+		roverBotSim.StopSimulator()</code></pre>
 
 										<p>Now run your script. The script should successfully connect to VREP and your robot should drive forward eventually crashing into the wall. Press CTRL+C to kill the script.</p>
 										<div class="html2pdf__page-break"></div>
@@ -164,9 +164,9 @@ if __name__ == '__main__':
 
 										<p>Now to explain the code.</p>
 
-										<pre><code>from soccerbot_lib import *</code></pre>
+										<pre><code>from roverbot_lib import *</code></pre>
 
-										<p>This imports all the functions, classes and global variables from the soccerbot_lib.py script. This will also import the Python modules math, time, numpy (as np) and vrep.</p>
+										<p>This imports all the functions, classes and global variables from the roverbot_lib.py script. This will also import the Python modules math, time, numpy (as np) and vrep.</p>
 
 										<pre><code>sceneParameters = SceneParameters()</code></pre>
 
@@ -181,9 +181,9 @@ robotParameters.driveType = 'differential'	# specify if using differential or om
 
 										<p>This is a Python capability. Essentially this says that if this is the main script being run, then perform the following operations; if this is not the main script (i.e. it has been imported by another script) do not perform the following actions. This is a great way to write Python modules and allow them to write test code.</p>
 
-										<pre><code>soccerBotSim = VREP_SoccerBot('127.0.0.1', robotParameters, sceneParameters)</code></pre>
+										<pre><code>roverBotSim = VREP_RoverBot('127.0.0.1', robotParameters, sceneParameters)</code></pre>
 
-										<p>This line of code creates an instance of the VREP_SoccerBot class and stores that instance as a variable, in this scenario we have called that variable soccerBotSim. We have passed three arguments into this function, they are in order: 
+										<p>This line of code creates an instance of the VREP_RoverBot class and stores that instance as a variable, in this scenario we have called that variable soccerBotSim. We have passed three arguments into this function, they are in order: 
 											<ul>
 												<li>The IP address of the computer running the VREP simulation environment. The '127.0.0.1' indicates the local computer. However, you could change this to the IP address of a different computer running VREP.</li>
 												<li>The scene parameters.</li>
@@ -191,21 +191,21 @@ robotParameters.driveType = 'differential'	# specify if using differential or om
 											</ul>
 										 </p>
 
-										 <pre><code>soccerBotSim.StartSimulator()</code></pre>
+										 <pre><code>roverBotSim.StartSimulator()</code></pre>
 
 										 <p>This will start the VREP simulator, which can also be done manually by pressing the Play button in VREP.</p>
 										<div class="html2pdf__page-break"></div>
 									</div>
 
 										 <pre><code>while True:
-	soccerBotSim.SetTargetVelocities(0.1, 0, 0)
-	soccerBotSim.UpdateObjectPositions() # needs to be called once within main code loop</code></pre>
+											roverBotSim.SetTargetVelocities(0.1, 0, 0)
+											roverBotSim.UpdateObjectPositions() # needs to be called once within main code loop</code></pre>
 
 										 <p>The final lines above consist of an infinite while loop which constantly calls the SetTargetVelocities and UpdateObjectPositions Functions. The second line of code sets the velocities of our robot using the SetTargetVelocities function which takes three inputs. The inputs are the robot's desired linear velocity in the x direction, the y direction, followed by the desired rotational velocity. The units of measure are m/s and rad/s for the linear and rotational velocities respectively. These velocities are also specified within the robot's coordinate frame. In simple terms the x velocity is how quickly you want the robot to move forward, the y velocity is only applicable to omni-drive robots and is how quickly you want the robot to move perpendicular to its forward direction, and the rotational velocity is how quickly you want the robot to rotate. The third line calling the UpdateObjectPositions function is used to reset the ball position to the center of the arena when it goes into a goal.</p>
 
 										 <hr class="major pdf-exclude" />
-										<h2>SoccerBot Python Module Functions</h2>
-										<p>The documentation for the EGB320 SoccerBot Python Module can be found <a href="SoccerBotLib_Documentation.html">here</a>.</p>
+										<h2>RoverBot Python Module Functions</h2>
+										<p>The documentation for the EGB320 SoccerBot Python Module can be found <a href="RoverBotLib_Documentation.html">here</a>.</p>
 
 
 										<hr class="major pdf-exclude" />

@@ -3,10 +3,11 @@
 
 # Used to Import add the VREP Python Code Folder to the Python Path
 import sys
-sys.path.insert(0, 'c:/Users/Chris/Documents/GitHub/EGB320.github.io/VREP_Sim/EGB320_VREP_Files/VREP_PythonCode')
+# sys.path.insert(0, 'c:/Users/Chris/Documents/GitHub/EGB320.github.io/VREP_Sim/EGB320_VREP_Files/VREP_PythonCode')
+sys.path.insert(0, 'c:\\Users\\lehnert\\OneDrive - Queensland University of Technology\\Documents\\GitHub\\EGB320.github.io\\VREP_Sim\\EGB320_VREP_Files\\VREP_PythonCode')
 
 # import the soccer bot module - this will include math, time, numpy (as np) and vrep python modules
-from lunarbot_lib import *
+from roverbot_lib import *
 from enum import Enum
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
@@ -15,8 +16,8 @@ import matplotlib.patches as patches
 
 # ROBOT STATES
 class RobotStates(Enum):
-	BALL_SEARCH_ROTATE = 0
-	BALL_SEARCH_MOVE_TO_POINT = 1
+	SAMPLE_SEARCH_ROTATE = 0
+	SAMPLE_SEARCH_MOVE_TO_POINT = 1
 	MOVE_TO_SAMPLE = 2
 	MOVE_TO_LANDER = 3
 	DROP_SAMPLE = 4
@@ -24,13 +25,13 @@ class RobotStates(Enum):
 
 
 # HELPER FUNCTIONS
-def PrintObjectRangeBearings(ballRangeBearing, obstaclesRangeBearing):
+def PrintObjectRangeBearings(sampleRangeBearing, obstaclesRangeBearing):
 	print("\n\n***** OBJECT RANGE-BEARINGS *****")
 
-	if ballRangeBearing != None:
-		print("Ball Position (r,b): %0.4f, %0.4f"%(ballRangeBearing[0], ballRangeBearing[1]))
+	if sampleRangeBearing != None:
+		print("Sample Position (r,b): %0.4f, %0.4f"%(sampleRangeBearing[0], sampleRangeBearing[1]))
 	else:
-		print("Ball Position (r,b): Not Detected")
+		print("Sample Position (r,b): Not Detected")
 			
 	if obstaclesRangeBearing != None:
 		for obstacle in obstaclesRangeBearing:
@@ -44,7 +45,7 @@ def PrintObjectRangeBearings(ballRangeBearing, obstaclesRangeBearing):
 			print("Obstacle (r,b): Not Detected")
 
 
-def PlotArenaAndObjects(figHandle, robotHandle, ballHandle, obstacleHandles, robotPose, ballPosition, obstaclePositions):
+def PlotArenaAndObjects(figHandle, robotHandle, sampleHandle, obstacleHandles, robotPose, samplePosition, obstaclePositions):
 	if figHandle == None:
 		# create figure handle
 		figHandle = plt.figure(1)
@@ -63,26 +64,26 @@ def PlotArenaAndObjects(figHandle, robotHandle, ballHandle, obstacleHandles, rob
 		plt.figure(1)
 		axis = plt.gca()
 
-	# Clear previous robot, ball and obstacles
+	# Clear previous robot, sample and obstacles
 	if robotHandle != None:
 		robotHandle.remove()
 
-	if ballHandle != None:
-		ballHandle.remove()
+	if sampleHandle != None:
+		sampleHandle.remove()
 
 	for handle in obstacleHandles:
 		if handle != None:
 			handle.remove()
 
 	# plot robot onto current axis
-	if ballPosition != None:
+	if samplePosition != None:
 		robotHandle = patches.Circle((robotPose[0], robotPose[1]), 0.09, color='b')
 		axis.add_patch(robotHandle)
 
-	# plot ball onto current axis
-	if ballPosition != None:
-		ballHandle = patches.Circle((ballPosition[0], ballPosition[1]), 0.025, color='r')
-		axis.add_patch(ballHandle)
+	# plot sample onto current axis
+	if samplePosition != None:
+		sampleHandle = patches.Circle((samplePosition[0], samplePosition[1]), 0.025, color='r')
+		axis.add_patch(sampleHandle)
 
 	# plot obstacles onto current axis
 	for index, obstaclePos in enumerate(obstaclePositions):
@@ -95,10 +96,10 @@ def PlotArenaAndObjects(figHandle, robotHandle, ballHandle, obstacleHandles, rob
 	# show the plot and return the handle
 	plt.draw()
 	plt.pause(0.001)
-	return figHandle, robotHandle, ballHandle, obstacleHandles
+	return figHandle, robotHandle, sampleHandle, obstacleHandles
 
 
-def PlotRangeAndBearings(figHandle, ballRBHandle, obstacleRBHandles, robotPose, ballRB, obstaclesRB):
+def PlotRangeAndBearings(figHandle, sampleRBHandle, obstacleRBHandles, robotPose, sampleRB, obstaclesRB):
 	if figHandle == None:
 		# create figure handle
 		figHandle = plt.figure(1)
@@ -119,8 +120,8 @@ def PlotRangeAndBearings(figHandle, ballRBHandle, obstacleRBHandles, robotPose, 
 
 
 	# Clear lines if possible
-	if ballRBHandle != None and ballRBHandle != []:
-		ballRBHandle.pop(0).remove()
+	if sampleRBHandle != None and sampleRBHandle != []:
+		sampleRBHandle.pop(0).remove()
 
 	if obstacleRBHandles != None:
 		for handle in obstacleRBHandles:
@@ -129,10 +130,10 @@ def PlotRangeAndBearings(figHandle, ballRBHandle, obstacleRBHandles, robotPose, 
 
 
 	# Plot lines
-	if ballRB != None:
-		x = [robotPose[0], robotPose[0]+ballRB[0]*math.cos(ballRB[1]+robotPose[5])]
-		y = [robotPose[1], robotPose[1]+ballRB[0]*math.sin(ballRB[1]+robotPose[5])]
-		ballRBHandle = plt.plot(x, y, '--r')
+	if sampleRB != None:
+		x = [robotPose[0], robotPose[0]+sampleRB[0]*math.cos(sampleRB[1]+robotPose[5])]
+		y = [robotPose[1], robotPose[1]+sampleRB[0]*math.sin(sampleRB[1]+robotPose[5])]
+		sampleRBHandle = plt.plot(x, y, '--r')
 
 	if obstaclesRB != None:
 		obstacleRBHandles = []
@@ -143,7 +144,7 @@ def PlotRangeAndBearings(figHandle, ballRBHandle, obstacleRBHandles, robotPose, 
 			obstacleRBHandles.append(handle)
 
 
-	return figHandle, ballRBHandle, obstacleRBHandles
+	return figHandle, sampleRBHandle, obstacleRBHandles
 
 
 def PlotTargetVelocity(figHandle, velocityHandle, targetVel, robotPose):
@@ -183,12 +184,12 @@ def PlotTargetVelocity(figHandle, velocityHandle, targetVel, robotPose):
 	return figHandle, velocityHandle
 
 
-def TransformRangeBearingsFromCameraToRobot(robotParameters, ballRangeBearing, landerRangeBearing, obstaclesRangeBearing):
-	if ballRangeBearing != None:
-		x = ballRangeBearing[0]*math.cos(ballRangeBearing[1]) + robotParameters.cameraDistanceFromRobotCenter
-		y = ballRangeBearing[0]*math.sin(ballRangeBearing[1])
-		ballRangeBearing[0] = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
-		ballRangeBearing[1] = math.atan2(y,x)
+def TransformRangeBearingsFromCameraToRobot(robotParameters, sampleRangeBearing, landerRangeBearing, obstaclesRangeBearing):
+	if sampleRangeBearing != None:
+		x = sampleRangeBearing[0]*math.cos(sampleRangeBearing[1]) + robotParameters.cameraDistanceFromRobotCenter
+		y = sampleRangeBearing[0]*math.sin(sampleRangeBearing[1])
+		sampleRangeBearing[0] = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
+		sampleRangeBearing[1] = math.atan2(y,x)
 
 	if obstaclesRangeBearing != None:
 		for idx, obsRB in enumerate(obstaclesRangeBearing):
@@ -203,20 +204,20 @@ def TransformRangeBearingsFromCameraToRobot(robotParameters, ballRangeBearing, l
 		landerRangeBearing[0] = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
 		landerRangeBearing[1] = math.atan2(y,x)
 
-	return ballRangeBearing, landerRangeBearing, obstaclesRangeBearing
+	return sampleRangeBearing, landerRangeBearing, obstaclesRangeBearing
 
 
-def BallSearchRotate(ballRB, ballInDribbler, targetVel, startTime, robotState):
-	# check to make sure ball is not in the dribbler
-	if ballInDribbler:
+def SampleSearchRotate(sampleRB, sampleInDribbler, targetVel, startTime, robotState):
+	# check to make sure sample is not in the dribbler
+	if sampleInDribbler:
 		robotState = RobotStates.MOVE_TO_LANDER
 		targetVel = [0, 0, 0]
 		startTime = None
 		return targetVel, startTime, robotState 
 
-	# Check to see if ball is in FOV
-	if ballRB != None:
-		# ball is in view change state to move towards ball
+	# Check to see if sample is in FOV
+	if sampleRB != None:
+		# sample is in view change state to move towards sample
 		robotState = RobotStates.MOVE_TO_SAMPLE
 		targetVel = [0, 0, 0]
 		startTime = None
@@ -231,24 +232,24 @@ def BallSearchRotate(ballRB, ballInDribbler, targetVel, startTime, robotState):
 
 	elif (time.time() - startTime) > (2*math.pi / targetVel[2]):
 		# rotated more than 360 degrees (approximately) change state to move towards next point
-		robotState = RobotStates.BALL_SEARCH_MOVE_TO_POINT
+		robotState = RobotStates.SAMPLE_SEARCH_MOVE_TO_POINT
 		targetVel = [0, 0, 0]
 		startTime = None
 
 	return targetVel, startTime, robotState 
 
 
-def MoveToBall(ballRB, obstaclesRB, ballInDribbler, targetVel, robotState, linearGain, rotationalGain, linearSpeedLimits, rotationalSpeedLimits):
-	# check to see if ball is in dribbler
-	if ballInDribbler:
+def MoveToSample(sampleRB, obstaclesRB, sampleInDribbler, targetVel, robotState, linearGain, rotationalGain, linearSpeedLimits, rotationalSpeedLimits):
+	# check to see if sample is in dribbler
+	if sampleInDribbler:
 		robotState = RobotStates.MOVE_TO_LANDER
 		targetVel = [linearSpeedLimits[0], 0, 0]
 		return targetVel, robotState
 
-	# Check to see if ball is still in FOV
-	if ballRB == None:
-		# ball is in view change state to move towards ball
-		robotState = RobotStates.BALL_SEARCH_ROTATE
+	# Check to see if sample is still in FOV
+	if sampleRB == None:
+		# sample is in view change state to move towards sample
+		robotState = RobotStates.SAMPLE_SEARCH_ROTATE
 		targetVel = [0, 0, 0.4]
 		return targetVel, robotState
 
@@ -257,8 +258,8 @@ def MoveToBall(ballRB, obstaclesRB, ballInDribbler, targetVel, robotState, linea
 	vectorComponents = ComputeRepulsiveVectorComponents(obstaclesRB)
 
 	# add on attractive component
-	vectorComponents[0] = ballRB[0]*math.cos(ballRB[1]) - vectorComponents[0]
-	vectorComponents[1] = ballRB[0]*math.sin(ballRB[1]) - vectorComponents[1]
+	vectorComponents[0] = sampleRB[0]*math.cos(sampleRB[1]) - vectorComponents[0]
+	vectorComponents[1] = sampleRB[0]*math.sin(sampleRB[1]) - vectorComponents[1]
 
 	# vector in terms of magnitude and direction
 	vector = [0, 0]
@@ -276,10 +277,10 @@ def MoveToBall(ballRB, obstaclesRB, ballInDribbler, targetVel, robotState, linea
 	return targetVel, robotState
 
 
-def MoveToTarget(targetRB, obstaclesRB, ballInDribbler, targetVel, robotState, linearGain, rotationalGain, linearSpeedLimits, rotationalSpeedLimits):
+def MoveToTarget(targetRB, obstaclesRB, sampleInDribbler, targetVel, robotState, linearGain, rotationalGain, linearSpeedLimits, rotationalSpeedLimits):
 	
-	if ballInDribbler == False:
-		robotState = RobotStates.BALL_SEARCH_ROTATE
+	if sampleInDribbler == False:
+		robotState = RobotStates.SAMPLE_SEARCH_ROTATE
 		targetVel = [0, 0, 0.4]
 		return targetVel, robotState
 
