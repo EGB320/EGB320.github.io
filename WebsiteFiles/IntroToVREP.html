@@ -112,7 +112,7 @@
 
 									<div class="page-wrapper"> 
 
-										<p>The robot coordinate frame is typically located on the robot. The robot coordinate frame moves around with the robot and hence it can move within the global frame. For our SoccerBot robot the coordinate frame is located within the center of the robot, with the x axis pointing towards the front of the robot, the y axis pointing towards the left wheel and the z axis pointing skywards. This will mean that an object's position within the robot's coordinate frame can move with time, since the robot coordinate frame is moving.</p> 
+										<p>The robot coordinate frame is typically located on the robot. The robot coordinate frame moves around with the robot and hence it can move within the global frame. For our RoverBot robot the coordinate frame is located within the center of the robot, with the x axis pointing towards the front of the robot, the y axis pointing towards the left wheel and the z axis pointing skywards. This will mean that an object's position within the robot's coordinate frame can move with time, since the robot coordinate frame is moving.</p> 
 
 										<figure class="figure">
 											<img src="images/vrep/CoordinateFrameDemo.gif" width="80%" alt="images/image-not-found.jpg" />
@@ -183,7 +183,7 @@ robotParameters.driveType = 'differential'	# specify if using differential or om
 
 										<pre><code>roverBotSim = VREP_RoverBot('127.0.0.1', robotParameters, sceneParameters)</code></pre>
 
-										<p>This line of code creates an instance of the VREP_RoverBot class and stores that instance as a variable, in this scenario we have called that variable soccerBotSim. We have passed three arguments into this function, they are in order: 
+										<p>This line of code creates an instance of the VREP_RoverBot class and stores that instance as a variable, in this scenario we have called that variable RoverBotSim. We have passed three arguments into this function, they are in order: 
 											<ul>
 												<li>The IP address of the computer running the VREP simulation environment. The '127.0.0.1' indicates the local computer. However, you could change this to the IP address of a different computer running VREP.</li>
 												<li>The scene parameters.</li>
@@ -205,7 +205,7 @@ robotParameters.driveType = 'differential'	# specify if using differential or om
 
 										 <hr class="major pdf-exclude" />
 										<h2>RoverBot Python Module Functions</h2>
-										<p>The documentation for the EGB320 SoccerBot Python Module can be found <a href="RoverBotLib_Documentation.html">here</a>.</p>
+										<p>The documentation for the EGB320 RoverBot Python Module can be found <a href="RoverBotLib_Documentation.html">here</a>.</p>
 
 
 										<hr class="major pdf-exclude" />
@@ -227,9 +227,9 @@ robotParameters.driveType = 'differential'	# specify if using differential or om
 											</li>
 											<li>Now ensure the Raspberry Pi and the computer you wish to run VREP on are on the same network (i.e. the QUT network).</li>
 											<li>Get the IP address of the desktop/laptop computer you will be running VREP on.</li>
-											<li>On the Raspberry Pi, in your python navigation script, change the IP address being passed into the VREP_SoccerBot class creation function. For example:
+											<li>On the Raspberry Pi, in your python navigation script, change the IP address being passed into the VREP_RoverBot class creation function. For example:
 
-												<pre><code>soccerBotSim = VREP_SoccerBot('pc_ip_address', robotParameters, sceneParameters)</code></pre>
+												<pre><code>RoverBotSim = VREP_RoverBot('pc_ip_address', robotParameters, sceneParameters)</code></pre>
 
 											</li>
 											<li>Launch and start VREP on the computer as you usually would.</li>
