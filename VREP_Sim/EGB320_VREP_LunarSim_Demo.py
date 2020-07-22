@@ -16,17 +16,17 @@ robotParameters.driveSystemQuality = 1	# specifies how good your drive system is
 
 # Camera Parameters
 robotParameters.cameraOrientation = 'landscape' # specifies the orientation of the camera, either landscape or portrait
-robotParameters.cameraDistanceFromRobotCenter = 0.1 # distance between the camera and the center of the robot in the direction of the front of the robot
-robotParameters.cameraHeightFromFloor = 0.03 # height of the camera relative to the floor in metres
-robotParameters.cameraTilt = 0. # tilt of the camera in radians
+robotParameters.cameraDistanceFromRobotCenter = 0.0 # distance between the camera and the center of the robot in the direction of the front of the robot
+robotParameters.cameraHeightFromFloor = 0.1 # height of the camera relative to the floor in metres
+robotParameters.cameraTilt = 0.1 # tilt of the camera in radians
 
 # Vision Processing Parameters
 robotParameters.maxSampleDetectionDistance = 1 # the maximum distance away that you can detect the sample in metres
-robotParameters.maxGoalDetectionDistance = 2.5 # the maximum distance away that you can detect the goals in metres
+robotParameters.maxLanderDetectionDistance = 2.5 # the maximum distance away that you can detect the lander in metres
 robotParameters.maxObstacleDetectionDistance = 1.5 # the maximum distance away that you can detect the obstacles in metres
 
-# Dribbler Parameters
-robotParameters.dribblerQuality = 1 # specifies how good your dribbler is from 0 to 1.0 (with 1.0 being awesome and 0 being non-existent)
+# Collector Parameters
+robotParameters.collectorQuality = 1 # specifies how good your sample collector is from 0 to 1.0 (with 1.0 being awesome and 0 being non-existent)
 
 
 # SET SCENE PARAMETERS
@@ -54,12 +54,15 @@ if __name__ == '__main__':
 		previousRobotState = RobotStates.MOVE_TO_SAMPLE
 
 		# Controller Values
-		linearGain = 0.5
+		#linearGain = 0.5
+		#rotationGain = 0.2
+
+		linearGain = 0.1
 		rotationGain = 0.2
 
 		# Min and Max Linear and Rotational Speeds
-		linearSpeedLimits = [0.03, 0.3]
-		rotationalSpeedLimits = [0.2, 0.8]
+		linearSpeedLimits = [0.03, 0.2]
+		rotationalSpeedLimits = [0.2, 0.5]
 
 		# helper variables
 		startTime = None
@@ -122,9 +125,9 @@ if __name__ == '__main__':
 			if previousRobotState != robotState:
 				print("Robot State Changed: "),
 				print(robotState),
-				print("\tTarget Velocities: "),
-				print(targetVel)
-				previousRobotState = robotState
+			print("\tTarget Velocities: "),
+			print(targetVel)
+			previousRobotState = robotState
 
 			# Update Plot
 			figHandle, robotHandle, sampleHandle, obstacleHandles = PlotArenaAndObjects(figHandle, robotHandle, sampleHandle, obstacleHandles, robotPose, samplePosition, obstaclePositions)

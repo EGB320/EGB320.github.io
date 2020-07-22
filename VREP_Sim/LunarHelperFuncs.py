@@ -3,8 +3,8 @@
 
 # Used to Import add the VREP Python Code Folder to the Python Path
 import sys
-# sys.path.insert(0, 'c:/Users/Chris/Documents/GitHub/EGB320.github.io/VREP_Sim/EGB320_VREP_Files/VREP_PythonCode')
-sys.path.insert(0, 'c:\\Users\\lehnert\\OneDrive - Queensland University of Technology\\Documents\\GitHub\\EGB320.github.io\\VREP_Sim\\EGB320_VREP_Files\\VREP_PythonCode')
+sys.path.insert(0, 'c:/Users/Chris/Documents/GitHub/EGB320.github.io/VREP_Sim/EGB320_VREP_Files/VREP_PythonCode')
+# sys.path.insert(0, 'c:\\Users\\lehnert\\OneDrive - Queensland University of Technology\\Documents\\GitHub\\EGB320.github.io\\VREP_Sim\\EGB320_VREP_Files\\VREP_PythonCode')
 
 # import the soccer bot module - this will include math, time, numpy (as np) and vrep python modules
 from roverbot_lib import *
@@ -207,9 +207,9 @@ def TransformRangeBearingsFromCameraToRobot(robotParameters, sampleRangeBearing,
 	return sampleRangeBearing, landerRangeBearing, obstaclesRangeBearing
 
 
-def SampleSearchRotate(sampleRB, sampleInDribbler, targetVel, startTime, robotState):
-	# check to make sure sample is not in the dribbler
-	if sampleInDribbler:
+def SampleSearchRotate(sampleRB, sampleInCollector, targetVel, startTime, robotState):
+	# check to make sure sample is not in the collector
+	if sampleInCollector:
 		robotState = RobotStates.MOVE_TO_LANDER
 		targetVel = [0, 0, 0]
 		startTime = None
@@ -239,9 +239,9 @@ def SampleSearchRotate(sampleRB, sampleInDribbler, targetVel, startTime, robotSt
 	return targetVel, startTime, robotState 
 
 
-def MoveToSample(sampleRB, obstaclesRB, sampleInDribbler, targetVel, robotState, linearGain, rotationalGain, linearSpeedLimits, rotationalSpeedLimits):
-	# check to see if sample is in dribbler
-	if sampleInDribbler:
+def MoveToSample(sampleRB, obstaclesRB, sampleInCollector, targetVel, robotState, linearGain, rotationalGain, linearSpeedLimits, rotationalSpeedLimits):
+	# check to see if sample is in collector
+	if sampleInCollector:
 		robotState = RobotStates.MOVE_TO_LANDER
 		targetVel = [linearSpeedLimits[0], 0, 0]
 		return targetVel, robotState
@@ -277,9 +277,9 @@ def MoveToSample(sampleRB, obstaclesRB, sampleInDribbler, targetVel, robotState,
 	return targetVel, robotState
 
 
-def MoveToTarget(targetRB, obstaclesRB, sampleInDribbler, targetVel, robotState, linearGain, rotationalGain, linearSpeedLimits, rotationalSpeedLimits):
+def MoveToTarget(targetRB, obstaclesRB, sampleInCollector, targetVel, robotState, linearGain, rotationalGain, linearSpeedLimits, rotationalSpeedLimits):
 	
-	if sampleInDribbler == False:
+	if sampleInCollector == False:
 		robotState = RobotStates.SAMPLE_SEARCH_ROTATE
 		targetVel = [0, 0, 0.4]
 		return targetVel, robotState
@@ -290,7 +290,7 @@ def MoveToTarget(targetRB, obstaclesRB, sampleInDribbler, targetVel, robotState,
 		return targetVel, robotState
 
     #logic for changing into drop sample state
-	if abs(targetRB[1]) < math.radians(10) and targetRB[0] < 0.15:
+	if abs(targetRB[1]) < math.radians(90) and targetRB[0] < 0.25:
 	 	robotState = RobotStates.DROP_SAMPLE
 	 	return targetVel, robotState
 

@@ -41,11 +41,10 @@ class VREP_RoverRobot(object):
 		self.v60MotorHandle = None 			# 60, 180, 300 used for omni drive
 		self.v180MotorHandle = None
 		self.v300MotorHandle = None
-		self.dribblerMotorHandle = None
 		self.sampleHandle = None
 		self.obstacleHandles = [None, None, None]
-		self.blueGoalHandle = None
-		self.yellowGoalHandle = None
+		self.landerHandle = None
+
 
 		# Wheel Bias
 		if self.robotParameters.driveSystemQuality != 1:
@@ -63,8 +62,7 @@ class VREP_RoverRobot(object):
 		self.robotPose = None
 		self.cameraPose = None
 		self.samplePosition = None
-		self.blueGoalPosition = None
-		self.yellowGoalPosition = None
+		self.landerPosition = None
 		self.obstaclePositions = [None, None, None]
 
 		# Variable to hold whether the sample has been joined to the robot
@@ -105,8 +103,7 @@ class VREP_RoverRobot(object):
 		vrep.simxGetObjectPosition(self.clientID, self.cameraHandle, -1, vrep.simx_opmode_streaming)
 		vrep.simxGetObjectPosition(self.clientID, self.sampleHandle, -1, vrep.simx_opmode_streaming)
 		vrep.simxGetObjectPosition(self.clientID, self.landerHandle, -1, vrep.simx_opmode_streaming)
-		# vrep.simxGetObjectPosition(self.clientID, self.blueGoalHandle, -1, vrep.simx_opmode_streaming)
-		# vrep.simxGetObjectPosition(self.clientID, self.yellowGoalHandle, -1, vrep.simx_opmode_streaming)
+
 		for handle in self.obstacleHandles:
 			vrep.simxGetObjectPosition(self.clientID, handle, -1, vrep.simx_opmode_streaming)
 
@@ -128,8 +125,7 @@ class VREP_RoverRobot(object):
 		vrep.simxGetObjectPosition(self.clientID, self.cameraHandle, -1, vrep.simx_opmode_discontinue)
 		vrep.simxGetObjectPosition(self.clientID, self.sampleHandle, -1, vrep.simx_opmode_discontinue)
 		vrep.simxGetObjectPosition(self.clientID, self.landerHandle, -1, vrep.simx_opmode_discontinue)
-		# vrep.simxGetObjectPosition(self.clientID, self.blueGoalHandle, -1, vrep.simx_opmode_discontinue)
-		# vrep.simxGetObjectPosition(self.clientID, self.yellowGoalHandle, -1, vrep.simx_opmode_discontinue)
+
 		for handle in self.obstacleHandles:
 			vrep.simxGetObjectPosition(self.clientID, handle, -1, vrep.simx_opmode_discontinue)
 
@@ -137,8 +133,7 @@ class VREP_RoverRobot(object):
 	# Gets the Range and Bearing to All Detected Objects.
 	# returns:
 	#	sampleRangeBearing - range and bearing to the sample with respect to the camera, will return None if the object is not detected
-	#	blueGoalRangeBearing - range and bearing to the blue goal with respect to the camera, will return None if the object is not detected
-	#	yellowGoalRangeBearing - range and bearing to the yellow goal with respect to the camera, will return None if the object is not detected
+	#	landerRangeBearing - range and bearing to the landerwith respect to the camera, will return None if the object is not detected
 	#	obstaclesRangeBearing - range and bearing to the obstacles with respect to the camera, will return None if the object is not detected
 	def GetDetectedObjects(self):
 		# Variables used to return range and bearing to the objects
@@ -158,9 +153,9 @@ class VREP_RoverRobot(object):
 				if inFOV == True:
 					sampleRangeBearing = [_range, _bearing]
 
-			# check to see if blue goal is in field of view
+			# check to see if yellow lander is in field of view
 			if self.landerPosition != None:
-				inFOV, _range, _bearing = self.ObjectInCameraFOV(self.landerPosition, self.robotParameters.maxGoalDetectionDistance)
+				inFOV, _range, _bearing = self.ObjectInCameraFOV(self.landerPosition, self.robotParameters.maxLanderDetectionDistance)
 				if inFOV == True:
 					landerRangeBearing = [_range, _bearing]
 
@@ -320,9 +315,9 @@ class VREP_RoverRobot(object):
 				print('Failed to set left and/or right motor speed. Error code %d'%errorCode)
 
 
-	# Returns true if the sample is within the dribbler
+	# Returns true if the sample is within the collector
 	# returns:
-	#	true - if sample is in the dribbler
+	#	true - if sample is in the collector
 	def SampleCollected(self):
 		return self.sampleConnectedToRobot
 
@@ -332,16 +327,10 @@ class VREP_RoverRobot(object):
 	 			vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndSample',[0],[],[],bytearray(),vrep.simx_opmode_blocking)
 	 			self.sampleConnectedToRobot = False
 
-	# Update sample Position - call this in every loop as to reset the sample position if in the goal
-	# this function also emulates your dribbler quality. Deprecated function should use UpdateObjectPositions instead.
-	def UpdatesamplePosition(self):
-		# deprecated function - left here so doesn't ruin students API
-		self.UpdateObjectPositions()
-		
 
 	# Update Object Positions - call this in every loop of your navigation code (or at the frequency your vision system runs at). 
-	# This is required to get correct range and bearings to objects, as well as resets the sample's position to the centre of the field when a goal is scored.
-	# This function also emulates the dribbler. The function returns the global pose/position of the robot and the objects too. 
+	# This is required to get correct range and bearings to objects.
+	# This function also emulates the collector. The function returns the global pose/position of the robot and the objects too. 
 	# However, you should not use these return values in your nagivation code, they are there to help you debug if you wish.
 	# returns: 
 	#		robotPose - a 6 element array representing the robot's pose (x,y,z,roll,pitch,yaw), or None if was not successfully updated from VREP
@@ -352,7 +341,7 @@ class VREP_RoverRobot(object):
 		self.GetObjectPositions()
 
 		# update sample
-		self.Updatesample()
+		self.UpdateSample()
 
 		# return object positions		
 		return self.robotPose, self.samplePosition, self.obstaclePositions 
@@ -396,11 +385,6 @@ class VREP_RoverRobot(object):
 		if errorCode1 != 0 or errorCode2 != 0 or errorCode3 != 0:
 			print('Failed to get Motor object handles. Terminating Program. Error Codes %d, %d, %d'%(errorCode1, errorCode2, errorCode3))
 			sys.exit(-1)
-
-		# errorCode = self.GetDribblerMotorHandle()
-		# if errorCode != 0:
-		# 	print('Failed to get Dribbler object handle. Terminating Program. Error Code %d'%(errorCode))
-		# 	sys.exit(-1)
 
 		errorCode = self.GetsampleHandle()
 		if errorCode != 0:
@@ -452,18 +436,10 @@ class VREP_RoverRobot(object):
 
 		return errorCode1, errorCode2, errorCode3
 
-
-	# Get VREP Dribbler Handle
-	def GetDribblerMotorHandle(self):
-		errorCode, self.dribblerMotorHandle = vrep.simxGetObjectHandle(self.clientID, 'DribblerMotor', vrep.simx_opmode_oneshot_wait)
-		return errorCode
-			
-
-	# Get VREP Goal Handles
+	# Get VREP Lander Handles
 	def GetLanderHandle(self):
 		landerErrorCode, self.landerHandle = vrep.simxGetObjectHandle(self.clientID, 'Lander', vrep.simx_opmode_oneshot_wait)	
 		return landerErrorCode
-
 
 	# Get VREP sample Handle
 	def GetsampleHandle(self):
@@ -609,7 +585,7 @@ class VREP_RoverRobot(object):
 			print("sample Position (x,y,z): %0.4f, %0.4f, %0.4f"%(self.samplePosition[0], self.samplePosition[1], self.samplePosition[2]))
 			
 		if self.landerPosition != None:
-			print("Blue Goal Position (x,y,z): %0.4f, %0.4f, %0.4f"%(self.landerPosition[0], self.landerPosition[1], self.landerPosition[2]))
+			print("Lander Position (x,y,z): %0.4f, %0.4f, %0.4f"%(self.landerPosition[0], self.landerPosition[1], self.landerPosition[2]))
 			
 		for index, obstacle in enumerate(self.obstaclePositions):
 			if obstacle != None:
@@ -623,7 +599,7 @@ class VREP_RoverRobot(object):
 		self.robotPose = None
 		self.cameraPose = None
 		self.samplePosition = None
-		self.landerGoalPosition = None
+		self.landerPosition = None
 		self.obstaclePositions = [None, None, None]
 
 		# GET 2D ROBOT POSE
@@ -693,21 +669,21 @@ class VREP_RoverRobot(object):
 
 
 	# Update the sample
-	def Updatesample(self):
+	def UpdateSample(self):
 		if self.samplePosition != None:
 
-			sampleDist = self.DribblerTosampleDistance()
+			sampleDist = self.CollectorToSampleDistance()
 
             # See if need to connect/disconnect sample from robot
 			if sampleDist != None and sampleDist < 0.04 and self.sampleConnectedToRobot == False:
-                # make physical connection between sample and robot to simulate dribbler
+                # make physical connection between sample and robot to simulate collector
 				vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndSample',[1],[],[],bytearray(),vrep.simx_opmode_blocking)
 				self.sampleConnectedToRobot = True
 
 			elif self.sampleConnectedToRobot == True:
                 # random chance to disconnect
-				if np.random.rand() > self.robotParameters.dribblerQuality:
-                    # terminate connection between sample and robot to simulate dribbler
+				if np.random.rand() > self.robotParameters.collectorQuality:
+                    # terminate connection between sample and robot to simulate collector
 					vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndSample',[0],[],[],bytearray(),vrep.simx_opmode_blocking)
 					self.sampleConnectedToRobot = False
 
@@ -752,7 +728,7 @@ class VREP_RoverRobot(object):
 		viewLimitIntersectionPoints = []
 		rangeAndBearings = []
 
-		# Get valid camera view limit points along the east wall (yellow goal wall)
+		# Get valid camera view limit points along the east wall
 		p1, p2 = self.CameraViewLimitWallIntersectionPoints(cameraPose, 'east')
 		if p1 != None:
 			viewLimitIntersectionPoints.append(p1)
@@ -766,7 +742,7 @@ class VREP_RoverRobot(object):
 		if p2 != None:
 			viewLimitIntersectionPoints.append(p2)
 
-		# Get valid camera view limit points along the west wall (blue goal wall)
+		# Get valid camera view limit points along the west wall
 		p1, p2 = self.CameraViewLimitWallIntersectionPoints(cameraPose, 'west')
 		if p1 != None:
 			viewLimitIntersectionPoints.append(p1)
@@ -794,8 +770,8 @@ class VREP_RoverRobot(object):
 	
 	# Gets the points where the edges of the camera's field of view intersects with the specified wall.
 	# inputs:
-	#	cameraPose - pose of the camera [x, y, theta] in the global coordinate frame (centre of the field with x pointed towards yellow goal, and blue pointing across the field, and z point to the sky)
-	# 	wall - wall want to get the camera view limit points of ('east', 'west', 'north', 'south'). East = yellow goal wall, west = blue goal wall, north = positive y axis wall, south = negative y axis wall
+	#	cameraPose - pose of the camera [x, y, theta] in the global coordinate frame
+	# 	wall - wall want to get the camera view limit points of ('east', 'west', 'north', 'south').
 	# returns:
 	#	p1 - will be [x,y] point if it is a valid wall point (i.e. lies on the arena's walls and is within the field of view) or None if it is not valid
 	#	p2 - will be [x,y] point if it is a valid wall point (i.e. lies on the arena's walls and is within the field of view) or None if it is not valid
@@ -850,8 +826,8 @@ class VREP_RoverRobot(object):
 
 	# Gets the point where the camera's view axis (centre of image) intersects with the specified wall.
 	# inputs:
-	#	cameraPose - pose of the camera [x, y, theta] in the global coordinate frame (centre of the field with x pointed towards yellow goal, and blue pointing across the field, and z point to the sky)
-	# 	wall - wall want to get the camera view limit points of ('east', 'west', 'north', 'south'). East = yellow goal wall, west = blue goal wall, north = positive y axis wall, south = negative y axis wall
+	#	cameraPose - pose of the camera [x, y, theta] in the global coordinate frame
+	# 	wall - wall want to get the camera view limit points of ('east', 'west', 'north', 'south').
 	# returns:
 	#	x - the x coordinate where the camera's axis intersects with the specified wall
 	#	y - the y coordinate where the camera's axis intersects with the specified wall
@@ -888,22 +864,22 @@ class VREP_RoverRobot(object):
 		return _range, _bearing
 
 
-	# Gets the orthogonal distance (in metres) from the dribbler to the sample. 
-	# Assuming the the sample's centroid is within 70 degrees of the dribbler's centroid
-	def DribblerTosampleDistance(self):
-		# get the position of the sample relative to the dribbler motor
+	# Gets the orthogonal distance (in metres) from the collector to the sample. 
+	# Assuming the the sample's centroid is within 70 degrees of the collector's centroid
+	def CollectorToSampleDistance(self):
+		# get the position of the sample relative to the collector motor
 		if self.robotPose != None and self.samplePosition != None:
-			# get the pose of the dribbler in the x-y plane using the robot's pose with some offsets
-			dribblerPose = [self.robotPose[0]+0.1*math.cos(self.robotPose[5]), self.robotPose[1]+0.1*math.sin(self.robotPose[5]), self.robotPose[5]]
+			# get the pose of the collector in the x-y plane using the robot's pose with some offsets
+			collectorPose = [self.robotPose[0]+0.1*math.cos(self.robotPose[5]), self.robotPose[1]+0.1*math.sin(self.robotPose[5]), self.robotPose[5]]
 
-			# get range and bearing from dribbler to sample position
-			_range, _bearing = self.GetRangeAndBearingFromPoseAndPoint(dribblerPose, self.samplePosition)
+			# get range and bearing from collector to sample position
+			_range, _bearing = self.GetRangeAndBearingFromPoseAndPoint(collectorPose, self.samplePosition)
 
 			# check to see if the bearing to the sample is larger than 70 degrees. If so return None
 			if abs(_bearing) > math.radians(70):
 				return None
 
-			# return distance to sample from dibbler orthogonal to dribbler's rotational axis
+			# return distance to sample from dibbler orthogonal to collector's rotational axis
 			return abs(_range * math.cos(_bearing))
 
 		return None
@@ -960,9 +936,9 @@ class RobotParameters(object):
 
 		# Vision Processing Parameters
 		self.maxsampleDetectionDistance = 1 # the maximum distance away that you can detect the sample in metres
-		self.maxLanderDetectionDistance = 2.5 # the maximum distance away that you can detect the goals in metres
+		self.maxLanderDetectionDistance = 2.5 # the maximum distance away that you can detect the lander in metres
 		self.maxObstacleDetectionDistance = 1.5 # the maximum distance away that you can detect the obstacles in metres
 		self.minWallDetectionDistance = 0.1 # the minimum distance away from a wall that you have to be to be able to detect it
 
-		# Dribbler Parameters
-		self.dribblerQuality = 1.0 # specifies how good your dribbler is from 0 to 1.0 (with 1.0 being awesome and 0 being non-existent)
+		# collector Parameters
+		self.collectorQuality = 1.0 # specifies how good your sample collector is from 0 to 1.0 (with 1.0 being awesome and 0 being non-existent)
