@@ -69,9 +69,9 @@
 										<pre><code># move the robot at a forward velocity of 0.1m/s with a rotational velocity of 0.5 rad/s.
 RoverBotSim.SetTargetVelocities(0.1, 0, 0.5)</code></pre>
 
-										<p><b>GetDetectedObjects()</b>: The GetDetectedObjects function takes no arguments and returns, as 4 variables in order, the range and bearing to the sample, the blue goal, the yellow goal, and any obstacles if they are within the camera's field of view (FOV). The range and bearing is returned as a 2 element array. If the object is not within the field of view that respective return variable will be set to none. How far the away the objects can be detected is based on the robot parameters, see <a href="#RobotParameters">Robot Parameters</a>. Only sample-obstacle occlusion is currently implemented. Example function usage:<p>
+										<p><b>GetDetectedObjects()</b>: The GetDetectedObjects function takes no arguments and returns, as 3 variables in order, the range and bearing to the sample, the lander, and any obstacles if they are within the camera's field of view (FOV). The range and bearing is returned as a 2 element array. If the object is not within the field of view that respective return variable will be set to none. How far the away the objects can be detected is based on the robot parameters, see <a href="#RobotParameters">Robot Parameters</a>. Only sample-obstacle occlusion is currently implemented. Example function usage:<p>
 
-										<pre><code>sampleRB, blueRB, yellowRB, obstaclesRB = RoverBotSim.GetDetectedObjects()
+										<pre><code>sampleRB, landerRB, obstaclesRB = RoverBotSim.GetDetectedObjects()
 
 # Check to see if the sample is within the camera's FOV
 if sampleRB != None:
@@ -98,20 +98,20 @@ else:
 										</code></pre>
 										
 
-										<p><b>KickSample(kickSpeed)</b>: The KickSample function attempts to fire the kicker plate with the passed kick speed. The kicker plate will not be fired if it has not reset. The kicker plate will reset itself over time automatically, it takes approximately 1 second to reset. Example function usage: </p>
+										<p><b>DropSample()</b>: The DropSample function attempts to drop the sample at the current position. Example function usage: </p>
 
-										<pre><code># Attempt to kick the sample with a kick speed of 0.5m/s
-RoverBotSim.KickSpeed(0.5)</code></pre>
+										<pre><code># Attempt to drop the sample at current position
+RoverBotSim.DropSample()</code></pre>
 
 										<p><b>SampleCollected()</b>: The SampleCollected function takes no arguments and returns true if the sample is within the robot's collector, false if it is not. Example Usage: </p>
 
 										<pre><code># check to see if sample is in collector
 if RoverBotSim.SampleCollected() == True:
-	# attempt to kick the sample with a kick speed of 0.5 m/s
-	RoverBotSim.KickSample(0.5)</code></pre>
+	# # Attempt to drop the sample at current position
+	RoverBotSim.DropSample()</code></pre>
 
 
-										<p><b>UpdateObjectPositions()</b>: The UpdateObjectPositions function does two things. Firstly it updates internal class variables holding the position of the various object within the scene (i.e. sample and goals). Secondly it updates the position of the sample, by moving it back the center of the arena when a goal is score as well as emulating the collector by randomly "releasing" the sample. How often the sample is randomly released from the "collector" is based on a passed robot parameter. <b><em>This function should be called once within each iteration of the main code loop</em></b>.</p>
+										<p><b>UpdateObjectPositions()</b>: The UpdateObjectPositions function does two things. Firstly it updates internal class variables holding the position of the various object within the scene (i.e. sample and lander). Secondly it emulates the collector by randomly "releasing" the sample. How often the sample is randomly released from the "collector" is based on a passed robot parameter (default is 1.0 which never releases sample). <b><em>This function should be called once within each iteration of the main code loop</em></b>.</p>
 
 										<pre><code> while True:
 	 # Navigation/AI Code - Get detected objects, and set robot velocities etc.
@@ -161,7 +161,7 @@ robotParameters.cameraTilt = 0.17 			# tilt of the camera in radians
 
 # Vision Processing Parameters
 robotParameters.maxSampleDetectionDistance = 1 		# the maximum distance you can detect the sample in metres
-robotParameters.maxGoalDetectionDistance = 2.5 		# the maximum distance you can detect the goals in metres
+robotParameters.maxLanderDetectionDistance = 2.5 		# the maximum distance you can detect the lander in metres
 robotParameters.maxObstacleDetectionDistance = 1.5 	# the maximum distance you can detect the obstacles in metres
 
 # Collector Parameters

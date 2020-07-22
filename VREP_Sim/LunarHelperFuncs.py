@@ -290,7 +290,7 @@ def MoveToTarget(targetRB, obstaclesRB, sampleInCollector, targetVel, robotState
 		return targetVel, robotState
 
     #logic for changing into drop sample state
-	if abs(targetRB[1]) < math.radians(90) and targetRB[0] < 0.25:
+	if abs(targetRB[1]) < math.radians(90) and targetRB[0] < 0.2:
 	 	robotState = RobotStates.DROP_SAMPLE
 	 	return targetVel, robotState
 

@@ -17,11 +17,11 @@ robotParameters.driveSystemQuality = 1	# specifies how good your drive system is
 # Camera Parameters
 robotParameters.cameraOrientation = 'landscape' # specifies the orientation of the camera, either landscape or portrait
 robotParameters.cameraDistanceFromRobotCenter = 0.0 # distance between the camera and the center of the robot in the direction of the front of the robot
-robotParameters.cameraHeightFromFloor = 0.1 # height of the camera relative to the floor in metres
-robotParameters.cameraTilt = 0.1 # tilt of the camera in radians
+robotParameters.cameraHeightFromFloor = 0.075 # height of the camera relative to the floor in metres
+robotParameters.cameraTilt = 0.0 # tilt of the camera in radians
 
 # Vision Processing Parameters
-robotParameters.maxSampleDetectionDistance = 1 # the maximum distance away that you can detect the sample in metres
+robotParameters.maxSampleDetectionDistance = 2 # the maximum distance away that you can detect the sample in metres
 robotParameters.maxLanderDetectionDistance = 2.5 # the maximum distance away that you can detect the lander in metres
 robotParameters.maxObstacleDetectionDistance = 1.5 # the maximum distance away that you can detect the obstacles in metres
 
@@ -58,7 +58,7 @@ if __name__ == '__main__':
 		#rotationGain = 0.2
 
 		linearGain = 0.1
-		rotationGain = 0.2
+		rotationGain = 0.25
 
 		# Min and Max Linear and Rotational Speeds
 		linearSpeedLimits = [0.03, 0.2]
@@ -130,9 +130,9 @@ if __name__ == '__main__':
 			previousRobotState = robotState
 
 			# Update Plot
-			figHandle, robotHandle, sampleHandle, obstacleHandles = PlotArenaAndObjects(figHandle, robotHandle, sampleHandle, obstacleHandles, robotPose, samplePosition, obstaclePositions)
-			figHandle, sampleRBHandle, obstacleRBHandles = PlotRangeAndBearings(figHandle, sampleRBHandle, obstacleRBHandles, robotPose, sampleRB, obstaclesRB)
-			figHandle, velocityHandle = PlotTargetVelocity(figHandle, velocityHandle, targetVel, robotPose)
+			#figHandle, robotHandle, sampleHandle, obstacleHandles = PlotArenaAndObjects(figHandle, robotHandle, sampleHandle, obstacleHandles, robotPose, samplePosition, obstaclePositions)
+			#figHandle, sampleRBHandle, obstacleRBHandles = PlotRangeAndBearings(figHandle, sampleRBHandle, obstacleRBHandles, robotPose, sampleRB, obstaclesRB)
+			#figHandle, velocityHandle = PlotTargetVelocity(figHandle, velocityHandle, targetVel, robotPose)
 
 
 	except (KeyboardInterrupt) as e:
