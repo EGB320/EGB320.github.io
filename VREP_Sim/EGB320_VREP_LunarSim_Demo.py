@@ -5,6 +5,7 @@
 from LunarHelperFuncs import *
 from roverbot_lib import *
 
+
 # SET ROBOT PARAMETERS
 robotParameters = RobotParameters()
 
@@ -16,9 +17,9 @@ robotParameters.driveSystemQuality = 1	# specifies how good your drive system is
 
 # Camera Parameters
 robotParameters.cameraOrientation = 'landscape' # specifies the orientation of the camera, either landscape or portrait
-robotParameters.cameraDistanceFromRobotCenter = 0.0 # distance between the camera and the center of the robot in the direction of the front of the robot
-robotParameters.cameraHeightFromFloor = 0.075 # height of the camera relative to the floor in metres
-robotParameters.cameraTilt = 0.0 # tilt of the camera in radians
+robotParameters.cameraDistanceFromRobotCenter = 0.1 # distance between the camera and the center of the robot in the direction of the front of the robot
+robotParameters.cameraHeightFromFloor = 0.2 # height of the camera relative to the floor in metres
+robotParameters.cameraTilt = math.radians(35) # tilt of the camera in radians
 
 # Vision Processing Parameters
 robotParameters.maxSampleDetectionDistance = 2 # the maximum distance away that you can detect the sample in metres
@@ -91,9 +92,14 @@ if __name__ == '__main__':
 				targetVel, startTime, robotState = SampleSearchRotate(sampleRB, lunarBotSim.SampleCollected(), targetVel, startTime, robotState)
 
 
+
+
 			elif robotState == RobotStates.SAMPLE_SEARCH_MOVE_TO_POINT:
 				linearSpeedLimits = [0.3, 0.3]
 				rotationalSpeedLimits = [0.1, 0.8]
+				tempRB = [0.1, math.radians(10)]
+				targetVel, robotState = MoveToTarget(tempRB, obstaclesRB, lunarBotSim.SampleCollected(), targetVel, robotState, linearGain, rotationGain, linearSpeedLimits, rotationalSpeedLimits)
+
 				
 
 			elif robotState == RobotStates.MOVE_TO_SAMPLE:
@@ -118,21 +124,21 @@ if __name__ == '__main__':
 			robotPose, samplePosition, obstaclePositions = lunarBotSim.UpdateObjectPositions()
 
 			# move for an extra 0.5 seconds forward when range to sample is less than 0.05m
-			if sampleRB != None and sampleRB[0] < 0.05:
-				time.sleep(0.5)
+			# if sampleRB != None and sampleRB[0] < 0.05:
+			# 	time.sleep(0.5)
 
 			# Print state
 			if previousRobotState != robotState:
 				print("Robot State Changed: "),
 				print(robotState),
-			print("\tTarget Velocities: "),
-			print(targetVel)
+				print("\tTarget Velocities: "),
+				print(targetVel)
 			previousRobotState = robotState
 
 			# Update Plot
-			#figHandle, robotHandle, sampleHandle, obstacleHandles = PlotArenaAndObjects(figHandle, robotHandle, sampleHandle, obstacleHandles, robotPose, samplePosition, obstaclePositions)
-			#figHandle, sampleRBHandle, obstacleRBHandles = PlotRangeAndBearings(figHandle, sampleRBHandle, obstacleRBHandles, robotPose, sampleRB, obstaclesRB)
-			#figHandle, velocityHandle = PlotTargetVelocity(figHandle, velocityHandle, targetVel, robotPose)
+			figHandle, robotHandle, sampleHandle, obstacleHandles = PlotArenaAndObjects(figHandle, robotHandle, sampleHandle, obstacleHandles, robotPose, samplePosition, obstaclePositions)
+			figHandle, sampleRBHandle, obstacleRBHandles = PlotRangeAndBearings(figHandle, sampleRBHandle, obstacleRBHandles, robotPose, sampleRB, obstaclesRB)
+			figHandle, velocityHandle = PlotTargetVelocity(figHandle, velocityHandle, targetVel, robotPose)
 
 
 	except (KeyboardInterrupt) as e:

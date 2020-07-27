@@ -168,44 +168,45 @@ class VREP_RoverRobot(object):
 			#check which objects are currently in FOV using object detection sensor within VREP sim
 			retCode,objectsDetected,_,_,_ = vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'getObjectsInView',[],[],[],bytearray(),vrep.simx_opmode_blocking)
 		
-			# check to see if sample is in field of view
-			if self.samplePosition != None:
-				
-				#if detected calculate range and bearing from camera pose location
-				if objectsDetected[lunar_object.sample0] == True:
-					_range, _bearing = self.GetRBInCameraFOV(self.samplePosition)
+			if objectsDetected != []:
+				# check to see if sample is in field of view
+				if self.samplePosition != None and objectsDetected != []:
 					
-					# check range is not to far away
-					if _range < self.robotParameters.maxsampleDetectionDistance:
-						sampleRangeBearing = [_range, _bearing]
-				
-				
-
-			# check to see if yellow lander is in field of view
-			if self.landerPosition != None:
-				
-				#if detected calculate range and bearing from camera pose location
-				if objectsDetected[lunar_object.lander] == True:
-					_range, _bearing = self.GetRBInCameraFOV(self.landerPosition)
+					#if detected calculate range and bearing from camera pose location
+					if objectsDetected[lunar_object.sample0] == True:
+						_range, _bearing = self.GetRBInCameraFOV(self.samplePosition)
+						
+						# check range is not to far away
+						if _range < self.robotParameters.maxsampleDetectionDistance:
+							sampleRangeBearing = [_range, _bearing]
 					
-					# check range is not to far away
-					if _range < self.robotParameters.maxLanderDetectionDistance:
-						landerRangeBearing = [_range, _bearing]
+					
 
-			# check to see which obstacles are within the field of view
-			for index, obstaclePosition in enumerate(self.obstaclePositions):
-				if obstaclePosition != None:
+				# check to see if yellow lander is in field of view
+				if self.landerPosition != None:
+					
+					#if detected calculate range and bearing from camera pose location
+					if objectsDetected[lunar_object.lander] == True:
+						_range, _bearing = self.GetRBInCameraFOV(self.landerPosition)
+						
+						# check range is not to far away
+						if _range < self.robotParameters.maxLanderDetectionDistance:
+							landerRangeBearing = [_range, _bearing]
 
-					# check to see if the current obstacle is in the FOV and within the field. If so add to detected obstacle range bearing list
-					if objectsDetected[lunar_object.obstacle0 + index] == True and self.PointInsideArena(obstaclePosition):
-						_range, _bearing = self.GetRBInCameraFOV(obstaclePosition)
+				# check to see which obstacles are within the field of view
+				for index, obstaclePosition in enumerate(self.obstaclePositions):
+					if obstaclePosition != None:
 
-						# make obstaclesRangeBearing into empty lists, if currently set to None
-						if obstaclesRangeBearing == None:
-							obstaclesRangeBearing = []
+						# check to see if the current obstacle is in the FOV and within the field. If so add to detected obstacle range bearing list
+						if objectsDetected[lunar_object.obstacle0 + index] == True and self.PointInsideArena(obstaclePosition):
+							_range, _bearing = self.GetRBInCameraFOV(obstaclePosition)
 
-						if _range <  self.robotParameters.maxObstacleDetectionDistance:
-							obstaclesRangeBearing.append([_range, _bearing])
+							# make obstaclesRangeBearing into empty lists, if currently set to None
+							if obstaclesRangeBearing == None:
+								obstaclesRangeBearing = []
+
+							if _range <  self.robotParameters.maxObstacleDetectionDistance:
+								obstaclesRangeBearing.append([_range, _bearing])
 
 
 					#OLD code for checking occlusions
@@ -719,7 +720,7 @@ class VREP_RoverRobot(object):
 			sampleDist = self.CollectorToSampleDistance()
 
             # See if need to connect/disconnect sample from robot
-			if sampleDist != None and sampleDist < 0.04 and self.sampleConnectedToRobot == False:
+			if sampleDist != None and sampleDist < 0.03 and self.sampleConnectedToRobot == False:
                 # make physical connection between sample and robot to simulate collector
 				vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndSample',[1],[],[],bytearray(),vrep.simx_opmode_blocking)
 				self.sampleConnectedToRobot = True
@@ -731,7 +732,7 @@ class VREP_RoverRobot(object):
 					vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndSample',[0],[],[],bytearray(),vrep.simx_opmode_blocking)
 					self.sampleConnectedToRobot = False
 
-			elif sampleDist != None and sampleDist > 0.04:
+			elif sampleDist != None and sampleDist > 0.03:
 				self.sampleConnectedToRobot = False
 
 	
