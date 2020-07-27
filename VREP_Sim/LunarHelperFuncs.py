@@ -3,8 +3,8 @@
 
 # Used to Import add the VREP Python Code Folder to the Python Path
 import sys
-#sys.path.insert(0, 'c:/Users/Chris/Documents/GitHub/EGB320.github.io/VREP_Sim/EGB320_VREP_Files/VREP_PythonCode')
-sys.path.insert(0, 'c:\\Users\\lehnert\\OneDrive - Queensland University of Technology\\Documents\\GitHub\\EGB320.github.io\\VREP_Sim\\EGB320_VREP_Files\\VREP_PythonCode')
+sys.path.insert(0, 'c:/Users/Chris/Documents/GitHub/EGB320.github.io/VREP_Sim/EGB320_VREP_Files/VREP_PythonCode')
+#sys.path.insert(0, 'c:\\Users\\lehnert\\OneDrive - Queensland University of Technology\\Documents\\GitHub\\EGB320.github.io\\VREP_Sim\\EGB320_VREP_Files\\VREP_PythonCode')
 
 # import the soccer bot module - this will include math, time, numpy (as np) and vrep python modules
 from roverbot_lib import *

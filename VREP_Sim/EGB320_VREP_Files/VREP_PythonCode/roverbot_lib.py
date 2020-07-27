@@ -4,6 +4,7 @@ import time
 import math
 import numpy as np
 import sys
+from enum import IntEnum
 
 
 ################################
@@ -12,7 +13,20 @@ import sys
 
 # This class wraps VREP api functions to allow 
 # users to start testing Navigation/AI systems
+class lunar_object(IntEnum):
+	sample0 = 0
+	sample1 = 1
+	sample2 = 2
+	
+	obstacle0 = 3
+	obstacle1 = 4
+	obstacle2 = 5
 
+	rock0 = 6
+	rock1 = 7
+	rock2 = 8
+
+	lander = 9
 
 class VREP_RoverRobot(object):
 	"""docstring for VREP_SoccerBot"""
@@ -64,6 +78,10 @@ class VREP_RoverRobot(object):
 		self.samplePosition = None
 		self.landerPosition = None
 		self.obstaclePositions = [None, None, None]
+
+
+		
+
 
 		# Variable to hold whether the sample has been joined to the robot
 		self.sampleConnectedToRobot = False
@@ -144,54 +162,75 @@ class VREP_RoverRobot(object):
 		# variables used to check for occlusion between obstacle and sample
 		obstacleBearingLimits = []
 
-		# Make sure the camera's pose is not nonoe
+		# Make sure the camera's pose is not none
 		if self.cameraPose != None:
 
+			#check which objects are currently in FOV using object detection sensor within VREP sim
+			retCode,objectsDetected,_,_,_ = vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'getObjectsInView',[],[],[],bytearray(),vrep.simx_opmode_blocking)
+		
 			# check to see if sample is in field of view
 			if self.samplePosition != None:
-				inFOV, _range, _bearing = self.ObjectInCameraFOV(self.samplePosition, self.robotParameters.maxsampleDetectionDistance)
-				if inFOV == True:
-					sampleRangeBearing = [_range, _bearing]
+				
+				#if detected calculate range and bearing from camera pose location
+				if objectsDetected[lunar_object.sample0] == True:
+					_range, _bearing = self.GetRBInCameraFOV(self.samplePosition)
+					
+					# check range is not to far away
+					if _range < self.robotParameters.maxsampleDetectionDistance:
+						sampleRangeBearing = [_range, _bearing]
+				
+				
 
 			# check to see if yellow lander is in field of view
 			if self.landerPosition != None:
-				inFOV, _range, _bearing = self.ObjectInCameraFOV(self.landerPosition, self.robotParameters.maxLanderDetectionDistance)
-				if inFOV == True:
-					landerRangeBearing = [_range, _bearing]
+				
+				#if detected calculate range and bearing from camera pose location
+				if objectsDetected[lunar_object.lander] == True:
+					_range, _bearing = self.GetRBInCameraFOV(self.landerPosition)
+					
+					# check range is not to far away
+					if _range < self.robotParameters.maxLanderDetectionDistance:
+						landerRangeBearing = [_range, _bearing]
 
 			# check to see which obstacles are within the field of view
 			for index, obstaclePosition in enumerate(self.obstaclePositions):
 				if obstaclePosition != None:
-					inFOV, _range, _bearing = self.ObjectInCameraFOV(obstaclePosition, self.robotParameters.maxObstacleDetectionDistance)
 
 					# check to see if the current obstacle is in the FOV and within the field. If so add to detected obstacle range bearing list
-					if inFOV == True and self.PointInsideArena(obstaclePosition):
+					if objectsDetected[lunar_object.obstacle0 + index] == True and self.PointInsideArena(obstaclePosition):
+						_range, _bearing = self.GetRBInCameraFOV(obstaclePosition)
 
 						# make obstaclesRangeBearing into empty lists, if currently set to None
 						if obstaclesRangeBearing == None:
 							obstaclesRangeBearing = []
 
-						obstaclesRangeBearing.append([_range, _bearing])
+						if _range <  self.robotParameters.maxObstacleDetectionDistance:
+							obstaclesRangeBearing.append([_range, _bearing])
 
+
+					#OLD code for checking occlusions
 					# if obstacle is within the FOV, get the bearing to the obstacle's edges relative to the camera. Will be used to see if an obstacle is occluding the sample
-					if self.PointInsideArena(obstaclePosition):
+					# if self.PointInsideArena(obstaclePosition):
 
-						# determine bearings to obstacle's edges
-						beta = math.atan2(0.09, _range)
-						min_bearing = max(_bearing-beta, -(self.horizontalViewAngle/2.0))
-						max_bearing = min(_bearing+beta, (self.horizontalViewAngle/2.0))
-						obstacleBearingLimits.append([_range, min_bearing, max_bearing, index])
 
+					# 	# determine bearings to obstacle's edges
+					# 	beta = math.atan2(0.09, _range)
+					# 	min_bearing = max(_bearing-beta, -(self.horizontalViewAngle/2.0))
+					# 	max_bearing = min(_bearing+beta, (self.horizontalViewAngle/2.0))
+					# 	obstacleBearingLimits.append([_range, min_bearing, max_bearing, index])
+
+
+		#OLD code for checking occlusions
 
 		# check to see if sample is occluded by an obstacle
-		if sampleRangeBearing != None:
-			for obs in obstacleBearingLimits:
-				# check if sample is further away than obstacle (i.e. behind an obstalce)
-				if sampleRangeBearing != None and sampleRangeBearing[0] > obs[0]:
-					# check to see if sample's bearing is inside obstacle's edge bearings
-					if sampleRangeBearing[1] > obs[1] and sampleRangeBearing[1] < obs[2]:
-						sampleRangeBearing = None
-						break
+		# if sampleRangeBearing != None:
+		# 	for obs in obstacleBearingLimits:
+		# 		# check if sample is further away than obstacle (i.e. behind an obstalce)
+		# 		if sampleRangeBearing != None and sampleRangeBearing[0] > obs[0]:
+		# 			# check to see if sample's bearing is inside obstacle's edge bearings
+		# 			if sampleRangeBearing[1] > obs[1] and sampleRangeBearing[1] < obs[2]:
+		# 				sampleRangeBearing = None
+		# 				break
 
 		return sampleRangeBearing, landerRangeBearing, obstaclesRangeBearing
 
@@ -386,7 +425,7 @@ class VREP_RoverRobot(object):
 			print('Failed to get Motor object handles. Terminating Program. Error Codes %d, %d, %d'%(errorCode1, errorCode2, errorCode3))
 			sys.exit(-1)
 
-		errorCode = self.GetsampleHandle()
+		errorCode = self.GetSampleHandle()
 		if errorCode != 0:
 			print('Failed to get sample object handle. Terminating Program. Error Code %d'%(errorCode))
 			sys.exit(-1)
@@ -442,10 +481,18 @@ class VREP_RoverRobot(object):
 		return landerErrorCode
 
 	# Get VREP sample Handle
-	def GetsampleHandle(self):
-		errorCode, self.sampleHandle = vrep.simxGetObjectHandle(self.clientID, 'Sample', vrep.simx_opmode_oneshot_wait)
+	def GetSampleHandle(self):
+		errorCode, self.sampleHandle = vrep.simxGetObjectHandle(self.clientID, 'Sample_0', vrep.simx_opmode_oneshot_wait)
+		# errorCode, self.sampleHandle1 = vrep.simxGetObjectHandle(self.clientID, 'Sample_1', vrep.simx_opmode_oneshot_wait)
+		# errorCode, self.sampleHandle2 = vrep.simxGetObjectHandle(self.clientID, 'Sample_2', vrep.simx_opmode_oneshot_wait)
 		return errorCode
 
+	# Get VREP sample Handle
+	def GetRockHandle(self):
+		errorCode, self.rockHandle[0] = vrep.simxGetObjectHandle(self.clientID, 'Rock_0', vrep.simx_opmode_oneshot_wait)
+		errorCode, self.rockHandle[1] = vrep.simxGetObjectHandle(self.clientID, 'Rock_1', vrep.simx_opmode_oneshot_wait)
+		errorCode, self.rockHandle[2] = vrep.simxGetObjectHandle(self.clientID, 'Rock_2', vrep.simx_opmode_oneshot_wait)
+		return errorCode
 
 	# Get VREP Obstacle Handles
 	def GetObstacleHandles(self):
@@ -634,30 +681,27 @@ class VREP_RoverRobot(object):
 
 
 	# Checks to see if an Object is within the field of view of the camera
-	def ObjectInCameraFOV(self, objectPosition, maxViewDistance):
+	def GetRBInCameraFOV(self, objectPosition):
 		# calculate range and bearing on 2D plane - relative to the camera
 		cameraPose2d = [self.cameraPose[0], self.cameraPose[1], self.cameraPose[5]]
 		_range, _bearing = self.GetRangeAndBearingFromPoseAndPoint(cameraPose2d, objectPosition)
 
 		# angle from camera's axis to the object's position
-		verticalAngle = math.atan2(objectPosition[2]-self.cameraPose[2], _range)
+		# verticalAngle = math.atan2(objectPosition[2]-self.cameraPose[2], _range)
 
-		# check range is not to far away
-		if _range > maxViewDistance:
-			# return False to indicate object outside camera's FOV and range and bearing
-			return False, _range, _bearing		
+		#OLD code needs removing
 
-		# check to see if in field of view
-		if abs(_bearing) > (self.horizontalViewAngle/2.0):
-			# return False to indicate object outside camera's FOV and range and bearing
-			return False, _range, _bearing
+		# # check to see if in field of view
+		# if abs(_bearing) > (self.horizontalViewAngle/2.0):
+		# 	# return False to indicate object outside camera's FOV and range and bearing
+		# 	return False, _range, _bearing
 
-		if abs(verticalAngle) > (self.verticalViewAngle/2.0):
-			# return False to indicate object outside camera's FOV and range and bearing
-			return False, _range, _bearing
+		# if abs(verticalAngle) > (self.verticalViewAngle/2.0):
+		# 	# return False to indicate object outside camera's FOV and range and bearing
+		# 	return False, _range, _bearing
 
 		# return True to indicate is in FOV and range and bearing
-		return True, _range, _bearing
+		return _range, _bearing
 
 	
 	# Determines if a 2D point is inside the arena, returns true if that is the case
