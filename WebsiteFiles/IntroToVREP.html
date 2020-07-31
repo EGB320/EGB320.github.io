@@ -23,6 +23,24 @@
 		</script>
 
 		<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+		<style>
+			table {
+			  border: 0;
+			  width: 100%
+			  }
+	  
+			th {
+			  text-align: left;
+			  }
+	  
+			#code-box {
+			  border-left: 5px solid #5C00AC;
+			  }
+	  
+			#no-border {
+			  border: none !important;
+			  }
+		  </style>
 	</head>
 
 	<body class="is-preload">
@@ -129,7 +147,7 @@
 
 										<p>Within your new script add the following code.</p>
 
-										<pre class="prettyprint"><code>#!/usr/bin/python
+										<pre class="prettyprint" id="no-border"><code>#!/usr/bin/python
 
 # import the  bot module - this will include math, time, numpy (as np) and vrep python modules
 from roverbot_lib import *
@@ -166,24 +184,24 @@ if __name__ == '__main__':
 
 										<p>Now to explain the code.</p>
 
-										<pre class="prettyprint"><code>from roverbot_lib import *</code></pre>
+										<pre class="prettyprint" id="no-border"><code>from roverbot_lib import *</code></pre>
 
 										<p>This imports all the functions, classes and global variables from the roverbot_lib.py script. This will also import the Python modules math, time, numpy (as np) and vrep.</p>
 
-										<pre class="prettyprint"><code>sceneParameters = SceneParameters()</code></pre>
+										<pre class="prettyprint" id="no-border"><code>sceneParameters = SceneParameters()</code></pre>
 
 										<p>This loads up the default VREP scene parameters and stores them as a variable. The scene parameters include the starting ball position, as well as the positions of the 3 static obstacles. Later on we will discuss how to change the default scene parameters.</p>
 
-										<pre class="prettyprint"><code>robotParameters = RobotParameters()
+										<pre class="prettyprint" id="no-border"><code>robotParameters = RobotParameters()
 robotParameters.driveType = 'differential'	# specify if using differential or omni drive system</code></pre>
 
 										<p>This loads the default robot parameters and stores them as a variable. We also specifically set the drive type to be differential. If you loaded the omni drive model, you will need to change this to be omni instead. The robot parameters include the minimum and maximum linear speed your robot can travel, the position of the robot's camera, how well your vision system can detect objects, and how well your dribbler system can "hold" onto the sample/ball. We will be discussing these parameters later on in this guide.</p>
 
-										<pre class="prettyprint"><code>if __name__ == 'main'</code></pre>
+										<pre class="prettyprint" id="no-border"><code>if __name__ == 'main'</code></pre>
 
 										<p>This is a Python capability. Essentially this says that if this is the main script being run, then perform the following operations; if this is not the main script (i.e. it has been imported by another script) do not perform the following actions. This is a great way to write Python modules and allow them to write test code.</p>
 
-										<pre class="prettyprint"><code>roverBotSim = VREP_RoverBot('127.0.0.1', robotParameters, sceneParameters)</code></pre>
+										<pre class="prettyprint" id="no-border"><code>roverBotSim = VREP_RoverBot('127.0.0.1', robotParameters, sceneParameters)</code></pre>
 
 										<p>This line of code creates an instance of the VREP_RoverBot class and stores that instance as a variable, in this scenario we have called that variable RoverBotSim. We have passed three arguments into this function, they are in order: 
 											<ul>
@@ -193,13 +211,13 @@ robotParameters.driveType = 'differential'	# specify if using differential or om
 											</ul>
 										 </p>
 
-										 <pre class="prettyprint"><code>roverBotSim.StartSimulator()</code></pre>
+										 <pre class="prettyprint" id="no-border"><code>roverBotSim.StartSimulator()</code></pre>
 
 										 <p>This will start the VREP simulator, which can also be done manually by pressing the Play button in VREP.</p>
 										<div class="html2pdf__page-break"></div>
 									</div>
 
-										 <pre class="prettyprint"><code>while True: 
+										 <pre class="prettyprint" id="no-border"><code>while True: 
 	roverBotSim.SetTargetVelocities(0.1, 0, 0) 
 	roverBotSim.UpdateObjectPositions() # needs to be called once within main code loop 
 										</code></pre>
@@ -232,7 +250,7 @@ robotParameters.driveType = 'differential'	# specify if using differential or om
 											<li>Get the IP address of the desktop/laptop computer you will be running VREP on.</li>
 											<li>On the Raspberry Pi, in your python navigation script, change the IP address being passed into the VREP_RoverBot class creation function. For example:
 
-												<pre class="prettyprint"><code>RoverBotSim = VREP_RoverBot('pc_ip_address', robotParameters, sceneParameters)</code></pre>
+												<pre class="prettyprint" id="no-border"><code>RoverBotSim = VREP_RoverBot('pc_ip_address', robotParameters, sceneParameters)</code></pre>
 
 											</li>
 											<li>Launch and start VREP on the computer as you usually would.</li>
