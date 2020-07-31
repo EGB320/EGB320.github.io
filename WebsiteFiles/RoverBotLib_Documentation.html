@@ -21,6 +21,25 @@
 
 		  gtag('config', 'UA-123133357-1');
 		</script>
+		<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+		<style>
+			table {
+			  border: 0;
+			  width: 100%
+			  }
+	  
+			th {
+			  text-align: left;
+			  }
+	  
+			#code-box {
+			  border-left: 5px solid #5C00AC;
+			  }
+	  
+			#no-border {
+			  border: none !important;
+			  }
+		  </style>
 	</head>
 
 	<body class="is-preload">
@@ -66,12 +85,12 @@
 
 										<p><b>SetTargetVelocities(x_dot, y_dot, theta_dot)</b>: The SetTargetVelocities function sets the robot's linear speed in the x and y direction with respect to the robot's coordinate frame and the robot's rotation velocity. The linear speeds, x_dot and y_dot, are in m/s while the rotation velocity, theta_dot, is in rad/s. Setting the y_dot velocity to a non-zero value while using a differential drive robot is impossible, and will simply be reset to 0. The maximum and minimum values you can set are based on the robot parameters, see <a href="#RobotParameters">Robot Parameters</a>. Example function usage:</p>
 
-										<pre><code># move the robot at a forward velocity of 0.1m/s with a rotational velocity of 0.5 rad/s.
+										<pre class="prettyprint" id="no-border"><code># move the robot at a forward velocity of 0.1m/s with a rotational velocity of 0.5 rad/s.
 RoverBotSim.SetTargetVelocities(0.1, 0, 0.5)</code></pre>
 
 										<p><b>GetDetectedObjects()</b>: The GetDetectedObjects function takes no arguments and returns, as 3 variables in order, the range and bearing to the sample, the lander, and any obstacles if they are within the camera's field of view (FOV). The range and bearing is returned as a 2 element array. If the object is not within the field of view that respective return variable will be set to none. How far the away the objects can be detected is based on the robot parameters, see <a href="#RobotParameters">Robot Parameters</a>. Only sample-obstacle occlusion is currently implemented. Example function usage:<p>
 
-										<pre><code>sampleRB, landerRB, obstaclesRB = RoverBotSim.GetDetectedObjects()
+										<pre class="prettyprint" id="no-border"><code>sampleRB, landerRB, obstaclesRB = RoverBotSim.GetDetectedObjects()
 
 # Check to see if the sample is within the camera's FOV
 if sampleRB != None:
@@ -87,7 +106,7 @@ if obstacles != None:
 
 										<p><b>GetDetectedWallPoints()</b>: The GetDetectedWallPoints function takes no arguments and returns a single variable that holds any detected wall points as a list of list containing the range and bearing to each wall point. The list will either contain 1, 2 or 3 range-bearing arrays depending on the situation, for the 3 scenarios see <a href="#WallPointScenarios">Wall Point Scenarios</a>. The returned variable will be none if there are no wall points detected (i.e. the robot is to close to a wall).</p>
 
-										<pre><code># detect any wall points, check to make sure not to close to the wall
+										<pre class="prettyprint" id="no-border"><code># detect any wall points, check to make sure not to close to the wall
 wallPoints = RoverBotSim.GetDetectedWallPoints()
 if wallPoints == None:
 	print("To close to the wall")
@@ -100,12 +119,12 @@ else:
 
 										<p><b>DropSample()</b>: The DropSample function attempts to drop the sample at the current position. Example function usage: </p>
 
-										<pre><code># Attempt to drop the sample at current position
+										<pre class="prettyprint" id="no-border"><code># Attempt to drop the sample at current position
 RoverBotSim.DropSample()</code></pre>
 
 										<p><b>SampleCollected()</b>: The SampleCollected function takes no arguments and returns true if the sample is within the robot's collector, false if it is not. Example Usage: </p>
 
-										<pre><code># check to see if sample is in collector
+										<pre class="prettyprint" id="no-border"><code># check to see if sample is in collector
 if RoverBotSim.SampleCollected() == True:
 	# # Attempt to drop the sample at current position
 	RoverBotSim.DropSample()</code></pre>
@@ -113,7 +132,7 @@ if RoverBotSim.SampleCollected() == True:
 
 										<p><b>UpdateObjectPositions()</b>: The UpdateObjectPositions function does two things. Firstly it updates internal class variables holding the position of the various object within the scene (i.e. sample and lander). Secondly it emulates the collector by randomly "releasing" the sample. How often the sample is randomly released from the "collector" is based on a passed robot parameter (default is 1.0 which never releases sample). <b><em>This function should be called once within each iteration of the main code loop</em></b>.</p>
 
-										<pre><code> while True:
+										<pre class="prettyprint" id="no-border"><code> while True:
 	 # Navigation/AI Code - Get detected objects, and set robot velocities etc.
 
 	# Update the sample position in each loop
@@ -126,7 +145,7 @@ if RoverBotSim.SampleCollected() == True:
 										<h3>Scene Parameters</h3>
 										<p>The scene parameters allow you to set the starting position of the sample and the position of the 3 static obstacles. The robot will always start within the center of the arena within the VREP simulator. The following example shows how to set the starting position of the sample and the static obstacle positions. Setting the sample and obstacle starting positions to -1 will allow you to manually set the positions within VREP.</p>
 
-										<pre><code> # SET SCENE PARAMETERS
+										<pre class="prettyprint" id="no-border"><code> # SET SCENE PARAMETERS
 sceneParameters = SceneParameters()
 
 # Set the sample's starting position [x, y] (in metres), 
@@ -143,7 +162,7 @@ sceneParameters.obstacle2_StartingPosition = -1
 										<h2 id="RobotParameters">Robot Parameters</h2>
 										<p>The robot parameters allow you to set the minimum and maximum linear (forward) speed the robot can move, how far the vision system can detect the various objects, the quality of the collector, and the position of the camera. We suggest you try and simulate your real robot as much as possible to eliminate as many integration bugs as possible. You will need to get these parameters from your various team members. The following example shows you how to set the various parameters.</p>
 
-										<pre><code># SET ROBOT PARAMETERS
+										<pre class="prettyprint" id="no-border"><code># SET ROBOT PARAMETERS
 robotParameters = RobotParameters()
 
 # Drive Parameters
