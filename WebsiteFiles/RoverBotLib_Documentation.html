@@ -150,13 +150,21 @@ sceneParameters = SceneParameters()
 
 # Set the sample's starting position [x, y] (in metres), 
 # or set to -1 if want to manually set the position of the sample using VREP controls
-sceneParameters.sampleStartingPosition = [0.5, 0]
+sceneParameters.sample0_StartingPosition = [0.5, 0.2]
+sceneParameters.sample1_StartingPosition = -1
+sceneParameters.sample2_StartingPosition = -1
 
 # Set the position of the obstacles [x, y] (in metres), specify None if not wanted in the scene, 
 # or set to -1 if want to manually set the obstacle positions using VREP controls
 sceneParameters.obstacle0_StartingPosition = [0.7, 0.7] 
 sceneParameters.obstacle1_StartingPosition = None
 sceneParameters.obstacle2_StartingPosition = -1
+
+# Set the position of the obstacles [x, y] (in metres), specify None if not wanted in the scene, 
+# or set to -1 if want to manually set the obstacle positions using VREP controls
+sceneParameters.rock0_StartingPosition = [0.3, 0.4] 
+sceneParameters.rock1_StartingPosition = None
+sceneParameters.rock2_StartingPosition = -1
 </code></pre>
 
 										<h2 id="RobotParameters">Robot Parameters</h2>

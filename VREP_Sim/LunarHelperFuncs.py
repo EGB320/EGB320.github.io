@@ -45,7 +45,7 @@ def PrintObjectRangeBearings(sampleRangeBearing, obstaclesRangeBearing):
 			print("Obstacle (r,b): Not Detected")
 
 
-def PlotArenaAndObjects(figHandle, robotHandle, sampleHandle, obstacleHandles, robotPose, samplePosition, obstaclePositions):
+def PlotArenaAndObjects(figHandle, robotHandle, sampleHandles, obstacleHandles, rockHandles, robotPose, samplePositions, obstaclePositions, rockPositions):
 	if figHandle == None:
 		# create figure handle
 		figHandle = plt.figure(1)
@@ -67,39 +67,56 @@ def PlotArenaAndObjects(figHandle, robotHandle, sampleHandle, obstacleHandles, r
 	# Clear previous robot, sample and obstacles
 	if robotHandle != None:
 		robotHandle.remove()
-
-	if sampleHandle != None:
-		sampleHandle.remove()
+	
+	for handle in sampleHandles:
+		if handle != None:
+			handle.remove()
 
 	for handle in obstacleHandles:
 		if handle != None:
 			handle.remove()
+	
+	for handle in rockHandles:
+		if handle != None:
+			handle.remove()
 
 	# plot robot onto current axis
-	if samplePosition != None:
+	if robotHandle != None:
 		robotHandle = patches.Circle((robotPose[0], robotPose[1]), 0.09, color='b')
 		axis.add_patch(robotHandle)
 
-	# plot sample onto current axis
-	if samplePosition != None:
-		sampleHandle = patches.Circle((samplePosition[0], samplePosition[1]), 0.025, color='r')
-		axis.add_patch(sampleHandle)
+	# plot samples onto current axis
+	for index, samplePos in enumerate(samplePositions):
+		if samplePos != None:
+			sampleHandles[index] = patches.Circle((samplePos[0], samplePos[1]),  0.025, color='r')
+			axis.add_patch(sampleHandles[index])
+		else:
+			sampleHandles[index] = None
+
 
 	# plot obstacles onto current axis
 	for index, obstaclePos in enumerate(obstaclePositions):
 		if obstaclePos != None:
-			obstacleHandles[index] = patches.Circle((obstaclePos[0], obstaclePos[1]), 0.09, color='black')
+			obstacleHandles[index] = patches.Circle((obstaclePos[0], obstaclePos[1]), 0.09, color='g')
 			axis.add_patch(obstacleHandles[index])
 		else:
 			obstacleHandles[index] = None
 
+	# plot obstacles onto current axis
+	for index, rockPos in enumerate(rockPositions):
+		if rockPos != None:
+			rockHandles[index] = patches.Circle((rockPos[0], rockPos[1]), 0.09, color='b')
+			axis.add_patch(rockHandles[index])
+		else:
+			rockHandles[index] = None
+
 	# show the plot and return the handle
 	plt.draw()
 	plt.pause(0.001)
-	return figHandle, robotHandle, sampleHandle, obstacleHandles
+	return figHandle, robotHandle, sampleHandles, obstacleHandles, rockHandles
 
 
-def PlotRangeAndBearings(figHandle, sampleRBHandle, obstacleRBHandles, robotPose, sampleRB, obstaclesRB):
+def PlotRangeAndBearings(figHandle, sampleRBHandles, obstacleRBHandles, rockRBHandles, robotPose, samplesRB, obstaclesRB, rocksRB):
 	if figHandle == None:
 		# create figure handle
 		figHandle = plt.figure(1)
@@ -120,20 +137,30 @@ def PlotRangeAndBearings(figHandle, sampleRBHandle, obstacleRBHandles, robotPose
 
 
 	# Clear lines if possible
-	if sampleRBHandle != None and sampleRBHandle != []:
-		sampleRBHandle.pop(0).remove()
+	if sampleRBHandles != None:
+		for handle in sampleRBHandles:
+			handle.pop(0).remove()
+	sampleRBHandles = None
 
 	if obstacleRBHandles != None:
 		for handle in obstacleRBHandles:
 			handle.pop(0).remove()
 	obstacleRBHandles = None
 
+	if rockRBHandles != None:
+		for handle in rockRBHandles:
+			handle.pop(0).remove()
+	rockRBHandles = None
+
 
 	# Plot lines
-	if sampleRB != None:
-		x = [robotPose[0], robotPose[0]+sampleRB[0]*math.cos(sampleRB[1]+robotPose[5])]
-		y = [robotPose[1], robotPose[1]+sampleRB[0]*math.sin(sampleRB[1]+robotPose[5])]
-		sampleRBHandle = plt.plot(x, y, '--r')
+	if samplesRB != None:
+		sampleRBHandles = []
+		for sampleRB in samplesRB:
+			x = [robotPose[0], robotPose[0]+sampleRB[0]*math.cos(sampleRB[1]+robotPose[5])]
+			y = [robotPose[1], robotPose[1]+sampleRB[0]*math.sin(sampleRB[1]+robotPose[5])]
+			handle = plt.plot(x, y, '--r')
+			sampleRBHandles.append(handle)
 
 	if obstaclesRB != None:
 		obstacleRBHandles = []
@@ -143,8 +170,16 @@ def PlotRangeAndBearings(figHandle, sampleRBHandle, obstacleRBHandles, robotPose
 			handle = plt.plot(x, y, '--k')
 			obstacleRBHandles.append(handle)
 
+	if rocksRB != None:
+		rockRBHandles = []
+		for rockRB in rocksRB:
+			x = [robotPose[0], robotPose[0]+rockRB[0]*math.cos(rockRB[1]+robotPose[5])]
+			y = [robotPose[1], robotPose[1]+rockRB[0]*math.sin(rockRB[1]+robotPose[5])]
+			handle = plt.plot(x, y, '--k')
+			rockRBHandles.append(handle)
 
-	return figHandle, sampleRBHandle, obstacleRBHandles
+
+	return figHandle, sampleRBHandles, obstacleRBHandles, rockRBHandles
 
 
 def PlotTargetVelocity(figHandle, velocityHandle, targetVel, robotPose):
@@ -184,12 +219,14 @@ def PlotTargetVelocity(figHandle, velocityHandle, targetVel, robotPose):
 	return figHandle, velocityHandle
 
 
-def TransformRangeBearingsFromCameraToRobot(robotParameters, sampleRangeBearing, landerRangeBearing, obstaclesRangeBearing):
-	if sampleRangeBearing != None:
-		x = sampleRangeBearing[0]*math.cos(sampleRangeBearing[1]) + robotParameters.cameraDistanceFromRobotCenter
-		y = sampleRangeBearing[0]*math.sin(sampleRangeBearing[1])
-		sampleRangeBearing[0] = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
-		sampleRangeBearing[1] = math.atan2(y,x)
+def TransformRangeBearingsFromCameraToRobot(robotParameters, samplesRangeBearing, landerRangeBearing, obstaclesRangeBearing, rocksRangeBearing):
+	if samplesRangeBearing != None:
+		for idx, sampleRB in enumerate(samplesRangeBearing):
+			x = sampleRB[0]*math.cos(sampleRB[1]) + robotParameters.cameraDistanceFromRobotCenter
+			y = sampleRB[0]*math.sin(sampleRB[1])
+			
+			samplesRangeBearing[idx][0] = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
+			samplesRangeBearing[idx][1] = math.atan2(y,x)
 
 	if obstaclesRangeBearing != None:
 		for idx, obsRB in enumerate(obstaclesRangeBearing):
@@ -204,7 +241,16 @@ def TransformRangeBearingsFromCameraToRobot(robotParameters, sampleRangeBearing,
 		landerRangeBearing[0] = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
 		landerRangeBearing[1] = math.atan2(y,x)
 
-	return sampleRangeBearing, landerRangeBearing, obstaclesRangeBearing
+	if rocksRangeBearing != None:
+		for idx, rockRB in enumerate(rocksRangeBearing):
+			x = rockRB[0]*math.cos(rockRB[1]) + robotParameters.cameraDistanceFromRobotCenter
+			y = rockRB[0]*math.sin(rockRB[1])
+			
+			
+			rocksRangeBearing[idx][0] = math.sqrt(math.pow(x, 2) + math.pow(y, 2))
+			rocksRangeBearing[idx][1] = math.atan2(y,x)
+
+	return samplesRangeBearing, landerRangeBearing, obstaclesRangeBearing, rocksRangeBearing
 
 
 def SampleSearchRotate(sampleRB, sampleInCollector, targetVel, startTime, robotState):
@@ -239,7 +285,7 @@ def SampleSearchRotate(sampleRB, sampleInCollector, targetVel, startTime, robotS
 	return targetVel, startTime, robotState 
 
 
-def MoveToSample(sampleRB, obstaclesRB, sampleInCollector, targetVel, robotState, linearGain, rotationalGain, linearSpeedLimits, rotationalSpeedLimits):
+def MoveToSample(sampleRB, sampleIndex, obstaclesRB, rocksRB, sampleInCollector, targetVel, robotState, linearGain, rotationalGain, linearSpeedLimits, rotationalSpeedLimits):
 	# check to see if sample is in collector
 	if sampleInCollector:
 		robotState = RobotStates.MOVE_TO_LANDER
@@ -248,18 +294,18 @@ def MoveToSample(sampleRB, obstaclesRB, sampleInCollector, targetVel, robotState
 
 	# Check to see if sample is still in FOV
 	if sampleRB == None:
-		# sample is in view change state to move towards sample
+		# sample is not in view change state to search for sample
 		robotState = RobotStates.SAMPLE_SEARCH_ROTATE
 		targetVel = [0, 0, 0.4]
 		return targetVel, robotState
 
-
 	# get repulsive vector
-	vectorComponents = ComputeRepulsiveVectorComponents(obstaclesRB)
+	vectorComponents = ComputeRepulsiveVectorComponents(obstaclesRB, rocksRB)
 
+	
 	# add on attractive component
-	vectorComponents[0] = sampleRB[0]*math.cos(sampleRB[1]) - vectorComponents[0]
-	vectorComponents[1] = sampleRB[0]*math.sin(sampleRB[1]) - vectorComponents[1]
+	vectorComponents[0] = sampleRB[sampleIndex][0]*math.cos(sampleRB[sampleIndex][1]) - vectorComponents[0]
+	vectorComponents[1] = sampleRB[sampleIndex][0]*math.sin(sampleRB[sampleIndex][1]) - vectorComponents[1]
 
 	# vector in terms of magnitude and direction
 	vector = [0, 0]
@@ -277,7 +323,7 @@ def MoveToSample(sampleRB, obstaclesRB, sampleInCollector, targetVel, robotState
 	return targetVel, robotState
 
 
-def MoveToTarget(targetRB, obstaclesRB, sampleInCollector, targetVel, robotState, linearGain, rotationalGain, linearSpeedLimits, rotationalSpeedLimits):
+def MoveToTarget(targetRB, obstaclesRB, rocksRB, sampleInCollector, targetVel, robotState, linearGain, rotationalGain, linearSpeedLimits, rotationalSpeedLimits):
 	
 	if sampleInCollector == False:
 		robotState = RobotStates.SAMPLE_SEARCH_ROTATE
@@ -296,7 +342,7 @@ def MoveToTarget(targetRB, obstaclesRB, sampleInCollector, targetVel, robotState
 
 
 	# get repulsive vector
-	vectorComponents = ComputeRepulsiveVectorComponents(obstaclesRB)
+	vectorComponents = ComputeRepulsiveVectorComponents(obstaclesRB, rocksRB)
 
 	# add on attractive component
 	vectorComponents[0] = vectorComponents[0] + targetRB[0]*math.cos(targetRB[1])
@@ -318,15 +364,22 @@ def MoveToTarget(targetRB, obstaclesRB, sampleInCollector, targetVel, robotState
 	return targetVel, robotState
 
 
-def ComputeRepulsiveVectorComponents(obstaclesRB):
+def ComputeRepulsiveVectorComponents(obstaclesRB, rocksRB):
 	repulsiveVector = [0, 0]
 
-	if obstaclesRB == None:
+	if obstaclesRB == None and rocksRB == None:
 		return repulsiveVector
 
-	for obsRB in obstaclesRB:
-		# compute the x and y components scale based on the range
-		repulsiveVector[0] = repulsiveVector[0] + obsRB[0]*math.cos(obsRB[1])
-		repulsiveVector[1] = repulsiveVector[1] + obsRB[0]*math.sin(obsRB[1])
+	if obstaclesRB != None:
+		for obsRB in obstaclesRB:
+			# compute the x and y components scale based on the range
+			repulsiveVector[0] = repulsiveVector[0] + obsRB[0]*math.cos(obsRB[1])
+			repulsiveVector[1] = repulsiveVector[1] + obsRB[0]*math.sin(obsRB[1])
+	
+	if rocksRB != None:
+		for obsRB in rocksRB:
+			# compute the x and y components scale based on the range
+			repulsiveVector[0] = repulsiveVector[0] + obsRB[0]*math.cos(obsRB[1])
+			repulsiveVector[1] = repulsiveVector[1] + obsRB[0]*math.sin(obsRB[1])
 
 	return repulsiveVector

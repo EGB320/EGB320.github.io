@@ -55,8 +55,9 @@ class VREP_RoverRobot(object):
 		self.v60MotorHandle = None 			# 60, 180, 300 used for omni drive
 		self.v180MotorHandle = None
 		self.v300MotorHandle = None
-		self.sampleHandle = None
+		self.sampleHandles = [None, None, None]
 		self.obstacleHandles = [None, None, None]
+		self.rockHandles = [None, None, None]
 		self.landerHandle = None
 
 
@@ -75,13 +76,10 @@ class VREP_RoverRobot(object):
 		# Variables to hold object positions
 		self.robotPose = None
 		self.cameraPose = None
-		self.samplePosition = None
+		self.samplePositions = [None, None, None]
 		self.landerPosition = None
 		self.obstaclePositions = [None, None, None]
-
-
-		
-
+		self.rockPositions = [None, None, None]
 
 		# Variable to hold whether the sample has been joined to the robot
 		self.sampleConnectedToRobot = False
@@ -95,6 +93,8 @@ class VREP_RoverRobot(object):
 		# Send Robot Parameters to VREP and set the scene
 		self.UpdateVREPRobot()
 		self.SetScene()
+
+		
 
 
 
@@ -119,13 +119,21 @@ class VREP_RoverRobot(object):
 		vrep.simxGetObjectPosition(self.clientID, self.robotHandle, -1, vrep.simx_opmode_streaming)
 		vrep.simxGetObjectOrientation(self.clientID, self.robotHandle, -1, vrep.simx_opmode_streaming)
 		vrep.simxGetObjectPosition(self.clientID, self.cameraHandle, -1, vrep.simx_opmode_streaming)
-		vrep.simxGetObjectPosition(self.clientID, self.sampleHandle, -1, vrep.simx_opmode_streaming)
 		vrep.simxGetObjectPosition(self.clientID, self.landerHandle, -1, vrep.simx_opmode_streaming)
 
 		for handle in self.obstacleHandles:
 			vrep.simxGetObjectPosition(self.clientID, handle, -1, vrep.simx_opmode_streaming)
 
+		for handle in self.sampleHandles:
+			vrep.simxGetObjectPosition(self.clientID, handle, -1, vrep.simx_opmode_streaming)
+
+		for handle in self.rockHandles:
+			vrep.simxGetObjectPosition(self.clientID, handle, -1, vrep.simx_opmode_streaming)
+
 		time.sleep(1)
+
+		#initialise local copy of object positions
+		self.GetObjectPositions()
 
 
 	# Stops the VREP Simulator. 
@@ -141,16 +149,20 @@ class VREP_RoverRobot(object):
 		vrep.simxGetObjectPosition(self.clientID, self.robotHandle, -1, vrep.simx_opmode_discontinue)
 		vrep.simxGetObjectOrientation(self.clientID, self.robotHandle, -1, vrep.simx_opmode_discontinue)
 		vrep.simxGetObjectPosition(self.clientID, self.cameraHandle, -1, vrep.simx_opmode_discontinue)
-		vrep.simxGetObjectPosition(self.clientID, self.sampleHandle, -1, vrep.simx_opmode_discontinue)
 		vrep.simxGetObjectPosition(self.clientID, self.landerHandle, -1, vrep.simx_opmode_discontinue)
 
 		for handle in self.obstacleHandles:
 			vrep.simxGetObjectPosition(self.clientID, handle, -1, vrep.simx_opmode_discontinue)
 
+		for handle in self.sampleHandles:
+			vrep.simxGetObjectPosition(self.clientID, handle, -1, vrep.simx_opmode_discontinue)
+
+		for handle in self.rockHandles:
+			vrep.simxGetObjectPosition(self.clientID, handle, -1, vrep.simx_opmode_discontinue)
 
 	# Gets the Range and Bearing to All Detected Objects.
 	# returns:
-	#	sampleRangeBearing - range and bearing to the sample with respect to the camera, will return None if the object is not detected
+	#	sampleRangeBearing - range and bearing to the samples with respect to the camera, will return None if the object is not detected
 	#	landerRangeBearing - range and bearing to the landerwith respect to the camera, will return None if the object is not detected
 	#	obstaclesRangeBearing - range and bearing to the obstacles with respect to the camera, will return None if the object is not detected
 	def GetDetectedObjects(self):
@@ -158,9 +170,7 @@ class VREP_RoverRobot(object):
 		sampleRangeBearing = None
 		landerRangeBearing = None
 		obstaclesRangeBearing = None
-
-		# variables used to check for occlusion between obstacle and sample
-		obstacleBearingLimits = []
+		rocksRangeBearing = None
 
 		# Make sure the camera's pose is not none
 		if self.cameraPose != None:
@@ -169,30 +179,25 @@ class VREP_RoverRobot(object):
 			retCode,objectsDetected,_,_,_ = vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'getObjectsInView',[],[],[],bytearray(),vrep.simx_opmode_blocking)
 		
 			if objectsDetected != []:
+
 				# check to see if sample is in field of view
-				if self.samplePosition != None and objectsDetected != []:
-					
-					#if detected calculate range and bearing from camera pose location
-					if objectsDetected[lunar_object.sample0] == True:
-						_range, _bearing = self.GetRBInCameraFOV(self.samplePosition)
-						
-						# check range is not to far away
-						if _range < self.robotParameters.maxsampleDetectionDistance:
-							sampleRangeBearing = [_range, _bearing]
-					
-					
+				for index, samplePosition in enumerate(self.samplePositions):
+				
+					if samplePosition != None:
+											
+						#if detected calculate range and bearing from camera pose location
+						if objectsDetected[lunar_object.sample0 + index] == True  and self.PointInsideArena(samplePosition):
+							_range, _bearing = self.GetRBInCameraFOV(samplePosition)
+													
+							# make sampleRangeBearing into empty lists, if currently set to None
+							if sampleRangeBearing == None:
+								sampleRangeBearing = []
 
-				# check to see if yellow lander is in field of view
-				if self.landerPosition != None:
+							# check range is not to far away
+							if _range < self.robotParameters.maxsampleDetectionDistance:
+								sampleRangeBearing.append([_range, _bearing])
 					
-					#if detected calculate range and bearing from camera pose location
-					if objectsDetected[lunar_object.lander] == True:
-						_range, _bearing = self.GetRBInCameraFOV(self.landerPosition)
-						
-						# check range is not to far away
-						if _range < self.robotParameters.maxLanderDetectionDistance:
-							landerRangeBearing = [_range, _bearing]
-
+					
 				# check to see which obstacles are within the field of view
 				for index, obstaclePosition in enumerate(self.obstaclePositions):
 					if obstaclePosition != None:
@@ -208,32 +213,35 @@ class VREP_RoverRobot(object):
 							if _range <  self.robotParameters.maxObstacleDetectionDistance:
 								obstaclesRangeBearing.append([_range, _bearing])
 
+				# check to see which rocks are within the field of view
+				for index, rockPosition in enumerate(self.rockPositions):
+					if rockPosition != None:
 
-					#OLD code for checking occlusions
-					# if obstacle is within the FOV, get the bearing to the obstacle's edges relative to the camera. Will be used to see if an obstacle is occluding the sample
-					# if self.PointInsideArena(obstaclePosition):
+						# check to see if the current obstacle is in the FOV and within the field. If so add to detected obstacle range bearing list
+						if objectsDetected[lunar_object.rock0 + index] == True and self.PointInsideArena(rockPosition):
+							_range, _bearing = self.GetRBInCameraFOV(rockPosition)
+
+							# make obstaclesRangeBearing into empty lists, if currently set to None
+							if rocksRangeBearing == None:
+								rocksRangeBearing = []
+
+							if _range <  self.robotParameters.maxRockDetectionDistance:
+								rocksRangeBearing.append([_range, _bearing])
 
 
-					# 	# determine bearings to obstacle's edges
-					# 	beta = math.atan2(0.09, _range)
-					# 	min_bearing = max(_bearing-beta, -(self.horizontalViewAngle/2.0))
-					# 	max_bearing = min(_bearing+beta, (self.horizontalViewAngle/2.0))
-					# 	obstacleBearingLimits.append([_range, min_bearing, max_bearing, index])
+				# check to see if yellow lander is in field of view
+				if self.landerPosition != None:
+					
+					#if detected calculate range and bearing from camera pose location
+					if objectsDetected[lunar_object.lander] == True:
+						_range, _bearing = self.GetRBInCameraFOV(self.landerPosition)
+						
+						# check range is not to far away
+						if _range < self.robotParameters.maxLanderDetectionDistance:
+							landerRangeBearing = [_range, _bearing]
 
 
-		#OLD code for checking occlusions
-
-		# check to see if sample is occluded by an obstacle
-		# if sampleRangeBearing != None:
-		# 	for obs in obstacleBearingLimits:
-		# 		# check if sample is further away than obstacle (i.e. behind an obstalce)
-		# 		if sampleRangeBearing != None and sampleRangeBearing[0] > obs[0]:
-		# 			# check to see if sample's bearing is inside obstacle's edge bearings
-		# 			if sampleRangeBearing[1] > obs[1] and sampleRangeBearing[1] < obs[2]:
-		# 				sampleRangeBearing = None
-		# 				break
-
-		return sampleRangeBearing, landerRangeBearing, obstaclesRangeBearing
+		return sampleRangeBearing, landerRangeBearing, obstaclesRangeBearing, rocksRangeBearing
 
 	
 	# Gets the Range and Bearing to the wall(s)
@@ -364,8 +372,29 @@ class VREP_RoverRobot(object):
 	
 	def DropSample(self):
 		if self.sampleConnectedToRobot:
-	 			vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndSample',[0],[],[],bytearray(),vrep.simx_opmode_blocking)
+	 			vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndSample',[0],[0.0],[],bytearray(),vrep.simx_opmode_blocking)
 	 			self.sampleConnectedToRobot = False
+
+	# Use this to force a physical connection between sample and rover
+	# Ideally use this if no collector has been added to your robot model
+	# if two samples are within the distance it will attempt to collect both
+	# Outputs:
+	#		Success - returns True if a sample was collected or false if not
+	def CollectSample(self):
+
+		for _, samplePosition in enumerate(self.samplePositions):
+
+			sampleDist = self.CollectorToSampleDistance(samplePosition)
+
+			if sampleDist != None and sampleDist < self.robotParameters.maxCollectDistance and self.sampleConnectedToRobot == False:
+				# make physical connection between sample and robot to simulate collector
+				vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndSample',[1],[self.robotParameters.maxCollectDistance],[],bytearray(),vrep.simx_opmode_blocking)
+				self.sampleConnectedToRobot = True
+				
+		
+		return self.sampleConnectedToRobot
+
+
 
 
 	# Update Object Positions - call this in every loop of your navigation code (or at the frequency your vision system runs at). 
@@ -384,7 +413,7 @@ class VREP_RoverRobot(object):
 		self.UpdateSample()
 
 		# return object positions		
-		return self.robotPose, self.samplePosition, self.obstaclePositions 
+		return self.robotPose, self.samplePositions, self.obstaclePositions, self.rockPositions
 
 
 	#########################################
@@ -426,19 +455,24 @@ class VREP_RoverRobot(object):
 			print('Failed to get Motor object handles. Terminating Program. Error Codes %d, %d, %d'%(errorCode1, errorCode2, errorCode3))
 			sys.exit(-1)
 
-		errorCode = self.GetSampleHandle()
-		if errorCode != 0:
-			print('Failed to get sample object handle. Terminating Program. Error Code %d'%(errorCode))
+		errorCode1, errorCode2, errorCode3 = self.GetsampleHandles()
+		if errorCode1 != 0 or errorCode2 != 0 or errorCode3 != 0:
+			print('Failed to get sample object handles. Terminating Program. Error Code %d, %d, %d'%(errorCode1, errorCode2, errorCode3))
+			sys.exit(-1)
+
+		errorCode1, errorCode2, errorCode3 = self.GetRockHandle()
+		if errorCode1 != 0 or errorCode2 != 0 or errorCode3 != 0:
+			print('Failed to get rock object handles. Terminating Program. Error Code %d, %d, %d'%(errorCode1, errorCode2, errorCode3))
 			sys.exit(-1)
 
 		landerErrorCode = self.GetLanderHandle()
 		if landerErrorCode != 0:
-			print('Failed to get Motor object handles. Terminating Program. Error Codes %d'%(landerErrorCode))
+			print('Failed to get lander object handles. Terminating Program. Error Codes %d'%(landerErrorCode))
 			sys.exit(-1)
 
-		obs0ErrorCode, obs1ErrorCode, obs2ErrorCode = self.GetObstacleHandles()
-		if obs0ErrorCode != 0 or obs1ErrorCode != 0 or obs2ErrorCode != 0:
-			print('Failed to get Obstacle object handles. Terminating Program. Error Codes %d, %d, %d'%(obs0ErrorCode, obs1ErrorCode, obs2ErrorCode))
+		errorCode1, errorCode2, errorCode3 = self.GetObstacleHandles()
+		if errorCode1 != 0 or errorCode2 != 0 or errorCode3 != 0:
+			print('Failed to get Obstacle object handles. Terminating Program. Error Codes %d, %d, %d'%(errorCode1, errorCode2, errorCode3))
 			sys.exit(-1)
 
 
@@ -482,18 +516,18 @@ class VREP_RoverRobot(object):
 		return landerErrorCode
 
 	# Get VREP sample Handle
-	def GetSampleHandle(self):
-		errorCode, self.sampleHandle = vrep.simxGetObjectHandle(self.clientID, 'Sample_0', vrep.simx_opmode_oneshot_wait)
-		# errorCode, self.sampleHandle1 = vrep.simxGetObjectHandle(self.clientID, 'Sample_1', vrep.simx_opmode_oneshot_wait)
-		# errorCode, self.sampleHandle2 = vrep.simxGetObjectHandle(self.clientID, 'Sample_2', vrep.simx_opmode_oneshot_wait)
-		return errorCode
+	def GetsampleHandles(self):
+		error0Code, self.sampleHandles[0] = vrep.simxGetObjectHandle(self.clientID, 'Sample_0', vrep.simx_opmode_oneshot_wait)
+		error1Code, self.sampleHandles[1] = vrep.simxGetObjectHandle(self.clientID, 'Sample_1', vrep.simx_opmode_oneshot_wait)
+		error2Code, self.sampleHandles[2] = vrep.simxGetObjectHandle(self.clientID, 'Sample_2', vrep.simx_opmode_oneshot_wait)
+		return error0Code, error1Code, error2Code
 
 	# Get VREP sample Handle
 	def GetRockHandle(self):
-		errorCode, self.rockHandle[0] = vrep.simxGetObjectHandle(self.clientID, 'Rock_0', vrep.simx_opmode_oneshot_wait)
-		errorCode, self.rockHandle[1] = vrep.simxGetObjectHandle(self.clientID, 'Rock_1', vrep.simx_opmode_oneshot_wait)
-		errorCode, self.rockHandle[2] = vrep.simxGetObjectHandle(self.clientID, 'Rock_2', vrep.simx_opmode_oneshot_wait)
-		return errorCode
+		error0Code, self.rockHandles[0] = vrep.simxGetObjectHandle(self.clientID, 'Rock_0', vrep.simx_opmode_oneshot_wait)
+		error1Code, self.rockHandles[1] = vrep.simxGetObjectHandle(self.clientID, 'Rock_1', vrep.simx_opmode_oneshot_wait)
+		error2Code, self.rockHandles[2] = vrep.simxGetObjectHandle(self.clientID, 'Rock_2', vrep.simx_opmode_oneshot_wait)
+		return error0Code, error1Code, error2Code
 
 	# Get VREP Obstacle Handles
 	def GetObstacleHandles(self):
@@ -520,7 +554,7 @@ class VREP_RoverRobot(object):
 		# move sample to starting position
 		if self.sceneParameters.sampleStartingPosition != -1:
 			vrepStartingPosition = [self.sceneParameters.sampleStartingPosition[0], self.sceneParameters.sampleStartingPosition[1], 0.725]
-			vrep.simxSetObjectPosition(self.clientID, self.sampleHandle, -1, vrepStartingPosition, vrep.simx_opmode_oneshot_wait)
+			vrep.simxSetObjectPosition(self.clientID, self.sampleHandles[0], -1, vrepStartingPosition, vrep.simx_opmode_oneshot_wait)
 		
 		# move obstacle 0 to starting position
 		if self.sceneParameters.obstacle0_StartingPosition != -1:
@@ -629,8 +663,9 @@ class VREP_RoverRobot(object):
 		if self.cameraPose != None:
 			print("Camera 3D Pose (x,y,z,roll,pitch,yaw): %0.4f, %0.4f, %0.4f, %0.4f, %0.4f, %0.4f"%(self.cameraPose[0], self.cameraPose[1], self.cameraPose[2], self.cameraPose[3], self.cameraPose[4], self.cameraPose[5]))
 			
-		if self.samplePosition != None:
-			print("sample Position (x,y,z): %0.4f, %0.4f, %0.4f"%(self.samplePosition[0], self.samplePosition[1], self.samplePosition[2]))
+		for index, sample in enumerate(self.samplePositions):	
+			if sample != None:
+				print("sample %d Position (x,y,z): %0.4f, %0.4f, %0.4f"%(index, sample[0], sample[1], sample[2]))
 			
 		if self.landerPosition != None:
 			print("Lander Position (x,y,z): %0.4f, %0.4f, %0.4f"%(self.landerPosition[0], self.landerPosition[1], self.landerPosition[2]))
@@ -639,6 +674,10 @@ class VREP_RoverRobot(object):
 			if obstacle != None:
 				print("Obstacle %d Position (x,y,z): %0.4f, %0.4f, %0.4f"%(index, obstacle[0], obstacle[1], obstacle[2]))
 
+		for index, rock in enumerate(self.rockPositions):
+			if rock != None:
+				print("Rock %d Position (x,y,z): %0.4f, %0.4f, %0.4f"%(index, rock[0], rock[1], rock[2]))
+
 
 	# Gets the pose/position in the global coordinate frame of all the objects in the scene.
 	# Stores them in class variables. Variables will be set to none if could not be updated
@@ -646,9 +685,10 @@ class VREP_RoverRobot(object):
 		# Set camera pose and object position to None so can check in an error occurred
 		self.robotPose = None
 		self.cameraPose = None
-		self.samplePosition = None
+		self.samplePositions = [None, None, None]
 		self.landerPosition = None
 		self.obstaclePositions = [None, None, None]
+		self.rockPositions = [None, None, None]
 
 		# GET 2D ROBOT POSE
 		errorCode, robotPosition = vrep.simxGetObjectPosition(self.clientID, self.robotHandle, -1, vrep.simx_opmode_buffer)
@@ -660,12 +700,15 @@ class VREP_RoverRobot(object):
 		errorCode, cameraPosition = vrep.simxGetObjectPosition(self.clientID, self.cameraHandle, -1, vrep.simx_opmode_buffer)
 		if errorCode == 0:
 			self.cameraPose = [cameraPosition[0], cameraPosition[1], cameraPosition[2], robotOrientation[0], robotOrientation[1], robotOrientation[2]]
+		
 
 		# GET POSITION OF EACH OBJECT
-		# sample position
-		errorCode, samplePosition = vrep.simxGetObjectPosition(self.clientID, self.sampleHandle, -1, vrep.simx_opmode_buffer)
-		if errorCode == 0:
-			self.samplePosition = samplePosition
+
+		samplePositions = [None, None, None]
+		for index, sample in enumerate(self.samplePositions):
+			errorCode, samplePositions[index] = vrep.simxGetObjectPosition(self.clientID, self.sampleHandles[index], -1, vrep.simx_opmode_buffer)
+			if errorCode == 0:
+				self.samplePositions[index] = samplePositions[index]
 
 		# lander position
 		errorCode, landerPosition = vrep.simxGetObjectPosition(self.clientID, self.landerHandle, -1, vrep.simx_opmode_buffer)
@@ -679,6 +722,12 @@ class VREP_RoverRobot(object):
 			errorCode, obstaclePositions[index] = vrep.simxGetObjectPosition(self.clientID, self.obstacleHandles[index], -1, vrep.simx_opmode_buffer)
 			if errorCode == 0:
 				self.obstaclePositions[index] = obstaclePositions[index]
+
+		rockPositions = [None, None, None]
+		for index, sample in enumerate(self.rockPositions):
+			errorCode, rockPositions[index] = vrep.simxGetObjectPosition(self.clientID, self.rockHandles[index], -1, vrep.simx_opmode_buffer)
+			if errorCode == 0:
+				self.rockPositions[index] = rockPositions[index]
 
 
 	# Checks to see if an Object is within the field of view of the camera
@@ -715,25 +764,27 @@ class VREP_RoverRobot(object):
 
 	# Update the sample
 	def UpdateSample(self):
-		if self.samplePosition != None:
+		for index, samplePosition in enumerate(self.samplePositions):
+		
+			if samplePosition != None:
 
-			sampleDist = self.CollectorToSampleDistance()
+				sampleDist = self.CollectorToSampleDistance(samplePosition)
 
-            # See if need to connect/disconnect sample from robot
-			if sampleDist != None and sampleDist < 0.03 and self.sampleConnectedToRobot == False:
-                # make physical connection between sample and robot to simulate collector
-				vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndSample',[1],[],[],bytearray(),vrep.simx_opmode_blocking)
-				self.sampleConnectedToRobot = True
+				# See if need to connect/disconnect sample from robot
+				if self.robotParameters.autoCollectSample == True and sampleDist != None and sampleDist < self.robotParameters.maxCollectDistance and self.sampleConnectedToRobot == False:
+					# make physical connection between sample and robot to simulate collector
+					vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndSample',[1],[self.robotParameters.maxCollectDistance],[],bytearray(),vrep.simx_opmode_blocking)
+					self.sampleConnectedToRobot = True
 
-			elif self.sampleConnectedToRobot == True:
-                # random chance to disconnect
-				if np.random.rand() > self.robotParameters.collectorQuality:
-                    # terminate connection between sample and robot to simulate collector
-					vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndSample',[0],[],[],bytearray(),vrep.simx_opmode_blocking)
+				elif self.sampleConnectedToRobot == True:
+					# random chance to disconnect
+					if np.random.rand() > self.robotParameters.collectorQuality:
+						# terminate connection between sample and robot to simulate collector
+						vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndSample',[0],[self.robotParameters.maxCollectDistance],[],bytearray(),vrep.simx_opmode_blocking)
+						self.sampleConnectedToRobot = False
+
+				elif sampleDist != None and sampleDist > 0.03:
 					self.sampleConnectedToRobot = False
-
-			elif sampleDist != None and sampleDist > 0.03:
-				self.sampleConnectedToRobot = False
 
 	
 	# Gets the range and bearing to a corner that is within the camera's field of view.
@@ -911,20 +962,20 @@ class VREP_RoverRobot(object):
 
 	# Gets the orthogonal distance (in metres) from the collector to the sample. 
 	# Assuming the the sample's centroid is within 70 degrees of the collector's centroid
-	def CollectorToSampleDistance(self):
+	def CollectorToSampleDistance(self, samplePosition):
 		# get the position of the sample relative to the collector motor
-		if self.robotPose != None and self.samplePosition != None:
+		if self.robotPose != None and samplePosition != None:
 			# get the pose of the collector in the x-y plane using the robot's pose with some offsets
 			collectorPose = [self.robotPose[0]+0.1*math.cos(self.robotPose[5]), self.robotPose[1]+0.1*math.sin(self.robotPose[5]), self.robotPose[5]]
 
 			# get range and bearing from collector to sample position
-			_range, _bearing = self.GetRangeAndBearingFromPoseAndPoint(collectorPose, self.samplePosition)
+			_range, _bearing = self.GetRangeAndBearingFromPoseAndPoint(collectorPose, samplePosition)
 
 			# check to see if the bearing to the sample is larger than 70 degrees. If so return None
 			if abs(_bearing) > math.radians(70):
 				return None
 
-			# return distance to sample from dibbler orthogonal to collector's rotational axis
+			# return distance to sample from collector orthogonal to collector's rotational axis
 			return abs(_range * math.cos(_bearing))
 
 		return None
@@ -983,7 +1034,10 @@ class RobotParameters(object):
 		self.maxsampleDetectionDistance = 1 # the maximum distance away that you can detect the sample in metres
 		self.maxLanderDetectionDistance = 2.5 # the maximum distance away that you can detect the lander in metres
 		self.maxObstacleDetectionDistance = 1.5 # the maximum distance away that you can detect the obstacles in metres
+		self.maxRockDetectionDistance = 1.5 # the maximum distance away that you can detect the obstacles in metres
 		self.minWallDetectionDistance = 0.1 # the minimum distance away from a wall that you have to be to be able to detect it
 
 		# collector Parameters
 		self.collectorQuality = 1.0 # specifies how good your sample collector is from 0 to 1.0 (with 1.0 being awesome and 0 being non-existent)
+		self.autoCollectSample = True #specifies whether the simulator automatically collects samples if near the collector 
+		self.maxCollectDistance = 0.03 #specificies the operating distance of the automatic collector function. Sample needs to be less than this distance to the collector

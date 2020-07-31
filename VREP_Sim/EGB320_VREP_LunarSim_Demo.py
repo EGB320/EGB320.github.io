@@ -18,8 +18,8 @@ robotParameters.driveSystemQuality = 1	# specifies how good your drive system is
 # Camera Parameters
 robotParameters.cameraOrientation = 'landscape' # specifies the orientation of the camera, either landscape or portrait
 robotParameters.cameraDistanceFromRobotCenter = 0.1 # distance between the camera and the center of the robot in the direction of the front of the robot
-robotParameters.cameraHeightFromFloor = 0.2 # height of the camera relative to the floor in metres
-robotParameters.cameraTilt = math.radians(35) # tilt of the camera in radians
+robotParameters.cameraHeightFromFloor = 0.1 # height of the camera relative to the floor in metres
+robotParameters.cameraTilt = math.radians(20) # tilt of the camera in radians
 
 # Vision Processing Parameters
 robotParameters.maxSampleDetectionDistance = 2 # the maximum distance away that you can detect the sample in metres
@@ -28,7 +28,8 @@ robotParameters.maxObstacleDetectionDistance = 1.5 # the maximum distance away t
 
 # Collector Parameters
 robotParameters.collectorQuality = 1 # specifies how good your sample collector is from 0 to 1.0 (with 1.0 being awesome and 0 being non-existent)
-
+robotParameters.autoCollectSample = True #specifies whether the simulator automatically collects samples if near the collector 
+robotParameters.maxCollectDistance = 0.03 #specificies the operating distance of the automatic collector function. Sample needs to be less than this distance to the collector
 
 # SET SCENE PARAMETERS
 sceneParameters = SceneParameters()
@@ -73,44 +74,42 @@ if __name__ == '__main__':
 		figHandle = None
 		robotHandle = None
 		landerHandle = None
-		sampleHandle = None
+		sampleHandles = [None, None, None]
 		obstacleHandles = [None, None, None]
+		rockHandles = [None,None,None]
 		velocityHandle = None
-		sampleRBHandle = None
-		landerRBHandle = None
+		sampleRBHandles = None
 		obstacleRBHandles = None
+		rockRBHandles = None
 
 		while True:
 
 			# Get object positions and transform from range bearings from camera pose to robot body pose
-			sampleRB, landerRB, obstaclesRB = lunarBotSim.GetDetectedObjects()
-			sampleRB, landerRB, obstaclesRB = TransformRangeBearingsFromCameraToRobot(robotParameters, sampleRB, landerRB, obstaclesRB)
+			samplesRB, landerRB, obstaclesRB, rocksRB = lunarBotSim.GetDetectedObjects()
+			samplesRB, landerRB, obstaclesRB, rocksRB = TransformRangeBearingsFromCameraToRobot(robotParameters, samplesRB, landerRB, obstaclesRB, rocksRB)
 
 			if robotState == RobotStates.SAMPLE_SEARCH_ROTATE:
 				linearSpeedLimits = [0.03, 0.3]
 				rotationalSpeedLimits = [0.1, 0.8]
-				targetVel, startTime, robotState = SampleSearchRotate(sampleRB, lunarBotSim.SampleCollected(), targetVel, startTime, robotState)
-
-
+				targetVel, startTime, robotState = SampleSearchRotate(samplesRB, lunarBotSim.SampleCollected(), targetVel, startTime, robotState)
 
 
 			elif robotState == RobotStates.SAMPLE_SEARCH_MOVE_TO_POINT:
 				linearSpeedLimits = [0.3, 0.3]
 				rotationalSpeedLimits = [0.1, 0.8]
 				tempRB = [0.1, math.radians(10)]
-				targetVel, robotState = MoveToTarget(tempRB, obstaclesRB, lunarBotSim.SampleCollected(), targetVel, robotState, linearGain, rotationGain, linearSpeedLimits, rotationalSpeedLimits)
-
-				
+				targetVel, robotState = MoveToTarget(tempRB, obstaclesRB, rocksRB, lunarBotSim.SampleCollected(), targetVel, robotState, linearGain, rotationGain, linearSpeedLimits, rotationalSpeedLimits)
+			
 
 			elif robotState == RobotStates.MOVE_TO_SAMPLE:
 				linearSpeedLimits = [0.03, 0.3]
 				rotationalSpeedLimits = [0.1, 0.8]
-				targetVel, robotState = MoveToSample(sampleRB, obstaclesRB, lunarBotSim.SampleCollected(), targetVel, robotState, linearGain, rotationGain, linearSpeedLimits, rotationalSpeedLimits)
+				targetVel, robotState = MoveToSample(samplesRB, 0, obstaclesRB, rocksRB, lunarBotSim.SampleCollected(), targetVel, robotState, linearGain, rotationGain, linearSpeedLimits, rotationalSpeedLimits)
 
 			elif robotState == RobotStates.MOVE_TO_LANDER:
 				linearSpeedLimits = [0.03, 0.15]
 				rotationalSpeedLimits = [0.1, 0.3]
-				targetVel, robotState = MoveToTarget(landerRB, obstaclesRB, lunarBotSim.SampleCollected(), targetVel, robotState, linearGain, rotationGain, linearSpeedLimits, rotationalSpeedLimits)
+				targetVel, robotState = MoveToTarget(landerRB, obstaclesRB, rocksRB, lunarBotSim.SampleCollected(), targetVel, robotState, linearGain, rotationGain, linearSpeedLimits, rotationalSpeedLimits)
 
 			elif robotState == RobotStates.DROP_SAMPLE:
 				if lunarBotSim.SampleCollected():
@@ -121,7 +120,7 @@ if __name__ == '__main__':
 
 			# Set Velocity and Update Sample Position
 			lunarBotSim.SetTargetVelocities(targetVel[0], targetVel[1], targetVel[2])
-			robotPose, samplePosition, obstaclePositions = lunarBotSim.UpdateObjectPositions()
+			robotPose, samplePositions, obstaclePositions, rockPositions = lunarBotSim.UpdateObjectPositions()
 
 			# move for an extra 0.5 seconds forward when range to sample is less than 0.05m
 			# if sampleRB != None and sampleRB[0] < 0.05:
@@ -136,8 +135,8 @@ if __name__ == '__main__':
 			previousRobotState = robotState
 
 			# Update Plot
-			figHandle, robotHandle, sampleHandle, obstacleHandles = PlotArenaAndObjects(figHandle, robotHandle, sampleHandle, obstacleHandles, robotPose, samplePosition, obstaclePositions)
-			figHandle, sampleRBHandle, obstacleRBHandles = PlotRangeAndBearings(figHandle, sampleRBHandle, obstacleRBHandles, robotPose, sampleRB, obstaclesRB)
+			figHandle, robotHandle, sampleHandles, obstacleHandles, rockHandles = PlotArenaAndObjects(figHandle, robotHandle, sampleHandles, obstacleHandles, rockHandles, robotPose, samplePositions, obstaclePositions, rockPositions)
+			figHandle, sampleRBHandles, obstacleRBHandles, rockRBHandles = PlotRangeAndBearings(figHandle, sampleRBHandles, obstacleRBHandles, rockRBHandles, robotPose, samplesRB, obstaclesRB, rocksRB)
 			figHandle, velocityHandle = PlotTargetVelocity(figHandle, velocityHandle, targetVel, robotPose)
 
 
