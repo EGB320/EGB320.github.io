@@ -11,22 +11,7 @@ from enum import IntEnum
 ####### SOCCER BOT CLASS #######
 ################################
 
-# This class wraps VREP api functions to allow 
-# users to start testing Navigation/AI systems
-class lunar_object(IntEnum):
-	sample0 = 0
-	sample1 = 1
-	sample2 = 2
-	
-	obstacle0 = 3
-	obstacle1 = 4
-	obstacle2 = 5
 
-	rock0 = 6
-	rock1 = 7
-	rock2 = 8
-
-	lander = 9
 
 class VREP_RoverRobot(object):
 	"""docstring for VREP_SoccerBot"""
@@ -552,33 +537,56 @@ class VREP_RoverRobot(object):
 	def SetScene(self):
 		
 		# move sample to starting position
-		if self.sceneParameters.sampleStartingPosition != -1:
-			vrepStartingPosition = [self.sceneParameters.sampleStartingPosition[0], self.sceneParameters.sampleStartingPosition[1], 0.725]
-			vrep.simxSetObjectPosition(self.clientID, self.sampleHandles[0], -1, vrepStartingPosition, vrep.simx_opmode_oneshot_wait)
+		for index, samplePosition in enumerate([self.sceneParameters.sample0_StartingPosition, self.sceneParameters.sample1_StartingPosition, self.sceneParameters.sample2_StartingPosition]):
+
+			if samplePosition != -1:
+				if samplePosition != None:
+					vrepStartingPosition = [samplePosition[0], samplePosition[1], 0.725]
+					vrep.simxSetObjectPosition(self.clientID, self.sampleHandles[index], -1, vrepStartingPosition, vrep.simx_opmode_oneshot_wait)
+				else:
+					vrep.simxSetObjectPosition(self.clientID, self.sampleHandles[index], -1, [2, 0.2 + (-0.15*index), 0.8125], vrep.simx_opmode_oneshot_wait)
+		
+		for index, obstaclePosition in enumerate([self.sceneParameters.obstacle0_StartingPosition, self.sceneParameters.obstacle1_StartingPosition, self.sceneParameters.obstacle2_StartingPosition]):
+
+			if obstaclePosition != -1:
+				if obstaclePosition != None:
+					vrepStartingPosition = [obstaclePosition[0], obstaclePosition[1], 0.725]
+					vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[index], -1, vrepStartingPosition, vrep.simx_opmode_oneshot_wait)
+				else:
+					vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[index], -1, [2,  -0.3 + (-0.175*index), 0.8125], vrep.simx_opmode_oneshot_wait)
+		
+		for index, rockPosition in enumerate([self.sceneParameters.rock0_StartingPosition, self.sceneParameters.rock1_StartingPosition, self.sceneParameters.rock2_StartingPosition]):
+
+			if rockPosition != -1:
+				if rockPosition != None:
+					vrepStartingPosition = [rockPosition[0], rockPosition[1], 0.725]
+					vrep.simxSetObjectPosition(self.clientID, self.rockHandles[index], -1, vrepStartingPosition, vrep.simx_opmode_oneshot_wait)
+				else:
+					vrep.simxSetObjectPosition(self.clientID, self.rockHandles[index], -1, [2, 0.7 + (-0.15*index), 0.8125], vrep.simx_opmode_oneshot_wait)
 		
 		# move obstacle 0 to starting position
-		if self.sceneParameters.obstacle0_StartingPosition != -1:
-			if self.sceneParameters.obstacle0_StartingPosition != None:
-				vrepStartingPosition = [self.sceneParameters.obstacle0_StartingPosition[0], self.sceneParameters.obstacle0_StartingPosition[1], 0.8125]
-				vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[0], -1, vrepStartingPosition, vrep.simx_opmode_oneshot_wait)
-			else:
-				vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[0], -1, [2, 0, 0.8125], vrep.simx_opmode_oneshot_wait)
+		# if self.sceneParameters.obstacle0_StartingPosition != -1:
+		# 	if self.sceneParameters.obstacle0_StartingPosition != None:
+		# 		vrepStartingPosition = [self.sceneParameters.obstacle0_StartingPosition[0], self.sceneParameters.obstacle0_StartingPosition[1], 0.8125]
+		# 		vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[0], -1, vrepStartingPosition, vrep.simx_opmode_oneshot_wait)
+		# 	else:
+		# 		vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[0], -1, [2, 0, 0.8125], vrep.simx_opmode_oneshot_wait)
 			
-		# move obstacle 1 to starting position
-		if self.sceneParameters.obstacle1_StartingPosition != -1:
-			if self.sceneParameters.obstacle1_StartingPosition != None:
-				vrepStartingPosition = [self.sceneParameters.obstacle1_StartingPosition[0], self.sceneParameters.obstacle1_StartingPosition[1], 0.8125]
-				vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[1], -1, vrepStartingPosition, vrep.simx_opmode_oneshot_wait)
-			else:
-				vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[1], -1, [2, -0.3, 0.8125], vrep.simx_opmode_oneshot_wait)
+		# # move obstacle 1 to starting position
+		# if self.sceneParameters.obstacle1_StartingPosition != -1:
+		# 	if self.sceneParameters.obstacle1_StartingPosition != None:
+		# 		vrepStartingPosition = [self.sceneParameters.obstacle1_StartingPosition[0], self.sceneParameters.obstacle1_StartingPosition[1], 0.8125]
+		# 		vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[1], -1, vrepStartingPosition, vrep.simx_opmode_oneshot_wait)
+		# 	else:
+		# 		vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[1], -1, [2, -0.3, 0.8125], vrep.simx_opmode_oneshot_wait)
 			
-		# move obstacle 2 to starting position
-		if self.sceneParameters.obstacle2_StartingPosition != -1:
-			if self.sceneParameters.obstacle2_StartingPosition != None:
-				vrepStartingPosition = [self.sceneParameters.obstacle2_StartingPosition[0], self.sceneParameters.obstacle2_StartingPosition[1], 0.8125]
-				vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[2], -1, vrepStartingPosition, vrep.simx_opmode_oneshot_wait)
-			else:
-				vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[2], -1, [2, -0.6, 0.8125], vrep.simx_opmode_oneshot_wait)
+		# # move obstacle 2 to starting position
+		# if self.sceneParameters.obstacle2_StartingPosition != -1:
+		# 	if self.sceneParameters.obstacle2_StartingPosition != None:
+		# 		vrepStartingPosition = [self.sceneParameters.obstacle2_StartingPosition[0], self.sceneParameters.obstacle2_StartingPosition[1], 0.8125]
+		# 		vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[2], -1, vrepStartingPosition, vrep.simx_opmode_oneshot_wait)
+		# 	else:
+		# 		vrep.simxSetObjectPosition(self.clientID, self.obstacleHandles[2], -1, [2, -0.6, 0.8125], vrep.simx_opmode_oneshot_wait)
 			
 
 	### CAMERA FUNCTIONS ###
@@ -703,7 +711,6 @@ class VREP_RoverRobot(object):
 		
 
 		# GET POSITION OF EACH OBJECT
-
 		samplePositions = [None, None, None]
 		for index, sample in enumerate(self.samplePositions):
 			errorCode, samplePositions[index] = vrep.simxGetObjectPosition(self.clientID, self.sampleHandles[index], -1, vrep.simx_opmode_buffer)
@@ -723,6 +730,7 @@ class VREP_RoverRobot(object):
 			if errorCode == 0:
 				self.obstaclePositions[index] = obstaclePositions[index]
 
+		# rock positions
 		rockPositions = [None, None, None]
 		for index, sample in enumerate(self.rockPositions):
 			errorCode, rockPositions[index] = vrep.simxGetObjectPosition(self.clientID, self.rockHandles[index], -1, vrep.simx_opmode_buffer)
@@ -992,12 +1000,23 @@ class SceneParameters(object):
 	"""docstring for SceneParameters"""
 	def __init__(self):
 		# sample Starting Position
-		self.sampleStartingPosition = [0.5, 0] # starting position of the sample [x, y] (in metres)
 
 		# Obstacles Starting Positions - set to none if you do not want a specific obstacle in the scene
-		self.obstacle0_StartingPosition = [0.7, 0.7]  # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
-		self.obstacle1_StartingPosition = None   # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
-		self.obstacle2_StartingPosition = None   # starting position of obstacle 1 [x, y] (in metres), or none if not wanted in the scene
+		self.sample0_StartingPosition = [0.5, 0]  # starting position of sample 0 [x, y] (in metres), -1 if want to use current vrep position, or none if not wanted in the scene
+		self.sample1_StartingPosition = [0, 0.675]   # starting position of sample 1 [x, y] (in metres), -1 if want to use current vrep position, or none if not wanted in the scene
+		self.sample2_StartingPosition = None   # starting position of sample 2 [x, y] (in metres), -1 if want to use current vrep position, or none if not wanted in the scene
+
+
+		# Obstacles Starting Positions - set to none if you do not want a specific obstacle in the scene
+		self.obstacle0_StartingPosition = [-0.45, 0.5]  # starting position of obstacle 0 [x, y] (in metres), -1 if want to use current vrep position, or none if not wanted in the scene
+		self.obstacle1_StartingPosition = [-0.25,-0.675]   # starting position of obstacle 1 [x, y] (in metres), -1 if want to use current vrep position, or none if not wanted in the scene
+		self.obstacle2_StartingPosition = None   # starting position of obstacle 2 [x, y] (in metres), -1 if want to use current vrep position, or none if not wanted in the scene
+
+
+		# Obstacles Starting Positions - set to none if you do not want a specific obstacle in the scene
+		self.rock0_StartingPosition = [0.675, -0.25]  # starting position of rock 0 [x, y] (in metres), -1 if want to use current vrep position, or none if not wanted in the scene
+		self.rock1_StartingPosition = None   # starting position of rock 1 [x, y] (in metres), -1 if want to use current vrep position, or none if not wanted in the scene
+		self.rock2_StartingPosition = None   # starting position of rock 2 [x, y] (in metres), -1 if want to use current vrep position, or none if not wanted in the scene
 
 
 ####################################
@@ -1012,13 +1031,13 @@ class RobotParameters(object):
 	def __init__(self):
 
 		# Body Paramaters
-		self.robotSize = 0.18 # This parameter cannot be changed
+		self.robotSize = 0.15 # This parameter cannot be changed
 		
 		# Drive/Wheel Parameters
 		self.driveType = 'differential'	# specifies the drive type ('differential' or 'omni')
-		self.wheelBase = 0.160 # This parameter cannot be changed
+		self.wheelBase = 0.150 # This parameter cannot be changed
 		#self.wheelRadius = 0.025 # This parameter cannot be changed
-		self.wheelRadius = 0.05
+		self.wheelRadius = 0.08
 		self.minimumLinearSpeed = 0.0 	# minimum speed at which your robot can move forward in m/s
 		self.maximumLinearSpeed = 0.25 	# maximum speed at which your robot can move forward in m/s
 		self.driveSystemQuality = 1.0 # specifies how good your drive system is from 0 to 1 (with 1 being able to drive in a perfectly straight line when a told to do so)
@@ -1041,3 +1060,21 @@ class RobotParameters(object):
 		self.collectorQuality = 1.0 # specifies how good your sample collector is from 0 to 1.0 (with 1.0 being awesome and 0 being non-existent)
 		self.autoCollectSample = True #specifies whether the simulator automatically collects samples if near the collector 
 		self.maxCollectDistance = 0.03 #specificies the operating distance of the automatic collector function. Sample needs to be less than this distance to the collector
+
+
+# This class wraps VREP api functions to allow 
+# users to start testing Navigation/AI systems
+class lunar_object(IntEnum):
+	sample0 = 0
+	sample1 = 1
+	sample2 = 2
+	
+	obstacle0 = 3
+	obstacle1 = 4
+	obstacle2 = 5
+
+	rock0 = 6
+	rock1 = 7
+	rock2 = 8
+
+	lander = 9
