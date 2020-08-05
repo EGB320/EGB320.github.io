@@ -70,7 +70,7 @@
 									<div class="page-wrapper"> 
 										<header class="main">
 											<h1>Introduction to VREP (aka CopeliaSim) Simulator</h1>
-											<a href="dlc/EGB320_VREP_Files.zip" class="button pdf-exclude icon fa-download" download> EGB320 VREP Files</a>
+											<a href="dlc/EGB320_VREP_Lunar_Files_beta.zip" class="button pdf-exclude icon fa-download" download> EGB320 VREP Files</a>
 										</header>							
 
 										<p>This article discusses the Virtual Robot Experimentation Platform (VREP) simulation environment  which has now changed its name to CopeliaSim. This article will discuss VREP and how it can be used to test the design of your robot especially the mobility and navigation systems. However, VREP could be used for almost all aspects of your project to help refine your design.</p>
@@ -91,11 +91,16 @@
 										<h2>Setting Up Your VREP Scene</h2>
 										<p><em>Make sure you have downloaded and extracted the EGB320 VREP files, see the top of the page for download link.</em></p>
 
-										<p>To setup the scene for this design project we must first launch VREP. Once VREP has launched, select File -> Open Scene. Then navigate to where you extracted the EGB320 VREP files and open up the file EGB320Scene.ttt. After opening the file your VREP workspace should contain the Robot Arena, as well as 3 obstacles and the orange ball on a side table.</p>
+										<p>To setup the scene for this design project we must first launch VREP. The teaching team have already created two scenes, one for a differential drive robot and one for a differential skid steer drive robot. Once VREP has launched, select File -> Open Scene then navigate to where you extracted the EGB320 VREP files and open up the scenes folder. To load in your desired scene either EGB320LunarScene_Differential.ttt or EGB320LunarScene_SkidSteer.ttt. Ensure that there is only one of one robot within the scene at all times. After opening the file your VREP workspace should contain the Robot Arena, as well as 3 obstacles, 3 samples and 3 rocks on a side table.</p>
 
-										<figure class="figure">
-    										<img src="images/vrep/EGB320_VrepScene_blank_v2.png" width="80%" alt="images/image-not-found.jpg" />
-										</figure>
+
+										
+										<div class="box alt">
+											<div class="row gtr-50 gtr-uniform">
+												<div class="col-6"><span class="image fit"><img src="images/vrep/scene_skid_steer_drive.png" alt="images/image-not-found.jpg" /></span></div>
+												<div class="col-6"><span class="image fit"><img src="images/vrep/scene_diff_drive.png" alt="images/image-not-found.jpg" /></span></div>
+											</div>
+										</div>
 
 
 										<div class="html2pdf__page-break"></div>
@@ -103,11 +108,9 @@
 
 									<div class="page-wrapper">
 
-										<p>We now need to load our robot model. The teaching team have already created two robot models, one for a differential drive robot and one for an omni drive robot. To load in your desired robot model select File -> Load Model. Then navigate to where you extracted the EGB320 VREP files and either select DifferentialDrive_Bot.ttm or OmniDrive_Bot.ttm. Ensure that there is only one of these models within the scene at all times.</p>
-
 										<p>Next we will add what is known as a 'floating view' to allow us to visualise what the camera is seeing. To do this right click anywhere within the scene and then select Add -> Floating View. Now click on the object titled 'VisionSensor' on the right hand side of the screen within the Scene Hierarchy tree. Finally, right click on the newly created floating view and select View -> Associate view with selected vision sensor.</p>
 
-										<p>So you do not have to load a robot model or create a floating view each time, we are now going to save this scene under a new name. Select File -> Save Scene As. Then save the scene giving it a new name. We are now ready to start controlling our robot via Python.</p>
+										<p>So you do not have to create a floating view each time, we are now going to save this scene under a new name. Select File -> Save Scene As. Then save the scene giving it a new name. We are now ready to start controlling our robot via Python.</p>
 
 										<p>There are plenty of tutorials online if you would like to know how to build robots and scenes within VREP. One good example is <a target="_blank" href="http://www.coppeliarobotics.com/helpFiles/en/bubbleRobTutorial.htm">The Bubble Bot Tutorial</a>. This tutorial also shows you how to write scripts within VREP to control your robot.</p>
 
@@ -145,6 +148,8 @@
 
 										<p>To open a connection to VREP using the EGB320 LunarBot Python Module first create a new Python Script in the EGB320 VREP Python Code Folder. You need create your script in this directory as your script will be implicitly calling functions from the vrep.py, vrepConst.py and the remoteAPI files (.so for Linux, .dll for Windows, .dylib for Mac).</p>
 
+										<p>One issue that can occur is having a mismatch between the 32bit or 64bit version of the .dll and your installed python version. If there is a mismatch then the vrep connection usually throws an import error. Please check if you are using a 64bit python installation then change the  </p>
+
 										<p>Within your new script add the following code.</p>
 
 										<pre class="prettyprint" id="no-border"><code>#!/usr/bin/python
@@ -157,7 +162,7 @@ sceneParameters = SceneParameters()
 
 # SET ROBOT PARAMETERS
 robotParameters = RobotParameters()
-robotParameters.driveType = 'differential'	# specify if using differential or omni drive system
+robotParameters.driveType = 'differential'	# specify if using differential (currently differential is only supported)
 
 # MAIN SCRIPT
 if __name__ == '__main__':
@@ -169,7 +174,7 @@ if __name__ == '__main__':
 		roverBotSim.StartSimulator()
 
 		while True:
-		roverBotSim.SetTargetVelocities(0.1, 0, 0)
+		roverBotSim.SetTargetVelocities(0.1, 0)  # forward and rotational velocity
 		roverBotSim.UpdateObjectPositions() # needs to be called once within main code loop
 
 	except KeyboardInterrupt as e:
@@ -193,9 +198,9 @@ if __name__ == '__main__':
 										<p>This loads up the default VREP scene parameters and stores them as a variable. The scene parameters include the starting ball position, as well as the positions of the 3 static obstacles. Later on we will discuss how to change the default scene parameters.</p>
 
 										<pre class="prettyprint" id="no-border"><code>robotParameters = RobotParameters()
-robotParameters.driveType = 'differential'	# specify if using differential or omni drive system</code></pre>
+robotParameters.driveType = 'differential'		# specify if using differential (currently differential is only supported) </code></pre>
 
-										<p>This loads the default robot parameters and stores them as a variable. We also specifically set the drive type to be differential. If you loaded the omni drive model, you will need to change this to be omni instead. The robot parameters include the minimum and maximum linear speed your robot can travel, the position of the robot's camera, how well your vision system can detect objects, and how well your dribbler system can "hold" onto the sample/ball. We will be discussing these parameters later on in this guide.</p>
+										<p>This loads the default robot parameters and stores them as a variable. We also specifically set the drive type to be differential. If you use a different mobility type like a skid steer with 4 wheels this should still work. We have depracted the use of an omnidrive system (contact the teaching team if you would like to utilise this type). The robot parameters include the minimum and maximum linear speed your robot can travel, the position of the robot's camera, how well your vision system can detect objects, and how well your sample collector system can "hold" onto the sample/ball. We will be discussing these parameters later on in this guide.</p>
 
 										<pre class="prettyprint" id="no-border"><code>if __name__ == 'main'</code></pre>
 
@@ -222,7 +227,7 @@ robotParameters.driveType = 'differential'	# specify if using differential or om
 	roverBotSim.UpdateObjectPositions() # needs to be called once within main code loop 
 										</code></pre>
 
-										 <p>The final lines above consist of an infinite while loop which constantly calls the SetTargetVelocities and UpdateObjectPositions Functions. The second line of code sets the velocities of our robot using the SetTargetVelocities function which takes three inputs. The inputs are the robot's desired linear velocity in the x direction, the y direction, followed by the desired rotational velocity. The units of measure are m/s and rad/s for the linear and rotational velocities respectively. These velocities are also specified within the robot's coordinate frame. In simple terms the x velocity is how quickly you want the robot to move forward, the y velocity is only applicable to omni-drive robots and is how quickly you want the robot to move perpendicular to its forward direction, and the rotational velocity is how quickly you want the robot to rotate. The third line calling the UpdateObjectPositions function is used to update syncronise the positions of the roverbot_lib and the simulator. If this is not called continuiously within your main loop your software will not use the latest positions of the sample and objects in the simulator.</p> 
+										 <p>The final lines above consist of an infinite while loop which constantly calls the SetTargetVelocities and UpdateObjectPositions Functions. The second line of code sets the velocities of our robot using the SetTargetVelocities function which takes three inputs. The inputs are the robot's desired linear velocity in the x direction, the y direction, followed by the desired rotational velocity. The units of measure are m/s and rad/s for the linear and rotational velocities respectively. These velocities are also specified within the robot's coordinate frame. In simple terms the x velocity is how quickly you want the robot to move forward and the rotational velocity is how quickly you want the robot to rotate. The third line calling the UpdateObjectPositions function is used to update syncronise the positions of the roverbot_lib and the simulator. If this is not called continuiously within your main loop your software will not use the latest positions of the sample and objects in the simulator.</p> 
 
 										 <hr class="major pdf-exclude" />
 										<h2>RoverBot Python Module Functions</h2>

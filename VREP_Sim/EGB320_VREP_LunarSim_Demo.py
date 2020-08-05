@@ -131,7 +131,7 @@ if __name__ == '__main__':
 			
 
 			# Set Velocity and Update Sample Position
-			lunarBotSim.SetTargetVelocities(targetVel[0], targetVel[1], targetVel[2])
+			lunarBotSim.SetTargetVelocities(targetVel[0], targetVel[2])
 			robotPose, samplePositions, obstaclePositions, rockPositions = lunarBotSim.UpdateObjectPositions()
 
 			# move for an extra 0.5 seconds forward when range to sample is less than 0.05m

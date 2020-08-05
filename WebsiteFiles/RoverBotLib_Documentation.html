@@ -83,7 +83,7 @@
 
 										<p><b>StopSimulator()</b>: The StopSimulator function stops the VREP simulator. This is the same as manually pressing the Stop button within VREP.</p>
 
-										<p><b>SetTargetVelocities(x_dot, y_dot, theta_dot)</b>: The SetTargetVelocities function sets the robot's linear speed in the x and y direction with respect to the robot's coordinate frame and the robot's rotation velocity. The linear speeds, x_dot and y_dot, are in m/s while the rotation velocity, theta_dot, is in rad/s. Setting the y_dot velocity to a non-zero value while using a differential drive robot is impossible, and will simply be reset to 0. The maximum and minimum values you can set are based on the robot parameters, see <a href="#RobotParameters">Robot Parameters</a>. Example function usage:</p>
+										<p><b>SetTargetVelocities(x_dot, theta_dot)</b>: The SetTargetVelocities function sets the robot's linear speed in the x direction with respect to the robot's coordinate frame and the robot's rotation velocity. The linear speed, x_dot, is in m/s while the rotation velocity, theta_dot, is in rad/s. The maximum and minimum values you can set are based on the robot parameters, see <a href="#RobotParameters">Robot Parameters</a>. Example function usage:</p>
 
 										<pre class="prettyprint" id="no-border"><code># move the robot at a forward velocity of 0.1m/s with a rotational velocity of 0.5 rad/s.
 RoverBotSim.SetTargetVelocities(0.1, 0, 0.5)</code></pre>
