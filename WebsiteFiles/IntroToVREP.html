@@ -148,7 +148,7 @@
 
 										<p>To open a connection to VREP using the EGB320 LunarBot Python Module first create a new Python Script in the EGB320 VREP Python Code Folder. You need create your script in this directory as your script will be implicitly calling functions from the vrep.py, vrepConst.py and the remoteAPI files (.so for Linux, .dll for Windows, .dylib for Mac).</p>
 
-										<p>One issue that can occur is having a mismatch between the 32bit or 64bit version of the .dll and your installed python version. If there is a mismatch then the vrep connection usually throws an import error. Please check if you are using a 64bit python installation then change the  </p>
+										<p>One issue that can occur is having a mismatch between the 32bit or 64bit version of the vrep .dll and your installed python version. If there is a mismatch then the python library dll import process usually throws an import error. The .dll we have provided is by default 64bit so please check to see if you are using a 64bit python installation and if not we recommend installing the 64bit python </p>
 
 										<p>Within your new script add the following code.</p>
 
