@@ -86,7 +86,7 @@
 										<p><b>SetTargetVelocities(x_dot, theta_dot)</b>: The SetTargetVelocities function sets the robot's linear speed in the x direction with respect to the robot's coordinate frame and the robot's rotation velocity. The linear speed, x_dot, is in m/s while the rotation velocity, theta_dot, is in rad/s. The maximum and minimum values you can set are based on the robot parameters, see <a href="#RobotParameters">Robot Parameters</a>. Example function usage:</p>
 
 										<pre class="prettyprint" id="no-border"><code># move the robot at a forward velocity of 0.1m/s with a rotational velocity of 0.5 rad/s.
-RoverBotSim.SetTargetVelocities(0.1, 0, 0.5)</code></pre>
+RoverBotSim.SetTargetVelocities(0.1, 0.5)</code></pre>
 
 										<p><b>GetDetectedObjects()</b>: The GetDetectedObjects function takes no arguments and returns, as 3 variables in order, the range and bearing to the sample, the lander, and any obstacles if they are within the camera's field of view (FOV). The range and bearing is returned as a 2 element array. If the object is not within the field of view that respective return variable will be set to none. How far the away the objects can be detected is based on the robot parameters, see <a href="#RobotParameters">Robot Parameters</a>. Only sample-obstacle occlusion is currently implemented. Example function usage:<p>
 
