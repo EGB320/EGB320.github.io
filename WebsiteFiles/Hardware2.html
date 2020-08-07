@@ -232,7 +232,7 @@
 										<p>Okay so we have now selected our motors, what next? Well next we would need to ensure that the weight of the motor and its stall current are suitable for our system. If they are, we would then need to go design the motor driver circuitry in order to control this motor. A tip for selecting a H-Bridge IC; make sure you get a H-Bridge with in-built under-voltage, over-current and over-temparature protection. It may cost you a little bit more, but it will save you a lot of issues. Additionally, make sure the H-Bridge can handle more than the stall current specified by the motor.</p>
 
 
-										<h3>What About Omnidirectional Drive Systems</h3>
+										<!-- <h3>What About Omnidirectional Drive Systems</h3>
 										<p>Designing for a omnidirectional drive system uses the same process as a differential drive system. However, we need to account for the fact the wheels are angled when determining the high and low motor speeds. The simplest way to do this is to use the kinematic equations for your omnidirectional drive system, and substitute your desired forward velocity. By doing this we can get the required wheel speeds to achieve this desired forward velocity. For example, the kinematic equations for a 3 wheeled omnidirectional drive system are:</p>
 
 										<figure class="figure">
@@ -247,9 +247,66 @@
     										<figcaption>The "Extra Speed" is Caused by The Orthogonal Roller.</figcaption>
 										</figure>
 
-										<p>However, this means that we need an additional amount of torque, as we cannot get a speed boost without giving something extra somewhere else. How much extra torque do we need? Well, it will be equal to approximately 15%. So you would compute your friction and acceleration torques as you would for a differential drive and then add on an extra 15%. Remember this is only for a 3 wheel omnidirectional system, for a 4 wheel system it is different.</p>
+										<p>However, this means that we need an additional amount of torque, as we cannot get a speed boost without giving something extra somewhere else. How much extra torque do we need? Well, it will be equal to approximately 15%. So you would compute your friction and acceleration torques as you would for a differential drive and then add on an extra 15%. Remember this is only for a 3 wheel omnidirectional system, for a 4 wheel system it is different.</p> -->
 
+										<h3>Stability Analysis</h3>
+										<p>In this section we are going to perform a basic stability analysis, identifying the angle required to tip over a rock. A stability analysis looks at what angle will cause the gravity vector to move outside the limits of the platform, see the following figure for some examples.</p>
 
+										<figure class="figure">
+    										<img src="images/Hardware2/Stability_Analysis_Example.PNG" width="60%" alt="Image Not Found" />
+    										<figcaption>The vehicle will tip over when the graviy vector moves outside the base of the vehicle. Source <a href="http://www.schoolphysics.co.uk/age11-14/Mechanics/Statics/text/Stability_/index.html">School Physics</a></figcaption>
+										</figure>
+
+										<p>To perform a stability analysis we require the <em>Center of Mass (COM)</em> of an object. We need the COM of an object as we assume the gravity vector will pass through this point. There are many ways to identify the COM of an object, for more information check out this <a href="https://www.khanacademy.org/science/physics/linear-momentum/center-of-mass/a/what-is-center-of-mass">Khan Academy article</a>. We are going to perform a stability analysis on the lunar project rocks, assuming that the COM is at the center of the rock. This assumption probably does not hold due to the cut-outs in the bottom of the rock, but you would need to validate/invalidate this assumption yourself.</p>
+
+										<p>In the figure below you can see a side view of our rock, assumed to be a simple cube. To identify the tipping angle we need to identify the angle at which the gravity vector will be pass outside the object. We can do this by identifying the angle at which the gravity vector will point towards one of our corners, which will require some basic trignometry. Firstly, We know the side length (L) and we can use this to identify the angle phi (&phi;) and in turn angle theta (&theta;) </p>
+
+										<figure class="figure">
+    										<img src="images/Hardware2/Stability_Analysis.jpg" width="35%" alt="Image Not Found" />
+    										<figcaption>Identifying the tipping angle can be done utilising some trignometry and by identifying when the gravity vector points towards the corners.</figcaption>
+										</figure>
+
+										<p>So the angle &phi; will be given by,</p>
+
+										<pre><code>&phi; = atan((L/2)/(L/2)
+&phi; = &pi;/4 = 45&deg;</code></pre>
+
+										<p>Theta is then simply,</p>
+										<pre><code>&theta; = &pi;/4 = 45&deg;</code></pre>
+
+										<p>So once the block is at an angle greater than 45&deg;, relative to the ground, it will tip over. We can utilise this information to help us design a system to topple the rock. In this example, we will investigate a system that will push the rock. A critical design parameter of this pushing system will be determining the stroke length required to tip the rock over. The height of our pushing device, relative to the ground, will be given by the letter h, which is a design parameter you can play with which will affect the stroke length required.</p>
+
+										
+										<div class="row">
+											<div class="col-6">
+												<figure class="figure">
+													<img src="images/Hardware2/Tipping_Analysis_A.jpg" width="100%" alt="Image Not Found" />
+													<figcaption>We will design a pushing device to tip over the rock.</figcaption>
+												</figure>
+											</div>
+											<div class="col-6">
+												<figure class="figure">
+													<img src="images/Hardware2/Tipping_Analysis_B.jpg" width="78%" alt="Image Not Found" />
+													<figcaption>We need to determine the required stroke length (d) to tip the rock over.</figcaption>
+												</figure>
+											</div>
+										  </div>
+
+										<p>To determine the required stroke length, given by d, we need some more trignometry as well as the identified rock tipping angle of 45&deg;. To calculate d, the stroke length, we need the length of variable a which in turn requires the length of variable b. Variable b is given by,</p>
+
+										<pre><code>b = L*sin(&theta;)</code></pre>
+
+										<p>Now given that our pushing rod is at height h, we can work out variable a</p>
+
+										<pre><code>a = h - b
+a = h - L*sin(&theta;)</code></pre>
+
+										<p>Now that we know variable a, we can determine the stroke length, d,</p>
+
+										<pre><code>d = a*tan(&theta;)
+d = (h - L*sin(&theta;))*tan(&theta;)</code></pre>
+
+										<p>Now we have a formula for the required stroke length of our tipping device. This formula is only dependent on the height of the pushing rod, a design parameter; the value of L and &theta; are given/calculated by the size of the rock and its center of mass. Remember we have made an assumption that the rock would pivot at the opposite base corner, this may not be true and some experimentation would be required to see if this is valid.</p>
 
 
 								</section>
