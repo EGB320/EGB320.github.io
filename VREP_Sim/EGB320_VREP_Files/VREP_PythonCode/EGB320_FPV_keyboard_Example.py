@@ -3,7 +3,8 @@
 
 # import the soccer bot module - this will include math, time, numpy (as np) and vrep python modules
 from roverbot_lib import *
-import cv2
+# import cv2
+import pygame
 
 #import any other required python modules
 
@@ -60,18 +61,51 @@ if __name__ == '__main__':
 	# In the exception catch code attempt to Stop the VREP Simulator so don't have to Stop it manually when pressing CTRL+C
 	try:
 
+		pygame.init()
+		pygame.display.set_caption("VREP Camera Stream")
+		# screen = pygame.display.set_mode((400, 300))
+		done = False
+
+		# while not done:
+		# 	for event in pygame.event.get():
+		# 		if event.type == pygame.QUIT:
+		# 			done = True
+		# 	pygame.display.flip()
+
 		# Create VREP SoccerBot object - this will attempt to open a connection to VREP. Make sure the VREP simulator is running.
 		lunarBotSim = VREP_RoverRobot('127.0.0.1', robotParameters, sceneParameters)
 		lunarBotSim.StartSimulator()
 
+		image = None
+		while image == None:
+			resolution, image = lunarBotSim.GetCameraImage()
+			
+		screen = pygame.display.set_mode(resolution)
+		
 		#We recommended changing this to a controlled rate loop (fixed frequency) to get more reliable control behaviour
-		while True:
+		while not done:
 			# move the robot at a forward velocity of 0.2m/s with a rotational velocity of 0.3 rad/s.
 			lunarBotSim.SetTargetVelocities(0.1, 0.3)
 
 			# Get Detected Objects
 			# samplesRB, landerRB, obstaclesRB, rocksRB = lunarBotSim.GetDetectedObjects()
-            image = lunarBotSim.GetCameraImage()
+			resolution, image = lunarBotSim.GetCameraImage()
+
+			if image != None:
+
+				cv2_image = np.array(image,dtype=np.uint8)
+				cv2_image.resize([resolution[1],resolution[0],3])
+
+				screen.fill([0,0,0])
+				frame = cv2.cvtColor(cv2_image, cv2.COLOR_BGR2RGB)
+				frame = frame.swapaxes(0,1)
+				frame = pygame.surfarray.make_surface(frame)
+				screen.blit(frame, (0,0))
+				pygame.display.update()
+
+			for event in pygame.event.get():
+				if event.type == pygame.QUIT:
+					done = True
 
 			# Get Detected Wall Points
 			# wallPoints = lunarBotSim.GetDetectedWallPoints()

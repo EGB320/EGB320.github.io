@@ -21,7 +21,7 @@ try:
     libsimx = ct.CDLL((libfullpath))
 except Exception as e:
     print ('----------------------------------------------------')
-    print(e)
+    print(e) 
     print ('----------------------------------------------------')
     print ('The remoteApi library could not be loaded. Make sure')
     print ('it is located in the same folder as "vrep.py", or')

@@ -136,7 +136,7 @@ class VREP_RoverRobot(object):
 		vrep.simxGetObjectPosition(self.clientID, self.cameraHandle, -1, vrep.simx_opmode_discontinue)
 		vrep.simxGetObjectPosition(self.clientID, self.landerHandle, -1, vrep.simx_opmode_discontinue)
 
-		res,resolution,image=vrep.simxGetVisionSensorImage(clientID,v0,0,vrep.simx_opmode_streaming)
+		res,resolution,image=vrep.simxGetVisionSensorImage(self.clientID,self.cameraHandle,0,vrep.simx_opmode_streaming)
 
 		for handle in self.obstacleHandles:
 			vrep.simxGetObjectPosition(self.clientID, handle, -1, vrep.simx_opmode_discontinue)
@@ -234,14 +234,14 @@ class VREP_RoverRobot(object):
 	def GetCameraImage(self):
 
 		if self.cameraHandle == None:
-			None
+			None, None
 	
-		res,resolution,image=vrep.simxGetVisionSensorImage(self.clientID,v0,0,vrep.simx_opmode_buffer)
-        if res==vrep.simx_return_ok:
-			return image
-            
+		res,resolution,image=vrep.simxGetVisionSensorImage(self.clientID,self.cameraHandle,0,vrep.simx_opmode_buffer)
+		
+		if res==vrep.simx_return_ok:
+			return resolution, image    
 		else:
-			return None
+			return None, None
 			# res=vrep.simxSetVisionSensorImage(clientID,v1,image,0,vrep.simx_opmode_oneshot)
 	
 	# Gets the Range and Bearing to the wall(s)
