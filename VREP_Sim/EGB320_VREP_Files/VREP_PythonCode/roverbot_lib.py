@@ -105,6 +105,9 @@ class VREP_RoverRobot(object):
 		vrep.simxGetObjectOrientation(self.clientID, self.robotHandle, -1, vrep.simx_opmode_streaming)
 		vrep.simxGetObjectPosition(self.clientID, self.cameraHandle, -1, vrep.simx_opmode_streaming)
 		vrep.simxGetObjectPosition(self.clientID, self.landerHandle, -1, vrep.simx_opmode_streaming)
+		
+		res,resolution,image=vrep.simxGetVisionSensorImage(self.clientID,self.cameraHandle,0,vrep.simx_opmode_streaming)
+
 
 		for handle in self.obstacleHandles:
 			vrep.simxGetObjectPosition(self.clientID, handle, -1, vrep.simx_opmode_streaming)
@@ -135,8 +138,6 @@ class VREP_RoverRobot(object):
 		vrep.simxGetObjectOrientation(self.clientID, self.robotHandle, -1, vrep.simx_opmode_discontinue)
 		vrep.simxGetObjectPosition(self.clientID, self.cameraHandle, -1, vrep.simx_opmode_discontinue)
 		vrep.simxGetObjectPosition(self.clientID, self.landerHandle, -1, vrep.simx_opmode_discontinue)
-
-		res,resolution,image=vrep.simxGetVisionSensorImage(self.clientID,self.cameraHandle,0,vrep.simx_opmode_streaming)
 
 		for handle in self.obstacleHandles:
 			vrep.simxGetObjectPosition(self.clientID, handle, -1, vrep.simx_opmode_discontinue)

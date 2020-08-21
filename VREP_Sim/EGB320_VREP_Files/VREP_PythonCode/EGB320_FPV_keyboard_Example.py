@@ -3,7 +3,7 @@
 
 # import the soccer bot module - this will include math, time, numpy (as np) and vrep python modules
 from roverbot_lib import *
-# import cv2
+import cv2
 import pygame
 
 #import any other required python modules
@@ -80,6 +80,7 @@ if __name__ == '__main__':
 		while image == None:
 			resolution, image = lunarBotSim.GetCameraImage()
 			
+		print(resolution)
 		screen = pygame.display.set_mode(resolution)
 		
 		#We recommended changing this to a controlled rate loop (fixed frequency) to get more reliable control behaviour
