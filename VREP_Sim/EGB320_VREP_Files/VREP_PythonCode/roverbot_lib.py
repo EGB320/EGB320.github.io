@@ -1034,12 +1034,12 @@ class lunar_object(IntEnum):
 	sample1 = 1
 	sample2 = 2
 	
-	rock0 = 6
-	rock1 = 7
-	rock2 = 8
+	rock0 = 3
+	rock1 = 4
+	rock2 = 5
 
-	obstacle0 = 3
-	obstacle1 = 4
-	obstacle2 = 5
+	obstacle0 = 6
+	obstacle1 = 7
+	obstacle2 = 8
 
 	lander = 9
