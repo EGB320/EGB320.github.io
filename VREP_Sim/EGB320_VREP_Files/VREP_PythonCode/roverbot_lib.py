@@ -698,7 +698,7 @@ class VREP_RoverRobot(object):
 
 		# rock positions
 		rockPositions = [None, None, None]
-		for index, sample in enumerate(self.rockPositions):
+		for index, rock in enumerate(self.rockPositions):
 			errorCode, rockPositions[index] = vrep.simxGetObjectPosition(self.clientID, self.rockHandles[index], -1, vrep.simx_opmode_buffer)
 			if errorCode == 0:
 				self.rockPositions[index] = rockPositions[index]
@@ -1034,12 +1034,12 @@ class lunar_object(IntEnum):
 	sample1 = 1
 	sample2 = 2
 	
-	obstacle0 = 3
-	obstacle1 = 4
-	obstacle2 = 5
-
 	rock0 = 6
 	rock1 = 7
 	rock2 = 8
+
+	obstacle0 = 3
+	obstacle1 = 4
+	obstacle2 = 5
 
 	lander = 9
