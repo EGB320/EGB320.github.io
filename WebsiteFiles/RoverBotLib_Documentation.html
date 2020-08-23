@@ -138,6 +138,13 @@ if RoverBotSim.SampleCollected() == True:
 	# Update the sample position in each loop
 	RoverBotSim.UpdateObjectPositions()</code></pre>
 
+	<p><b>GetCameraImage()</b>: The GetCameraImage function grabs the a single image from a buffer of images streamed from the vision sensor. Due to api limitations this may be a delayed image. (see the teaching team for a way to rectify this with additional code). An example snippet of code for capturing an image and converting it to a cv2 image format is shown below.</p>
+
+	<pre class="prettyprint" id="no-border"><code>resolution, image = RoverBotSim.GetCameraImage()
+if image != None:
+	cv2_image = np.array(image,dtype=np.uint8)
+	cv2_image.resize([resolution[1],resolution[0],3])
+	frame = cv2.cvtColor(cv2_image, cv2.COLOR_BGR2RGB)</code></pre>
 
 										<hr class="major pdf-exclude" />
 										<h2>Scene and Robot Parameters</h2>
@@ -193,8 +200,11 @@ robotParameters.maxObstacleDetectionDistance = 1.5 	# the maximum distance you c
 
 # Collector Parameters
 robotParameters.collectorQuality = 1 			# specifies how good your collector is from 0 to 1.0 
-							# (with 1.0 being awesome and 0 being non-existent)</code></pre>
+							# (with 1.0 being awesome and 0 being non-existent)
+robotParameters.autoCollectSample = True #specifies whether the simulator automatically collects samples if near the collector 
+robotParameters.maxCollectDistance = 0.03 #specifies the operating distance of the automatic collector function. Sample needs to be less than this distance to the collector</code></pre>
 
+							
 
 										<h2 id="WallPointScenarios">Wall Point Scenarios</h2>
 
