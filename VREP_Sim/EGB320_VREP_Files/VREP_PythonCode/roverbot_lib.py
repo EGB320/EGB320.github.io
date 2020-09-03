@@ -15,7 +15,6 @@ from enum import IntEnum
 
 class VREP_RoverRobot(object):
 	"""docstring for VREP_SoccerBot"""
-	
 	####################################
 	####### VREP SOCCER BOT INIT #######
 	####################################
@@ -89,9 +88,10 @@ class VREP_RoverRobot(object):
 	# THESE ARE THE FUNCTIONS YOU SHOULD CALL.
 	# ALL OTHER FUNCTIONS ARE HELPER FUNCTIONS.
 
-	# Starts the VREP Simulator. 
-	# The VREP Simulator can also be started manually by pressing the Play Button in VREP.
+
 	def StartSimulator(self):
+		# Starts the VREP Simulator. 
+		# The VREP Simulator can also be started manually by pressing the Play Button in VREP.
 		print('Attempting to Start the Simulator')
 		if vrep.simxStartSimulation(self.clientID, vrep.simx_opmode_oneshot_wait) != 0:
 			print('An error occurred while trying to start the simulator via the Python API. Terminating Program!')
@@ -276,11 +276,12 @@ class VREP_RoverRobot(object):
 		return wallPoints
 		
 
-	# Set Target Velocities
-	# inputs:
-	#	x - the velocity of the robot in the forward direction (in m/s)
-	#	theta_dt - the rotational velocity of the robot (in rad/s)
+
 	def SetTargetVelocities(self, x_dot, theta_dot):
+		# Set Target Velocities
+		# inputs:
+		#	x - the velocity of the robot in the forward direction (in m/s)
+		#	theta_dt - the rotational velocity of the robot (in rad/s)
 		
 		# Need to set based on drive system type
 		if self.robotParameters.driveType == 'differential':
