@@ -139,7 +139,8 @@
 										<p>Now that you have connected an LED to your Raspberry Pi, the next step is to write some software to control the input and output signals sent from the Pi to the LED circuit. Open up a text editor on the Raspberry Pi, GEdit for example, and write the following code. Feel free to install any other text editor on the Raspberry Pi.</p>
 										
 										<p> A recommended python development environment that is supported on a raspberry pi is Spyder. To install this software on your pi, ensure your pi has internet and run the following code in a terminal (CTL+ALT+T to open):</p>
-										<pre class="prettyprint" id="no-border"><code>sudo apt-get install spyder3</code></pre>
+										<pre class="prettyprint" id="no-border"><code>sudo apt update
+sudo apt install spyder3</code></pre>
 
 										<p>Once installed you should be able to open spyder via the terminal by running "spyder3" as a command or via the pi menu -> programming -> spyder3 </p>
 										
@@ -201,10 +202,11 @@ if __name__ == "__main__":
 	# Forever Loop - turns on LED while switch is pressed
 	while True:
 		if GPIO.input(20) == GPIO.HIGH:			# Check to see if switch is pressed
-			GPIO.output(21, HIGH)			# Turn on LED
+			GPIO.output(21, GPIO.HIGH)			# Turn on LED
+			print("GPIO 20 is high")
 		else:
-			GPIO.input(20, LOW)			# Turn off LED
-
+			GPIO.output(21, GPIO.LOW)			# Turn off LED
+			print("GPIO 20 is low")
 	GPIO.cleanup()						# Exit the GPIO session cleanly
 	</code></pre>
 										<h2>Extra Information: Python Basics</h2>
