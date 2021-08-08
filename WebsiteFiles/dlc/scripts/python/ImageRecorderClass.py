@@ -1,5 +1,7 @@
 # Import the required libraries
-import numpy as np
+from picamera.array import PiRGBArray
+from picamera import PiCamera
+import time
 import cv2
 
 class ImageRecorder():
@@ -22,62 +24,61 @@ class ImageRecorder():
             self.input_okay=False
             return
 
-        # Create the video capture object
-        self.cap = cv2.VideoCapture(0)
+        self.cam = PiCamera()
+        self.imWidth = 640
+        self.imHeight = 480
+        self.cam.resolution = (self.imWidth, self.imHeight)  # pixels
+        self.rawCapture = PiRGBArray(self.cam, size=(self.imWidth, self.imHeight))
 
-        # Set the resolution you want from your camera - change this for higher quality images (e.g. 640 x 480). 
-        self.cap.set(3,320) # Width --> Channel 3
-        self.cap.set(4,240) # Height --> Channel 4
-        # Other camera parameters can be altered, such as brightness and contrast.
-        # See https://docs.opencv.org/3.0-beta/modules/videoio/doc/reading_and_writing_video.html#videocapture-set
-        # We are leaving all other parameters at default in this script.
-        
+        # allow camera to warm up
+        while self.cam.analog_gain <= 1:
+            time.sleep(0.1)
+                
 
     def SaveFrames(self):
-        # Complete the following loop while the video capture object is active
-        while(self.cap.isOpened()) and self.input_okay:
-            # Read the frame`
-            ret, frame = self.cap.read()
-            # If a frame has been obtained, complete the following
-            if ret==True:        
-                # Display the frame
-                cv2.imshow('frame',frame)
-                # Increment loop counter
-                self.loop = self.loop+1
-                # Read keypress
-                key = cv2.waitKey(1)
-                # If the key was 'q' --> QUIT
-                if key & 0xFF == ord('q'):            
-                    break
-                # If the user has not pressed 'q' and the desired frequency has been reached --> SAVE FRAME
-                elif self.function_type=="count" and self.loop%self.input_var==0:
-                    # Increment frame counter
-                    self.counter = self.counter+1 
-                    # Generate image path and filename
-                    string_name = "frames/frame_%06d.png"%self.counter
-                    # Write the frame to a png file (assumes there is a folder next to this script named "frames")
-                    cv2.imwrite(string_name, frame)
-                # If the user has not pressed 'q' and a key has been pressed --> SAVE FRAME
-                elif self.function_type=="keypress" and key & 0xFF == ord(self.input_var):
-                    # Increment frame self.counter
-                    self.counter = self.counter+1 
-                    # Generate image path and filename
-                    string_name = "frames/frame_%06d.png"%self.counter
-                    # Write the frame to a png file (assumes there is a folder next to this script named "frames")
-                    cv2.imwrite(string_name, frame)
-            else:
+        for frame in self.cam.capture_continuous(self.rawCapture, format='bgr', use_video_port=True):
+            # format bgr for opencv
+            im = frame.array
+
+            # display image/wait for keypress
+            cv2.imshow('picam frame', im)
+            # k = cv.waitKey(1) & 0xFF
+
+            # clear the stream in preparation for next frame
+            self.rawCapture.truncate(0)
+
+            # Increment loop counter
+            self.loop = self.loop+1
+            # Read keypress
+            key = cv2.waitKey(1)
+            # If the key was 'q' --> QUIT
+            if key & 0xFF == ord('q'):            
                 break
+            # If the user has not pressed 'q' and the desired frequency has been reached --> SAVE FRAME
+            elif self.function_type=="count" and self.loop % self.input_var==0:
+                # Increment frame counter
+                self.counter = self.counter+1 
+                # Generate image path and filename
+                string_name = "frames/frame_%06d.png"%self.counter
+                # Write the frame to a png file (assumes there is a folder next to this script named "frames")
+                cv2.imwrite(string_name, im)
+            # If the user has not pressed 'q' and a key has been pressed --> SAVE FRAME
+            elif self.function_type=="keypress" and key & 0xFF == ord(self.input_var):
+                # Increment frame self.counter
+                self.counter = self.counter+1 
+                # Generate image path and filename
+                string_name = "frames/frame_%06d.png"%self.counter
+                # Write the frame to a png file (assumes there is a folder next to this script named "frames")
+                cv2.imwrite(string_name, im)
 
     def CleanUp(self):
         # Release the camera object and close the window
-        self.cap.release()
         cv2.destroyAllWindows()
 
 
 
 if __name__ == '__main__':
-    image_recorder = ImageRecorder("count",1000)
+    # record on the keypress c
+    image_recorder = ImageRecorder("keypress",'c')
     image_recorder.SaveFrames()
     image_recorder.CleanUp()
-
-
