@@ -69,15 +69,27 @@ import numpy as np</code></pre>
 
 										<h3>The Camera Object</h3>
 										
-										<p>The next step is to create your camera object. There are 2 modules which you can use for this; the picamera module, or OpenCV’s inbuilt cv2.VideoCapture() module. There are advantages for use of either method, so it is up to you to decide which module you would like to use for your project. Since cv2.VideoCapture() will work with any camera, and can be run using a webcam on a desktop, we will use this method for demonstration.</p>
+										<p>The next step is to create your camera object. There are 2 modules that you can use for this; the picamera module, or OpenCV’s inbuilt cv2.VideoCapture() module. There are advantages to using either method. The picamera module offers more control of the image but cv2.VideoCapture() will work with any camera.  So it is up to you to decide which module you would like to use for your project. Below we offer an example of using both approaches. <a href="https://picamera.readthedocs.io/en/release-1.10/recipes1.html">Raspberry Pi camera basics</a>, <a href="https://docs.opencv.org/3.0-beta/modules/videoio/doc/reading_and_writing_video.html#videocapture-set">OpenCV basics</a>.</p>
+										
+										<pre><code>import time
+import picamera
+
+with picamera.PiCamera() as camera:
+	camera.resolution = (1024, 768)
+	camera.start_preview()
+	# Camera warm-up time
+	time.sleep(2)
+	camera.capture('foo.jpg')
+# See https://picamera.readthedocs.io/en/release-1.10/recipes1.html</code></pre>
 
 										<pre><code>cap = cv2.VideoCapture(0)  		# Connect to camera 0 (or the only camera)
 cap.set(3, 320)                     	# Set the width to 320
 cap.set(4, 240)                     	# Set the height to 240
 ret, frame = cap.read()	     		# Get a frame from the camera 
 
-# Other camera parameters can be altered, such as brightness and contrast.
 # See https://docs.opencv.org/3.0-beta/modules/videoio/doc/reading_and_writing_video.html#videocapture-set</code></pre>
+
+										
 
 
 										<h3>Displaying Frames Using OpenCV and Python</h3>
@@ -201,18 +213,25 @@ type 		→ 		The thresholding method being used (see <a href="https://docs.openc
 										<p>We would first extract the colour channel we wish to analyse (which will display as a grayscale image). We can then threshold this channel using the binary thresholding method with a threshold of 127;</p>
 
 <!-- gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) -->
-										<pre><code>ret, thresholded_frame = cv2.threshold(gray_frame, 127, 255, cv2.THRESH_BINARY)</code></pre>
-										
-										<p>A full example of a colour thresholding and image segmentation process can be completed as per the following script;</p>
 
-										<pre><code>import numpy as np
+<pre><code>import io
+import time
+import picamera
 import cv2
+import numpy as np
 
-cap = cv2.VideoCapture(0)							# Create the camera object
-cap.set(3, 640)									# Set the frame width
-cap.set(4, 480)									# Set the frame height
+# Create the in-memory stream
+stream = io.BytesIO()
+with picamera.PiCamera() as camera:
+	time.sleep(2)
+	camera.capture(stream, format='jpeg')
 
-ret, frame = cap.read()								# Import the raw frame
+# Construct a numpy array from the stream
+data = np.fromstring(stream.getvalue(), dtype=np.uint8)
+
+# "Decode" the image from the array, preserving colour
+frame = cv2.imdecode(data, 1)
+
 frame_blue = frame[:,:,0];							# Extract blue channel
 ret, thresholded_frame = cv2.threshold(frame_blue, 127, 255, cv2.THRESH_BINARY)	# Threshold blue channel
 
@@ -220,7 +239,9 @@ cv2.imshow("Binary Thresholded Frame", thresholded_frame)			# Display thresholde
 cv2.waitKey(0)									# Exit on keypress
 
 cap.release()
-cv2.destroyAllWindows()</code></pre>
+cv2.destroyAllWindows()
+
+</code> </pre>
 										<p>
 										The effect of this script on an input frame can be seen below, where the left image is the input image, the middle frame is the blue colour channel, and the right image is the thresholded frame.
 										</p>
