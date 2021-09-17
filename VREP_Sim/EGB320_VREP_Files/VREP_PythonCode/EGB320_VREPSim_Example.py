@@ -75,8 +75,8 @@ if __name__ == '__main__':
 			if samplesRB != None:
 				# loop through each sample detected using Pythonian way
 				for sample in samplesRB:
-					sampleRange = samplesRB[0]
-					sampleBearing = samplesRB[1]
+					sampleRange = sample[0]
+					sampleBearing = sample[1]
 
 			# Check to see if any obstacles are within the camera's FOV
 			if obstaclesRB != None:
