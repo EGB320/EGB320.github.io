@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <title>EGB320 | DMS</title>
+  </head>
+  <body>
+
+    <div class="container">
+        <br></br>
+        <h3>EGB320 | Demo Management System</h3>
+        <p></p>
+        <nav>
+            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                <a class="nav-item nav-link active" id="nav-settings-tab" data-toggle="tab" href="#nav-settings" role="tab" aria-controls="nav-setting" aria-selected="true">Settings</a>
+                <a class="nav-item nav-link" id="nav-gameplay-tab" data-toggle="tab" href="#nav-gameplay" role="tab" aria-controls="nav-gameplay" aria-selected="false">Game Play</a>
+                <a class="nav-item nav-link" id="nav-camera-tab" data-toggle="tab" href="#nav-camera" role="tab" aria-controls="nav-camera" aria-selected="false">Camera Feed</a>
+            </div>
+        </nav>
+        <div class="tab-content" id="nav-tabContent">
+            <div class="tab-pane fade show active" id="nav-settings" role="tabpanel" aria-labelledby="nav-settings-tab">
+                    <p></p>
+                    <h5>Field Settings</h5>
+                    <form>
+                        <div class="form-group row">
+                            <label for="fieldNoText" class="col-sm-3 col-form-label">Field No</label>
+                            <div class="col-sm-3">
+                            <input type="text" class="form-control" id="fieldNoText" value="1">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                                <label for="groupNoText" class="col-sm-3 col-form-label">Group No</label>
+                                <div class="col-sm-3">
+                                <input type="text" class="form-control" id="groupNoText" placeholder="Group Number">
+                                </div>
+                            </div>
+                        <div class="form-group row">
+                                <label for="setupDurationText" class="col-sm-3 col-form-label">Setup Duration (s)</label>
+                                <div class="col-sm-3">
+                                    <input type="text" class="form-control" id="setupDurationText" value="600">
+                                </div>
+                                <label for="setupWarningText" class="col-sm-3 col-form-label">Setup Warning (s)</label>
+                                <div class="col-sm-3">
+                                    <input type="text" class="form-control" id="setupWarningText" value="60">
+                                </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="demoDurationText" class="col-sm-3 col-form-label">Demo Duration (s)</label>
+                            <div class="col-sm-3">
+                                <input type="text" class="form-control" id="demoDurationText" value="300">
+                            </div>
+                            <label for="demoWarningText" class="col-sm-3 col-form-label">Demo Warning (s)</label>
+                            <div class="col-sm-3">
+                                <input type="text" class="form-control" id="demoWarningText" value="60">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="timeoutDurationText" class="col-sm-3 col-form-label">Timeout Duration (s)</label>
+                            <div class="col-sm-3">
+                                <input type="text" class="form-control" id="timeoutDurationText" value="300">
+                            </div>
+                            <label for="timeoutWarningText" class="col-sm-3 col-form-label">Timeout Warning (s)</label>
+                            <div class="col-sm-3">
+                                <input type="text" class="form-control" id="timeoutWarningText" value="60">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-10">
+                            <table>
+                                <tr>
+                                    <td><button type="button" class="btn btn-primary" onclick="saveSettings()">Save Changes</button></td>
+                                    <td>&nbsp</td>
+                                    <td><h6 style="color: green" id="changesReturn"></h6></td>
+                                </tr>
+                            </table>
+                            </div>
+                        </div>
+                        <hr></hr>
+                    </form>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <h5>Test Sounds</h5>
+                        </div>
+                        <div class="col-sm-9">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-danger btn-sm" onclick="playSound(0)" id="whistleTest">Setup | Demo Expire</button>
+                                <button type="button" class="btn btn-warning btn-sm" onclick="playSound(1)" id="bellTest">Warning</button>
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="playSound(2)" id="hornTest">Timeout Expire</button>                                
+                            </div>
+                        </div>
+                    </div>
+                    <hr></hr>
+                    <p></p>
+                    <h5>Camera Settings</h5>
+                    <form>
+                        <div class="form-group row">
+                            <label for="cameraSelect" class="col-sm-3 col-form-label">Camera</label>
+                            <div class="col-sm-3">
+                                <select class="form-control" id="cameraSelect">
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                        
+                    
+            </div>
+            <div class="tab-pane fade" id="nav-gameplay" role="tabpanel" aria-labelledby="nav-gameplay-tab">
+                <p></p>
+                <table>
+                    <tr>
+                        <td><h2 id="demoInfo">Field 2 | Group 16 |</h2></td>
+                        <td>&nbsp</td>
+                        <td><button type="button" class="btn btn-outline-info btn-sm" onclick="resetField()" id="restFieldButton">Reset Field</button></td>
+                    </tr>
+                </table>
+                <hr></hr>
+                <h5><center>Timers</center></h5>
+                <ul class="list-group list-group-horizontal">
+                    <li class="list-group-item flex-fill">
+                        <center>Setup</center>
+                        <p></p>
+                        <center><h2 id="setupTimer">n/a</h2></center>
+                        <p></p>
+                            <center><button type="button" class="btn btn-success" onclick="onStartSetupTimer()" id="setupTimerStart">Start</button></center>
+                    </li>
+                    <li class="list-group-item flex-fill">
+                        <center>Demo</center>
+                        <p></p>
+                        <center><h2 id="demoTimer">n/a</h2></center>
+                        <p></p>
+                        <center>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-success" onclick="onStartDemoTimer()" id="demoTimerStart" disabled>Start</button>
+                                <button type="button" class="btn btn-warning" onclick="onPauseDemoTimer()" id="demoTimerPause" disabled>Pause</button>
+                            </div>
+                        </center>
+                    </li>
+                    <li class="list-group-item flex-fill">
+                        <center>Timeout</center>
+                        <p></p>
+                        <center><h2 id="timeoutTimer">n/a</h2></center>
+                        <p></p>
+                        <center>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-success" onclick="onStartTimeoutTimer()" id="timeoutTimerStart" disabled>Start</button>
+                                <button type="button" class="btn btn-warning" onclick="onPauseTimeoutTimer()" id="timeoutTimerPause" disabled>Pause</button>
+                            </div>
+                        </center>
+                    </li>
+                </ul>
+                <hr></hr>
+                <h5><center>Scoring</center></h5>
+                <p></p>
+                <ul class="list-group list-group-horizontal">
+                    <li class="list-group-item flex-fill">
+                        <center><h6>Open Sample Collected</h6></center>
+                        <center><h2 id="open_sample_score">0</h2></center>
+                        <center><button type="button" class="btn btn-success" onclick="onSampleCollected(0)" id="openSampleButton" disabled>Open Sample Collected</button></center>
+                        <ul id="openSampleList"><p></p></ul>
+                    </li>
+                    <li class="list-group-item flex-fill">
+                        <center><h6>Under Rock Sample Collected</h6></center>
+                        <center><h2 id="rock_sample_score">0</h2></center>
+                        <center><button type="button" class="btn btn-success" onclick="onSampleCollected(1)" id="rockSampleButton" disabled>Open Sample Collected</button></center>
+                        <ul id="rockSampleList"><p></p></ul>
+                    </li>
+                    <li class="list-group-item flex-fill">
+                        <center><h6>Penalty</h6></center>
+                        <center><h2 id="penalty">0</h2></center>
+                        <center> <button type="button" class="btn btn-danger" onclick="updatePenaltyInfo(0)" id="penaltyButton" disabled>Collision</button></center>
+                        <ul id="penaltyList"><p></p></ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="tab-pane fade" id="nav-camera" role="tabpanel" aria-labelledby="nav-camera-tab">
+                <p></p>
+                    <h5><center>Camera Feed</center></h5>
+                    <p></p>
+                    <div class="container">
+                        <center><video autoplay="true" id="videoElement"></video>
+                        </center> 
+                    </div>
+                    <div id="recordedVideos" style="display: none;">
+                    <hr></hr>
+                    <p></p>
+                    <h5><center>Recorded Footage</center></h5>
+                        <div id="accordion">
+                        </div>
+                    </div>
+            </div>
+            <hr></hr>
+        </div>
+        
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    <script src="js/settings.js"></script> 
+    <script src="js/gameplay.js"></script> 
+    <script src="js/camera.js"></script> 
+
+  </body>
+</html>
