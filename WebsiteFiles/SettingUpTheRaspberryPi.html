@@ -156,7 +156,7 @@
 
 										<hr class="major pdf-exclude" />
 										<h2>Configuring and Testing The Raspberry Pi Camera</h2>
-										<p>To be able to use the Rasberry Pi Camera, you will need to ensure the camera module is enabled. To do this click on the Raspberry Pi Icon which can be found in the top left corner. Then in the menu select Preferences -> Raspberry Pi Configuration. Within the Raspberry Pi Configuration Display, go to the Interfaces tab and ensure that the Camera is enabled.</p>
+										<p>To be able to use the Rasberry Pi Camera, you will need to ensure the camera module is enabled. To do this click on the Raspberry Pi Icon which can be found in the top left corner. Then in the menu select Preferences -> Raspberry Pi Configuration. Within the Raspberry Pi Configuration Display, go to the Interfaces tab and ensure that the Camera is enabled. Also ensure that the Serial Port is enabled and the Serial Console is <b>disabled</b>.</p>
 										
 										<figure class="figure">
 											<div class="row gtr-50 gtr-uniform">
@@ -225,7 +225,20 @@
 												</div>
 										</figure>
 
-										
+
+										<hr class="major pdf-exclude" />
+
+										<h2>Updating necessary software for Motor Hat</h2>
+
+										<p>To make use of the motor control hardware, several software changes are required.</p>
+
+										<ol>
+											<li>Login to the Raspberry Pi using your preferred method and verify that it has an internet connection.</li>
+											<li>Open a new terminal window or ssh connection.</li>
+											<li>Run the command <code>sudo apt update</code> followed by <code>sudo apt upgrade</code>. This will update installed software packages to the latest available version.</li>
+											<li>Run command <code>python3 -m pip install psutil</code>. This installs a Python package that is used to get the MAC address of the Raspberry Pi's network interfaces.</li>
+											<li>Check PySerial version using <code>python3 -m pip show pyserial</code>. If the version is not greater than 3.3, upgrade PySerial using <code>python3 -m pip install pyserial</code>.</li>
+										</ol>
 
 										<hr class="major pdf-exclude" />
 
@@ -234,7 +247,7 @@
 
 										<p>There are two methods of reducing the number of pins required by the touch screen.</p>
 
-										<p><b>Method 1 </b>- simply connect the screen to the Raspberry Pi using the HDMI and Mico USB. This will provide the screen with power and display, however the touch interface will not work. The touch interface requires the screen to communicate with the Raspberry Pi via SPI. Feel free to use a wireless/bluetooth keyboard instead of connecting the SPI.</p>
+										<p><b>Method 1 </b>- simply connect the screen to the Raspberry Pi using the HDMI and Micro USB. This will provide the screen with power and display, however the touch interface will not work. The touch interface requires the screen to communicate with the Raspberry Pi via SPI. Feel free to use a wireless/bluetooth keyboard instead of connecting the SPI.</p>
 
 										<p><b>Method 2 </b>- the provided 5 inch touch screen comes with a 26-pin female connector. However, it does not actually require all 26 pins to operate correctly; in fact it only needs 9 pins in total. The touch screen requires power, ground, and the SPI serial communication pins. So if you require access to more GPIO pins, or want flexibility with the placement and orientation of the touch screen and Raspberry Pi, you can do so. The following figures and table display the required pin connections for the touch screen, and indicate the positioning of these pins on the Raspberry Pi. The BOARD numbering convention has been used, but you can convert to BCM if you wish using the provided Raspberry Pi pinout.</p>
 

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>EGB320 Mechatronics Design 2</title>
+        <meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link id="pagestyle" rel="stylesheet" href="assets/css/main.css" />
+		<link href="assets/css/main.css" media="print" rel="stylesheet" />
+
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=UA-123133357-1"></script>
+		<script>
+		  window.dataLayer = window.dataLayer || [];
+		  function gtag(){dataLayer.push(arguments);}
+		  gtag('js', new Date());
+
+		  gtag('config', 'UA-123133357-1');
+		</script>
+		<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+    </head>
+
+    <body class="is-preload">
+        <div id="wrapper">
+            <div id="main">
+                <div class="inner">
+                    <header id="header">
+                        <div id="col-12">
+                            <div class="row" style="position: relative; top: 0.75em;">
+                                <a href="#" class="button pdf-exclude icon fa-print" style="position: absolute; right: 1em; bottom: 2.5em;" onclick="CreateDocumentToExportPDF('EGB320_IntroToVREP.pdf')"></a>
+                            </div>
+                            <div class="row" style="position: relative;">
+                                <a href="index.html" class="logo">EGB320 - Mechatronics Design 2</a>
+                                <a id="date" class="logo date" style="position: absolute; right: 1em;">Date</a>
+                            </div>
+                        </div>
+                    </header>
+
+                    <section>
+                        <header class="main">
+                            <h1>Python Hardware (PenguinPi) Library Documentation</h1>
+                            <!--<a href="dlc/EGB320_VREP_Lunar_Files.zip" class="button pdf-exclude icon fa-download" download> EGB320 VREP Files</a> -->
+                        </header>
+
+                        <p>The documentation for the EGB320 penguinPi.py file can be found here. This file provides high level classes and functions for interacting with the hardware using Python.</p>
+
+                        <hr class="major pdf-exclude" />
+
+                        <h2>Python Module Classes</h2>
+                        <p>Each class corresponds to a specific component of the hardware. Some less important functions have not been documented here.</p>
+                        <p>THe classes are typically initialised using a string representing an address. The available addresses can be found in the following section.</p>
+
+                        <hr class="major pdf-exclude" />
+
+                        <h3>UART</h3>
+
+                        <p>The UART module encapsulates the serial communication between the Raspberry Pi and the microcontroller on the hat. This class is used to automatically open a serial connection with the microcontroller when penguinPi is imported.</p>
+
+                        <hr class="major pdf-exclude" />
+
+                        <h3>Motor</h3>
+                        <p>The Motor class is used for interacting with a pair of DC motors. These will typically be the main drive motors on the robot.</p>
+                        <p>The functionality of this class can be tested by running <code>test_motors.py</code> and <code>test_encoders.py</code>.</p>
+                        <p><b>set_velocity:</b> Set the desired velocity of a motor. This should be an integer between -100 and 100.</p>
+                        <p><b>set_target_velocity:</b> Designed to be equivalent to SetTargetVelocities from the RoverBot module. This function should be called once for each motor. Inputs are two integers between -100 and 100, representing desired linear and rotational velocity. Note that this function is very basic and it is recommended to implement this logic yourself using the set_velocity function instead.</p>
+                        <p><b>get_encoder:</b> If a wheel encoder has been set up for this motor, then this function can be used to get the number of ticks from that encoder since the last reset.</p>
+
+                        <!-- <h3>Servo</h3> -->
+
+                        <hr class="major pdf-exclude" />
+
+                        <h3>LED</h3>
+                        <p>The LED class is used for controlling all the LEDs built into the hat. This <b>does not</b> include the main LED array.</p>
+                        <p>The functionality of this class can be tested by running <code>test_leds.py</code>.</p>
+                        <p><b>set_state:</b> Set the state of one LED. A state of 1 corresponds to on, and 0 to off.</p>
+
+                        <hr class="major pdf-exclude" />
+
+                        <h3>AnalogIn</h3>
+                        <p>This class is primarly used to monitor the battery voltage and current.</p>
+                        <p>The functionality of this class can be tested by running <code>test_adc.py</code>.</p>
+                        <p><b>get_value:</b> Get a reading from one of the microcontroller's analog to digital converters. If the application is not very time sensitive then consider using get_smooth instead.</p>
+                        <p><b>get_smooth:</b> This has the same functionality as get_value, except that the microcontroller takes several readings and returns the average.</p>
+
+                        <hr class="major pdf-exclude" />
+
+                        <h3>Hat</h3>
+                        <p>The Hat class bundles several smaller components together into one class. These include the DIP switches, the LED array and the OLED display.</p>
+                        <p>The functionality of this class can be tested by running <code>test_dip.py</code>, <code>test_ipaddr_set.py</code>, <code>test_leds.py</code> and <code>test_usertext.py</code>.</p>
+
+                        <p><b>get_dip:</b> Read the builtin DIP switches. Returns a number with each binary digit representing the state of one switch. Switch 1 is the high-order bit.</p>
+                        <p><b>refresh_ip_display:</b> This function gets the Raspberry Pi's current IP addresses and Wi-Fi MAC address and displays them on the OLED display.</p>
+                        <p><b>automatic_ip_display_update:</b> This function launches a separate thread which will update the IP and MAC addresses displayed on the OLED. By default this occurs once every two minutes, but the interval can be set to any whole number of seconds using the optional second argument.</p>
+                        <p><b>set_ledarray:</b> Sets the state of all LEDs in the builtin array. The input should be an integer. The 16 least significant bits of it are used to set the values of the LEDs in the array.</p>
+
+                        <hr class="major pdf-exclude" />
+
+                        <h2>Address Mapping</h2>
+
+                        <p><b>AD_ADC_C:</b> Battery current sensor</p>
+                        <p><b>AD_ADC_V:</b> Battery voltage sensor</p>
+
+                        <p><b>AD_HAT:</b> PenguinPi hat</p>
+
+                        <p><b>AD_LED_2:</b> Builtin LED</p>
+                        <p><b>AD_LED_3:</b> Builtin LED</p>
+                        <p><b>AD_LED_4:</b> Builtin LED</p>
+
+                        <p><b>AD_LED_B:</b> Blue component of builtin RGB LED</p>
+                        <p><b>AD_LED_G:</b> Green component of builtin RGB LED</p>
+                        <p><b>AD_LED_R:</b> Red component of builtin RGB LED</p>
+
+                        <p><b>AD_MOTOR_L:</b> Left drive motor</p>
+                        <p><b>AD_MOTOR_R:</b> Right drive motor</p>
+
+                    </section>
+                </div>
+            </div>
+
+            <div id="sidebar">
+                <!-- Inserted using JS -->
+            </div>
+        </div>
+
+        <script src="assets/js/jquery.min.js"></script>
+		<script src="assets/js/browser.min.js"></script>
+		<script src="assets/js/breakpoints.min.js"></script>
+		<script src="assets/js/util.js"></script>
+		<script src="assets/js/main.js"></script>
+		<script src="assets/js/generatePDF.js"></script>
+		<script type="text/javascript">
+			// On Load
+			$(document).ready(function(){
+				// Load sidebar
+				$('#sidebar').load('navbar.html');
+
+				// Insert today's date
+				var d = new Date();
+				var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+				document.getElementById("date").innerHTML = d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+			});
+		</script>
+    </body>
+</html>
