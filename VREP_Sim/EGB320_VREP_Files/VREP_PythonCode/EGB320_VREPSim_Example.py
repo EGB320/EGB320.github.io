@@ -51,6 +51,9 @@ robotParameters.collectorQuality = 1 # specifies how good your sample collector 
 robotParameters.autoCollectSample = True #specifies whether the simulator automatically collects samples if near the collector 
 robotParameters.maxCollectDistance = 0.03 #specificies the operating distance of the automatic collector function. Sample needs to be less than this distance to the collector
 
+robotParameters.sync = False #this parameter forces the simulation into syncronoush mode when True
+						     #requiring you to call stepSim() to manual step the simulator in your loop
+		
 
 # MAIN SCRIPT
 if __name__ == '__main__':
@@ -105,6 +108,11 @@ if __name__ == '__main__':
 
 			# Update Ball Position
 			lunarBotSim.UpdateObjectPositions()
+
+			#use this step function if using syncronous mode
+			#lunarBotSim.stepSim()
+
+
 
 	except KeyboardInterrupt as e:
 		# attempt to stop simulator so it restarts and don't have to manually press the Stop button in VREP 

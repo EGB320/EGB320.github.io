@@ -15,7 +15,6 @@ from enum import IntEnum
 
 class VREP_RoverRobot(object):
 	"""docstring for VREP_SoccerBot"""
-	
 	####################################
 	####### VREP SOCCER BOT INIT #######
 	####################################
@@ -89,9 +88,10 @@ class VREP_RoverRobot(object):
 	# THESE ARE THE FUNCTIONS YOU SHOULD CALL.
 	# ALL OTHER FUNCTIONS ARE HELPER FUNCTIONS.
 
-	# Starts the VREP Simulator. 
-	# The VREP Simulator can also be started manually by pressing the Play Button in VREP.
+
 	def StartSimulator(self):
+		# Starts the VREP Simulator. 
+		# The VREP Simulator can also be started manually by pressing the Play Button in VREP.
 		print('Attempting to Start the Simulator')
 		if vrep.simxStartSimulation(self.clientID, vrep.simx_opmode_oneshot_wait) != 0:
 			print('An error occurred while trying to start the simulator via the Python API. Terminating Program!')
@@ -105,6 +105,9 @@ class VREP_RoverRobot(object):
 		vrep.simxGetObjectOrientation(self.clientID, self.robotHandle, -1, vrep.simx_opmode_streaming)
 		vrep.simxGetObjectPosition(self.clientID, self.cameraHandle, -1, vrep.simx_opmode_streaming)
 		vrep.simxGetObjectPosition(self.clientID, self.landerHandle, -1, vrep.simx_opmode_streaming)
+		
+		res,resolution,image=vrep.simxGetVisionSensorImage(self.clientID,self.cameraHandle,0,vrep.simx_opmode_streaming)
+
 
 		for handle in self.obstacleHandles:
 			vrep.simxGetObjectPosition(self.clientID, handle, -1, vrep.simx_opmode_streaming)
@@ -228,6 +231,19 @@ class VREP_RoverRobot(object):
 
 		return sampleRangeBearing, landerRangeBearing, obstaclesRangeBearing, rocksRangeBearing
 
+
+	def GetCameraImage(self):
+
+		if self.cameraHandle == None:
+			None, None
+	
+		res,resolution,image=vrep.simxGetVisionSensorImage(self.clientID,self.cameraHandle,0,vrep.simx_opmode_buffer)
+		
+		if res==vrep.simx_return_ok:
+			return resolution, image    
+		else:
+			return None, None
+			# res=vrep.simxSetVisionSensorImage(clientID,v1,image,0,vrep.simx_opmode_oneshot)
 	
 	# Gets the Range and Bearing to the wall(s)
 	# returns:
@@ -260,11 +276,12 @@ class VREP_RoverRobot(object):
 		return wallPoints
 		
 
-	# Set Target Velocities
-	# inputs:
-	#	x - the velocity of the robot in the forward direction (in m/s)
-	#	theta_dt - the rotational velocity of the robot (in rad/s)
+
 	def SetTargetVelocities(self, x_dot, theta_dot):
+		# Set Target Velocities
+		# inputs:
+		#	x - the velocity of the robot in the forward direction (in m/s)
+		#	theta_dt - the rotational velocity of the robot (in rad/s)
 		
 		# Need to set based on drive system type
 		if self.robotParameters.driveType == 'differential':
@@ -312,8 +329,8 @@ class VREP_RoverRobot(object):
 	
 	def DropSample(self):
 		if self.sampleConnectedToRobot:
-	 			vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndSample',[0],[0.0],[],bytearray(),vrep.simx_opmode_blocking)
-	 			self.sampleConnectedToRobot = False
+			vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndSample',[0],[0.0],[],bytearray(),vrep.simx_opmode_blocking)
+			self.sampleConnectedToRobot = False
 
 	# Use this to force a physical connection between sample and rover
 	# Ideally use this if no collector has been added to your robot model
@@ -375,6 +392,12 @@ class VREP_RoverRobot(object):
 		else:
 			print('Failed to connect to VREP API Server. Terminating Program')
 			sys.exit(-1)
+
+		if self.sync:
+			vrep.simxSynchronous(self.clientID, True)
+	
+	def stepSim(self):
+		vrep.simxSynchronousTrigger(self.clientID)
 
 
 	# Get VREP Object Handles
@@ -682,7 +705,7 @@ class VREP_RoverRobot(object):
 
 		# rock positions
 		rockPositions = [None, None, None]
-		for index, sample in enumerate(self.rockPositions):
+		for index, rock in enumerate(self.rockPositions):
 			errorCode, rockPositions[index] = vrep.simxGetObjectPosition(self.clientID, self.rockHandles[index], -1, vrep.simx_opmode_buffer)
 			if errorCode == 0:
 				self.rockPositions[index] = rockPositions[index]
@@ -982,6 +1005,9 @@ class RobotParameters(object):
 
 		# Body Paramaters
 		self.robotSize = 0.15 # This parameter cannot be changed
+
+		self.sync = False #this parameter forces the simulation into syncronoush mode
+						  #requiring you to call stepSim() to manual step the simulator in your loop
 		
 		# Drive/Wheel Parameters
 		self.driveType = 'differential'	# specifies the drive type ('differential' is the only type currently)
@@ -1018,12 +1044,12 @@ class lunar_object(IntEnum):
 	sample1 = 1
 	sample2 = 2
 	
-	obstacle0 = 3
-	obstacle1 = 4
-	obstacle2 = 5
+	rock0 = 3
+	rock1 = 4
+	rock2 = 5
 
-	rock0 = 6
-	rock1 = 7
-	rock2 = 8
+	obstacle0 = 6
+	obstacle1 = 7
+	obstacle2 = 8
 
 	lander = 9

@@ -329,8 +329,8 @@ class VREP_RoverRobot(object):
 	
 	def DropSample(self):
 		if self.sampleConnectedToRobot:
-	 			vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndSample',[0],[0.0],[],bytearray(),vrep.simx_opmode_blocking)
-	 			self.sampleConnectedToRobot = False
+			vrep.simxCallScriptFunction(self.clientID, 'Robot', vrep.sim_scripttype_childscript, 'JoinRobotAndSample',[0],[0.0],[],bytearray(),vrep.simx_opmode_blocking)
+			self.sampleConnectedToRobot = False
 
 	# Use this to force a physical connection between sample and rover
 	# Ideally use this if no collector has been added to your robot model
@@ -392,6 +392,12 @@ class VREP_RoverRobot(object):
 		else:
 			print('Failed to connect to VREP API Server. Terminating Program')
 			sys.exit(-1)
+
+		if self.sync:
+			vrep.simxSynchronous(self.clientID, True)
+	
+	def stepSim(self):
+		vrep.simxSynchronousTrigger(self.clientID)
 
 
 	# Get VREP Object Handles
@@ -999,6 +1005,9 @@ class RobotParameters(object):
 
 		# Body Paramaters
 		self.robotSize = 0.15 # This parameter cannot be changed
+
+		self.sync = False #this parameter forces the simulation into syncronoush mode
+						  #requiring you to call stepSim() to manual step the simulator in your loop
 		
 		# Drive/Wheel Parameters
 		self.driveType = 'differential'	# specifies the drive type ('differential' is the only type currently)

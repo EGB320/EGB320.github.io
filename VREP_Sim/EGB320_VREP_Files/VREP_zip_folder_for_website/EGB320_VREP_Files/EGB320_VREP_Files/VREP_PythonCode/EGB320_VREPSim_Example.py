@@ -51,6 +51,9 @@ robotParameters.collectorQuality = 1 # specifies how good your sample collector 
 robotParameters.autoCollectSample = True #specifies whether the simulator automatically collects samples if near the collector 
 robotParameters.maxCollectDistance = 0.03 #specificies the operating distance of the automatic collector function. Sample needs to be less than this distance to the collector
 
+robotParameters.sync = False #this parameter forces the simulation into syncronoush mode when True
+						     #requiring you to call stepSim() to manual step the simulator in your loop
+		
 
 # MAIN SCRIPT
 if __name__ == '__main__':
@@ -63,20 +66,20 @@ if __name__ == '__main__':
 		lunarBotSim = VREP_RoverRobot('127.0.0.1', robotParameters, sceneParameters)
 		lunarBotSim.StartSimulator()
 
-
+		#We recommended changing this to a controlled rate loop (fixed frequency) to get more reliable control behaviour
 		while True:
-			# move the robot at a forward velocity of 0.1m/s with a rotational velocity of 0.5 rad/s.
-			lunarBotSim.SetTargetVelocities(0.1, 0.5)
+			# move the robot at a forward velocity of 0.2m/s with a rotational velocity of 0.3 rad/s.
+			lunarBotSim.SetTargetVelocities(0.1, 0.3)
 
 			# Get Detected Objects
 			samplesRB, landerRB, obstaclesRB, rocksRB = lunarBotSim.GetDetectedObjects()
 
-			# Check to see if the sample is within the camera's FOV
+			#Check to see if the sample is within the camera's FOV
 			if samplesRB != None:
 				# loop through each sample detected using Pythonian way
 				for sample in samplesRB:
-					sampleRange = samplesRB[0]
-					sampleBearing = samplesRB[1]
+					sampleRange = sample[0]
+					sampleBearing = sample[1]
 
 			# Check to see if any obstacles are within the camera's FOV
 			if obstaclesRB != None:
@@ -93,23 +96,23 @@ if __name__ == '__main__':
 					obstacleBearing = obstacle[1]
 
 			# Get Detected Wall Points
-			wallPoints = lunarBotSim.GetDetectedWallPoints()
-			if wallPoints == None:
-				print("To close to the wall")
-			else:
-				print("\nDetected Wall Points")
-				# print the range and bearing to each wall point in the list
-				for point in wallPoints:
-					print("\tWall Point (range, bearing): %0.4f, %0.4f"%(point[0], point[1]))
-
-
-			#do something here with the robot
-			targetVel = [0,0]
-			lunarBotSim.SetTargetVelocities(targetVel[0], targetVel[1])
+			# wallPoints = lunarBotSim.GetDetectedWallPoints()
+			# if wallPoints == None:
+			# 	print("To close to the wall")
+			# else:
+			# 	print("\nDetected Wall Points")
+			# 	# print the range and bearing to each wall point in the list
+			# 	for point in wallPoints:
+			# 		print("\tWall Point (range, bearing): %0.4f, %0.4f"%(point[0], point[1]))
 
 
 			# Update Ball Position
 			lunarBotSim.UpdateObjectPositions()
+
+			#use this step function if using syncronous mode
+			#lunarBotSim.stepSim()
+
+
 
 	except KeyboardInterrupt as e:
 		# attempt to stop simulator so it restarts and don't have to manually press the Stop button in VREP 
