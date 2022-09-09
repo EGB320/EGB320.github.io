@@ -393,7 +393,7 @@ class VREP_RoverRobot(object):
 			print('Failed to connect to VREP API Server. Terminating Program')
 			sys.exit(-1)
 
-		if self.sync:
+		if self.robotParameters.sync:
 			vrep.simxSynchronous(self.clientID, True)
 	
 	def stepSim(self):
