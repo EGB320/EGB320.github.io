@@ -64,7 +64,7 @@ sceneParameters.bayContents[4,2,0] = warehouseObjects.rubiks
 sceneParameters.bayContents[5,0,1] = warehouseObjects.cereal
 
 
-sceneParameters.obstacle0_StartingPosition = [-0.5,0]  # starting position of obstacle 0 [x, y] (in metres), -1 if want to use current CoppeliaSim position, or none if not wanted in the scene
+sceneParameters.obstacle0_StartingPosition = -1  # starting position of obstacle 0 [x, y] (in metres), -1 if want to use current CoppeliaSim position, or none if not wanted in the scene
 # sceneParameters.obstacle0_StartingPosition = None  # starting position of obstacle 0 [x, y] (in metres), -1 if want to use current CoppeliaSim position, or none if not wanted in the scene
 sceneParameters.obstacle1_StartingPosition = -1   # starting position of obstacle 1 [x, y] (in metres), -1 if want to use current CoppeliaSim position, or none if not wanted in the scene
 sceneParameters.obstacle2_StartingPosition = -1   # starting position of obstacle 2 [x, y] (in metres), -1 if want to use current CoppeliaSim position, or none if not wanted in the scene
@@ -87,7 +87,7 @@ robotParameters.cameraTilt = 0.0 # tilt of the camera in radians
 
 # Vision Processing Parameters
 robotParameters.maxItemDetectionDistance = 1 # the maximum distance away that you can detect the items in metres
-robotParameters.maxPackingBayDetectionDistance = 2.5 # the maximum distance away that you can detect the packing bay in metres
+robotParameters.maxPackingBayDetectionDistance = 2.5 # the maximum distance away that you can detect the picking station in metres
 robotParameters.maxObstacleDetectionDistance = 1.5 # the maximum distance away that you can detect the obstacles in metres
 robotParameters.maxRowMarkerDetectionDistance = 2.5 # the maximum distance away that you can detect the row markers in metres
 
@@ -141,11 +141,11 @@ if __name__ == '__main__':
      				warehouseObjects.shelves,
 					warehouseObjects.row_markers,
 					warehouseObjects.obstacles,
-					warehouseObjects.packingBay,
+					warehouseObjects.pickingStation,
 				]
 			)
 			timing_stats["GetDetectedObjects"].append((time.perf_counter() - start_time) * 1000)
-			itemsRB, packingBayRB, obstaclesRB, rowMarkerRangeBearing, shelfRangeBearing = objectsRB
+			itemsRB, packingStationRB, obstaclesRB, rowMarkerRangeBearing, shelfRangeBearing = objectsRB
 
 			# Time the proximity sensor reading
 			start_time = time.perf_counter()
@@ -173,14 +173,14 @@ if __name__ == '__main__':
 				
 				print(f"Objects detected:")
 				print(f"  - Items: {item_count}")
-				print(f"  - Packing bay: {'Yes' if packingBayRB is not None else 'No'}")
+				print(f"  - Picking station: {'Yes' if packingStationRB is not None else 'No'}")
 				print(f"  - Obstacles: {obstacle_count}")
 				print(f"  - Shelves: {shelf_count}/6")
 				print(f"  - Row markers: {row_marker_count}/3")
 				
-				# Show packing bay details if detected
-				if packingBayRB is not None:
-					print(f"  - Packing bay range: {packingBayRB[0]:.3f}m, bearing: {packingBayRB[1]:.3f}rad")
+				# Show picking station details if detected
+				if packingStationRB is not None:
+					print(f"  - Picking station range: {packingStationRB[0]:.3f}m, bearing: {packingStationRB[1]:.3f}rad")
 				
 				# Show closest obstacle if any
 				if obstaclesRB is not None and len(obstaclesRB) > 0:
