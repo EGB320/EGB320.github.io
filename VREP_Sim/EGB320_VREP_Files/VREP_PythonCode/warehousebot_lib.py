@@ -25,7 +25,7 @@ class warehouseObjects(IntEnum):
 	obstacle1 = 7
 	obstacle2 = 8
 	
-	packingBay = 9
+	pickingStation = 9
 
 	row_marker_1 = 10
 	row_marker_2 = 11
@@ -43,16 +43,12 @@ class warehouseObjects(IntEnum):
 	obstacles = 102
 	row_markers = 103
 	shelves = 104
-	#packingBay = 105 # There's only one so it is already defined.
-
-
-
+	#pickingStation = 105 # There's only one so it is already defined.
 
 
 ################################
 ###### WAREHOUSE BOT CLASS #####
 ################################
-
 
 
 class COPPELIA_WarehouseRobot(object):
@@ -86,7 +82,7 @@ class COPPELIA_WarehouseRobot(object):
 		self.itemTemplateHandles = [None] * 6
 		self.itemHandles = np.zeros((6,4,3),dtype=np.int16)
 		self.obstacleHandles = [None, None, None]
-		self.packingBayHandle = None
+		self.packingStationHandle = None
 		self.rowMarkerHandles = [None,None,None]
 		self.shelfHandles = [None]*6
 
@@ -108,7 +104,7 @@ class COPPELIA_WarehouseRobot(object):
 		self.robotPose = None
 		self.cameraPose = None
 		self.itemPositions = np.full((6,4,3,3),np.nan,dtype=np.float32)
-		self.packingBayPosition = None
+		self.packingStationPosition = None
 		self.obstaclePositions = [None, None, None]
 		self.rowMarkerPositions = [None, None, None]
 
@@ -180,7 +176,7 @@ class COPPELIA_WarehouseRobot(object):
 	# Gets the Range and Bearing to All Detected Objects.
 	# returns:
 	#	itemRangeBearing - range and bearing to the items with respect to the camera, will return None if the object is not detected
-	#	packingBayRangeBearing - range and bearing to the packingBaywith respect to the camera, will return None if the object is not detected
+	#	packingStationRangeBearing - range and bearing to the picking station with respect to the camera, will return None if the object is not detected
 	#	obstaclesRangeBearing - range and bearing to the obstacles with respect to the camera, will return None if the object is not detected
 	def GetDetectedObjects(self,objects = None):
 		import time  # Import time for internal timing
@@ -192,13 +188,13 @@ class COPPELIA_WarehouseRobot(object):
 		
 		# Variables used to return range and bearing to the objects
 		itemRangeBearing = [None]*6
-		packingBayRangeBearing = None
+		packingStationRangeBearing = None
 		obstaclesRangeBearing = None
 		rowMarkerRangeBearing = [None,None,None]
 		shelfRangeBearing = [None]*6
 
 		# if objects variable is None, detect all objects.
-		objects= objects or [warehouseObjects.items,warehouseObjects.shelves,warehouseObjects.row_markers,warehouseObjects.obstacles,warehouseObjects.packingBay]
+		objects= objects or [warehouseObjects.items,warehouseObjects.shelves,warehouseObjects.row_markers,warehouseObjects.obstacles,warehouseObjects.pickingStation]
 
 		# Make sure the camera's pose is not none
 		if self.cameraPose != None:
@@ -324,19 +320,19 @@ class COPPELIA_WarehouseRobot(object):
 						obstacle_time = (time.perf_counter() - obstacle_start_time) * 1000
 						print(f"🔍    Obstacle processing: {obstacle_time:.1f}ms")
 
-				# check to see if yellow packingBay is in field of view
-				if warehouseObjects.packingBay in objects:
+				# check to see if picking station is in field of view
+				if warehouseObjects.pickingStation in objects:
 					if timing_debug:
 						packing_start_time = time.perf_counter()
 					
-					if self.packingBayPosition != None:
-						# Packing bay is at index 9 in the detection array
+					if self.packingStationPosition != None:
+						# Picking station is at index 9 in the detection array
 						if is_detected(9):
-							_valid, _range, _bearing = self.GetRBInCameraFOV(self.packingBayPosition)
+							_valid, _range, _bearing = self.GetRBInCameraFOV(self.packingStationPosition)
 							if _valid:
 								# check range is not to far away
 								if _range < self.robotParameters.maxPackingBayDetectionDistance:
-									packingBayRangeBearing = [_range, _bearing]
+									packingStationRangeBearing = [_range, _bearing]
 					
 					if timing_debug:
 						packing_time = (time.perf_counter() - packing_start_time) * 1000
@@ -365,7 +361,7 @@ class COPPELIA_WarehouseRobot(object):
 			func_total_time = (time.perf_counter() - func_start_time) * 1000
 			print(f"🔍 [GetDetectedObjects] Total time: {func_total_time:.1f}ms")
 
-		return itemRangeBearing, packingBayRangeBearing, obstaclesRangeBearing, rowMarkerRangeBearing, shelfRangeBearing
+		return itemRangeBearing, packingStationRangeBearing, obstaclesRangeBearing, rowMarkerRangeBearing, shelfRangeBearing
 
 
 	def GetCameraImage(self):
@@ -375,7 +371,12 @@ class COPPELIA_WarehouseRobot(object):
 	
 		try:
 			image, resolution = self.sim.getVisionSensorImg(self.cameraHandle)
-			return resolution, image
+			# Unpack the image data from bytes to proper image array
+			if image is not None:
+				image_data = self.sim.unpackUInt8Table(image)
+				return resolution, image_data
+			else:
+				return None, None
 		except Exception as e:
 			print(f"Error getting camera image: {e}")
 			return None, None
@@ -669,9 +670,9 @@ class COPPELIA_WarehouseRobot(object):
 		elif errorCode3 != 0 or errorCode4 != 0:
 			print("Failed to get rear wheel motor handles. Disregard if using the \"Differential\" scene.")
 
-		packingBayErrorCode = self.GetPackingBayHandle()
-		if packingBayErrorCode != 0:
-			print('Failed to get packingBay object handles. Terminating Program. Error Codes %d'%(packingBayErrorCode))
+		packingStationErrorCode = self.GetPickingStationHandle()
+		if packingStationErrorCode != 0:
+			print('Failed to get picking station object handles. Terminating Program. Error Codes %d'%(packingStationErrorCode))
 			sys.exit(-1)
 
 		errorCode1, errorCode2, errorCode3 = self.GetObstacleHandles()
@@ -759,13 +760,13 @@ class COPPELIA_WarehouseRobot(object):
 		
 		return errorCode1, errorCode2, errorCode3, errorCode4
 
-	# Get ZMQ PackingBay Handles
-	def GetPackingBayHandle(self):
+	# Get ZMQ Picking Station Handles
+	def GetPickingStationHandle(self):
 		try:
-			self.packingBayHandle = self.sim.getObject('/Packing_Bay')
+			self.packingStationHandle = self.sim.getObject('/Picking_station')
 			return 0
 		except Exception as e:
-			print(f"Error getting packing bay handle: {e}")
+			print(f"Error getting picking station handle: {e}")
 			return -1
 
 	# Get ZMQ item Template Handles
@@ -989,37 +990,23 @@ class COPPELIA_WarehouseRobot(object):
 		# set camera pose
 		try:
 			self.sim.setObjectPosition(self.cameraHandle, self.robotHandle, [x, 0, z])
-			self.sim.setObjectOrientation(self.cameraHandle, self.robotHandle, [0, pitch, math.pi/2.0])
+			self.sim.setObjectOrientation(self.cameraHandle, self.robotHandle, [math.pi, pitch, math.pi/2.0])
 		except Exception as e:
 			print(f"Error setting camera pose: {e}")
 
 	
-	# Sets the camera's height relative to the floor in metres
-	def SetCameraHeight(self, z):
-		self.SetCameraPose(0, z, 0)
-
-
-	# Sets the distance between the camera and the center of the robot in the direction of front of the robot
-	def SetCameraOffsetFromRobotCentre(self, x):
-		self.SetCameraPose(x, 0, 0)
-
-
-	# Sets the tilt of the camera in radians
-	def SetCameraTilt(self, pitch):
-		self.SetCameraPose(0, 0, pitch)
-
 
 	# Set Camera Orientation to either portrait or landscape
 	def SetCameraOrientation(self, orientation):
-		# get resolution based on orientation
+		# get resolution based on orientation and robot parameters
 		if orientation == 'portrait':
-			x_res = 480
-			y_res = 640
+			x_res = self.robotParameters.cameraResolutionY  # swap X and Y for portrait
+			y_res = self.robotParameters.cameraResolutionX
 			self.verticalViewAngle = self.robotParameters.cameraPerspectiveAngle
 			self.horizontalViewAngle = self.robotParameters.cameraPerspectiveAngle * x_res / y_res
 		elif orientation == 'landscape':
-			x_res = 640
-			y_res = 480
+			x_res = self.robotParameters.cameraResolutionX
+			y_res = self.robotParameters.cameraResolutionY
 			self.verticalViewAngle = self.robotParameters.cameraPerspectiveAngle * y_res / x_res
 			self.horizontalViewAngle = self.robotParameters.cameraPerspectiveAngle
 		else:
@@ -1037,6 +1024,32 @@ class COPPELIA_WarehouseRobot(object):
 		except Exception as e:
 			print(f"Error setting camera resolution: {e}")
 		
+
+	# Set Camera Resolution directly
+	def SetCameraResolution(self, x_res, y_res):
+		"""Set the camera resolution to specific width and height values.
+		
+		Args:
+			x_res (int): Camera width resolution in pixels
+			y_res (int): Camera height resolution in pixels
+		"""
+		if self.cameraHandle is None:
+			print("Error: Camera handle not initialized. Cannot set resolution.")
+			return False
+			
+		# Update robot parameters
+		self.robotParameters.cameraResolutionX = x_res
+		self.robotParameters.cameraResolutionY = y_res
+		
+		# Set resolution of camera (vision sensor object) - resolution parameters are int32 parameters
+		try:
+			self.sim.setObjectInt32Param(self.cameraHandle, self.sim.visionintparam_resolution_x, x_res)
+			self.sim.setObjectInt32Param(self.cameraHandle, self.sim.visionintparam_resolution_y, y_res)
+			print(f"Camera resolution set to {x_res}x{y_res}")
+			return True
+		except Exception as e:
+			print(f"Error setting camera resolution: {e}")
+			return False
 
 	####################################
 	####### API HELPER FUNCTIONS #######
@@ -1077,7 +1090,7 @@ class COPPELIA_WarehouseRobot(object):
 		self.robotPose = None
 		self.cameraPose = None
 		# self.itemPositions = [None]*len(self.itemHandles)
-		self.packingBayPosition = None
+		self.packingStationPosition = None
 		self.obstaclePositions = [None, None, None]
 
 		# GET 2D ROBOT POSE
@@ -1124,14 +1137,14 @@ class COPPELIA_WarehouseRobot(object):
 			if timing_debug:
 				packing_start_time = time.perf_counter()
 			
-			packingBayPosition = self.sim.getObjectPosition(self.packingBayHandle, -1)
-			self.packingBayPosition = packingBayPosition
+			packingStationPosition = self.sim.getObjectPosition(self.packingStationHandle, -1)
+			self.packingStationPosition = packingStationPosition
 			
 			if timing_debug:
 				packing_time = (time.perf_counter() - packing_start_time) * 1000
-				print(f"🎯    Packing bay position query: {packing_time:.1f}ms")
+				print(f"🎯    Picking station position query: {packing_time:.1f}ms")
 		except Exception as e:
-			print(f"Error getting packing bay position: {e}")
+			print(f"Error getting picking station position: {e}")
 
 		# obstacle positions
 		if timing_debug:
@@ -1484,6 +1497,8 @@ class RobotParameters(object):
 		self.cameraHeightFromFloor = 0.1 # height of the camera relative to the floor in metres
 		self.cameraTilt = 0.0 # tilt of the camera in radians
 		self.cameraPerspectiveAngle = math.radians(60) # do not change this parameter
+		self.cameraResolutionX = 640 # camera resolution width in pixels
+		self.cameraResolutionY = 480 # camera resolution height in pixels
 
 		# Vision Processing Parameters
 		self.maxItemDetectionDistance = 1 # the maximum distance away that you can detect the item in metres
