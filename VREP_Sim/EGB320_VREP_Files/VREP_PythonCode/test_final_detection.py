@@ -32,7 +32,7 @@ try:
         try:
             # Test object detection - focusing only on objects that should work
             items, packing_bay, obstacles, row_markers, shelves = robot.GetDetectedObjects(
-                [warehouseObjects.packingBay, warehouseObjects.obstacles]
+                [warehouseObjects.pickingStation, warehouseObjects.obstacles]
             )
             
             print(f"  Packing bay detected: {packing_bay}")

@@ -49,7 +49,7 @@ def test_complete_functionality():
             detection_result = robot.GetDetectedObjects()
             print(f"Cycle {cycle + 1}: Detection result: {detection_result}")
             
-            # GetDetectedObjects returns: (itemRangeBearing, packingBayRangeBearing, obstaclesRangeBearing, rowMarkerRangeBearing, shelfRangeBearing)
+            # GetDetectedObjects returns: (itemRangeBearing, packingStationRangeBearing, obstaclesRangeBearing, rowMarkerRangeBearing, shelfRangeBearing)
             if isinstance(detection_result, tuple) and len(detection_result) >= 5:
                 items, packing_bay, obstacles, row_markers, shelves = detection_result
                 

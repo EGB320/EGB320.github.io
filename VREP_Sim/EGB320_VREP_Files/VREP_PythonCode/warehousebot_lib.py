@@ -26,6 +26,9 @@ class warehouseObjects(IntEnum):
 	obstacle2 = 8
 	
 	pickingStation = 9
+	pickingStation1 = 19
+	pickingStation2 = 20
+	pickingStation3 = 21
 
 	row_marker_1 = 10
 	row_marker_2 = 11
@@ -43,6 +46,7 @@ class warehouseObjects(IntEnum):
 	obstacles = 102
 	row_markers = 103
 	shelves = 104
+	pickingStations = 105  # All picking stations
 	#pickingStation = 105 # There's only one so it is already defined.
 
 
@@ -72,6 +76,7 @@ class COPPELIA_WarehouseRobot(object):
 
 		# COPPELIA Object Handle Variables
 		self.robotHandle = None
+		self.scriptHandle = None  # Handle for the script attached to the Robot object
 		self.cameraHandle = None
 		self.objectDetectorHandle = None
 		self.leftMotorHandle = None 		# left and right used for differential drive
@@ -83,6 +88,8 @@ class COPPELIA_WarehouseRobot(object):
 		self.itemHandles = np.zeros((6,4,3),dtype=np.int16)
 		self.obstacleHandles = [None, None, None]
 		self.packingStationHandle = None
+		self.pickingStationHandles = [None, None, None]  # Handles for picking stations 1, 2, 3
+		self.pickingStationItemHandles = [None, None, None]  # Handles for items at picking stations 1, 2, 3
 		self.rowMarkerHandles = [None,None,None]
 		self.shelfHandles = [None]*6
 
@@ -296,6 +303,42 @@ class COPPELIA_WarehouseRobot(object):
 					if timing_debug:
 						item_time = (time.perf_counter() - item_start_time) * 1000
 						print(f"🔍    Item processing: {item_time:.1f}ms")
+				
+				# check to see if items at picking stations are in field of view
+				if warehouseObjects.items in objects:
+					if timing_debug:
+						picking_station_item_start_time = time.perf_counter()
+					
+					for station_index in range(3):
+						item_type = self.sceneParameters.pickingStationContents[station_index]
+						
+						if item_type != -1 and 0 <= item_type <= 5:  # Valid item type
+							station_handle = self.pickingStationHandles[station_index]
+							
+							if station_handle is not None:
+								try:
+									# Get the position of the picking station item
+									station_position = self.sim.getObjectPosition(station_handle, -1)
+									item_position = [station_position[0], station_position[1], station_position[2] + 0.1]
+									
+									# Check if item is in camera field of view
+									if is_detected(item_type) and self.PointInsideArena(item_position):
+										_valid, _range, _bearing = self.GetRBInCameraFOV(item_position)
+										
+										# check range is not too far away
+										if _range < self.robotParameters.maxItemDetectionDistance \
+											and abs(_bearing) < self.robotParameters.cameraPerspectiveAngle/2:
+											# make itemRangeBearing into empty lists, if currently set to None
+											if itemRangeBearing[item_type] == None:
+												itemRangeBearing[item_type] = []
+											itemRangeBearing[item_type].append([_range, _bearing])
+								except Exception as e:
+									# Silently ignore errors for missing picking stations
+									pass
+					
+					if timing_debug:
+						picking_station_item_time = (time.perf_counter() - picking_station_item_start_time) * 1000
+						print(f"🔍    Picking station item processing: {picking_station_item_time:.1f}ms")
 					
 				# check to see which obstacles are within the field of view
 				if warehouseObjects.obstacles in objects:
@@ -422,8 +465,8 @@ class COPPELIA_WarehouseRobot(object):
 		if self.robotParameters.driveType == 'differential':
 			# ensure wheel base and wheel radius are set as these are not allowed to be changed
 			self.robotParameters.wheelBase = 0.15
-			self.robotParameters.wheelRadius = 0.04
-		
+			self.robotParameters.wheelRadius = 0.03
+
 			# determine minimum wheel speed based on minimumLinear and maximumLinear speed
 			minWheelSpeed = self.robotParameters.minimumLinearSpeed / self.robotParameters.wheelRadius
 			maxWheelSpeed = self.robotParameters.maximumLinearSpeed / self.robotParameters.wheelRadius
@@ -475,36 +518,150 @@ class COPPELIA_WarehouseRobot(object):
 	def Dropitem(self):
 		if self.itemConnectedToRobot:
 			try:
-				self.sim.callScriptFunction('RobotReleaseItem', 'Robot', [], [], [], "")
+				self.sim.callScriptFunction('RobotReleaseItem', self.scriptHandle, [], [], [], "")
 				self.itemConnectedToRobot = False
 			except Exception as e:
 				print(f"Error calling RobotReleaseItem script function: {e}")
+
+	# Replicate the JoinRobotAndItem functionality using direct sim calls
+	def JoinRobotAndItem(self, item_handle):
+		"""
+		Replicates the Lua JoinRobotAndItem function using direct ZMQ API calls.
+		Sets the item position relative to the robot and parents it.
+		
+		Args:
+			item_handle: Handle of the item to collect
+			
+		Returns:
+			bool: True if successful, False otherwise
+		"""
+		try:
+			# Validate object handle (equivalent to sim.isHandle check in Lua)
+			if item_handle == -1:
+				print("Warning: Invalid item handle (-1)")
+				return False
+				
+			# Check if handle is valid by trying to get its position
+			try:
+				self.sim.getObjectPosition(item_handle, -1)
+			except Exception:
+				print(f"Warning: Invalid object handle: {item_handle}")
+				return False
+			
+			# Set object position relative to robot (equivalent to __setObjectPosition__ in Lua)
+			# Position [0, 0, 0.1] relative to the robot center
+			self.sim.setObjectPosition(item_handle, self.robotHandle, [0.13, 0, -0.06])
+			
+			# Parent the item to the robot (equivalent to sim.setObjectParent in Lua)
+			self.sim.setObjectParent(item_handle, self.robotHandle, True)
+			
+			print(f"Grabbed item with handle: {item_handle}")
+			return True
+			
+		except Exception as e:
+			print(f"Error in JoinRobotAndItem: {e}")
+			return False
 
 	# Use this to force a physical connection between item and rover
 	# Ideally use this if no collector has been added to your robot model
 	# if two items are within the distance it will attempt to collect both
 	# Outputs:
 	#		Success - returns True if a item was collected or false if not
-	def CollectItem(self,shelf_height):
+	#		closest_station - returns the station number (1-3) if closest_picking_station=True and item collected from picking station
+	def CollectItem(self, shelf_height, closest_picking_station=False):
 
-		# for _, itemPosition in enumerate(self.itemPositions):
+		# If closest_picking_station is True, find the closest item at picking stations
+		if closest_picking_station:
+			closest_distance = float('inf')
+			closest_station = None
+			closest_handle = None
+			
+			for station_index in range(3):
+				item_handle = self.pickingStationItemHandles[station_index]
+				
+				if item_handle is not None:
+					try:
+						# Get current position of the picking station item
+						item_position = self.sim.getObjectPosition(item_handle, -1)
+						
+						# Calculate distance from robot collector to this item
+						distance = self.CollectorToItemDistance(item_position)
+						
+						if distance is not None and distance < closest_distance:
+							closest_distance = distance
+							closest_station = station_index
+							closest_handle = item_handle
+							
+					except Exception:
+						# Item may have been removed, clear the handle
+						self.pickingStationItemHandles[station_index] = None
+			
+			# Attempt to collect the closest item if within threshold distance
+			if closest_station is not None and closest_distance < self.robotParameters.maxCollectDistance:
+				if self.itemConnectedToRobot == False:
+					# Use our custom JoinRobotAndItem method instead of callScriptFunction
+					if self.JoinRobotAndItem(closest_handle):
+						self.itemConnectedToRobot = True
+						# Clear the item handle since it's been collected
+						self.pickingStationItemHandles[closest_station] = None
+						print(f"✅ Collected item from picking station {closest_station + 1}! (Distance: {closest_distance:.3f}m)")
+						return True, closest_station + 1  # Return success and station number (1-3)
+					else:
+						print(f"Error joining item from picking station {closest_station + 1}")
+						return False, None
+				else:
+					print("Robot already carrying an item")
+					return False, None
+			elif closest_station is not None:
+				print(f"⚠️ Closest item at picking station {closest_station + 1} is too far away ({closest_distance:.3f}m > {self.robotParameters.maxCollectDistance:.3f}m)")
+				return False, None
+			else:
+				print("⚠️ No items found at any picking stations")
+				return False, None
+
+		# Original collection logic for shelf bays
 		for shelf,x,y in [(s,x,y) for s in range(6) for x in range(4) for y in range(3)]:
 			handle = self.itemHandles[shelf,x,y]
 			itemPosition = self.itemPositions[shelf,x,y]
 
 			itemDist = self.CollectorToItemDistance(itemPosition)
 
-
 			if itemDist != None and itemDist < self.robotParameters.maxCollectDistance and self.itemConnectedToRobot == False and self.GetItemBayHeight(itemPosition) == shelf_height:
 				# make physical connection between item and robot to simulate collector
-				try:
-					self.sim.callScriptFunction('JoinRobotAndItem', 'Robot', [handle], [], [], "")
+				if self.JoinRobotAndItem(handle):
 					self.itemConnectedToRobot = True
-				except Exception as e:
-					print(f"Error calling JoinRobotAndItem script function: {e}")
-				
+					return True, None
+				else:
+					print(f"Error joining item from shelf bay")
+					return False, None
 		
-		return self.itemConnectedToRobot
+		# Check items at picking stations (items at picking stations are at ground level, so shelf_height should be 0)
+		if shelf_height == 0:
+			for station_index in range(3):
+				item_handle = self.pickingStationItemHandles[station_index]
+				
+				if item_handle is not None:
+					try:
+						# Get current position of the picking station item
+						item_position = self.sim.getObjectPosition(item_handle, -1)
+						itemDist = self.CollectorToItemDistance(item_position)
+						
+						if itemDist != None and itemDist < self.robotParameters.maxCollectDistance and self.itemConnectedToRobot == False:
+							# make physical connection between item and robot to simulate collector
+							if self.JoinRobotAndItem(item_handle):
+								self.itemConnectedToRobot = True
+								# Clear the item handle since it's been collected
+								self.pickingStationItemHandles[station_index] = None
+								print(f"Collected item from picking station {station_index + 1}")
+								return True, station_index + 1
+							else:
+								print(f"Error joining item from picking station {station_index + 1}")
+								return False, None
+					except Exception as e:
+						# Item may have been removed or doesn't exist anymore
+						self.pickingStationItemHandles[station_index] = None
+		
+		return False, None
 
 	def GetItemBayHeight(self,itemPosition):
 		if itemPosition[2] < 0.1:
@@ -591,8 +748,8 @@ class COPPELIA_WarehouseRobot(object):
 		print('Attempting connection to CoppeliaSim ZMQ Remote API Server.')
 		try:
 			# Set a reasonable timeout to prevent hanging
-			print(f'Connecting to {coppelia_server_ip}:23000...')
-			self.client = RemoteAPIClient(host=coppelia_server_ip, port=23000)
+			print(f'Connecting to {coppelia_server_ip}:23001...')
+			self.client = RemoteAPIClient(host=coppelia_server_ip, port=23001)
 			self.sim = self.client.require('sim')
 			print('Connected to CoppeliaSim ZMQ Remote API Server.')
 			
@@ -651,6 +808,11 @@ class COPPELIA_WarehouseRobot(object):
 		errorCode = self.GetRobotHandle()
 		if errorCode != 0:
 			print('Failed to get Robot object handle. Terminating Program. Error Code %d'%(errorCode))
+			sys.exit(-1)
+
+		errorCode = self.GetScriptHandle()
+		if errorCode != 0:
+			print('Failed to get Script handle. Terminating Program. Error Code %d'%(errorCode))
 			sys.exit(-1)
 
 		errorCode = self.GetCameraHandle()
@@ -715,6 +877,15 @@ class COPPELIA_WarehouseRobot(object):
 			print(f"Error getting robot handle: {e}")
 			return -1
 
+	# Get Script Handle (attached to Robot object)
+	def GetScriptHandle(self):
+		try:
+			# Try common script paths - the script is usually attached as a child script to the Robot
+			self.scriptHandle = self.sim.getObject('/Robot')  # Use robot handle for script calls
+			return 0
+		except Exception as e:
+			print(f"Error getting script handle: {e}")
+			return -1
 
 	# Get ZMQ Camera Handle
 	def GetCameraHandle(self):
@@ -764,6 +935,16 @@ class COPPELIA_WarehouseRobot(object):
 	def GetPickingStationHandle(self):
 		try:
 			self.packingStationHandle = self.sim.getObject('/Picking_station')
+			
+			# Try to get multiple picking station handles
+			for i in range(3):
+				try:
+					station_name = f'/Picking_station_{i+1}'
+					self.pickingStationHandles[i] = self.sim.getObject(station_name)
+				except Exception:
+					# If specific picking station doesn't exist, keep as None
+					self.pickingStationHandles[i] = None
+			
 			return 0
 		except Exception as e:
 			print(f"Error getting picking station handle: {e}")
@@ -960,9 +1141,54 @@ class COPPELIA_WarehouseRobot(object):
 					except Exception as e:
 						print(f"Warning: Error setting default obstacle {index} position: {e}")
 		
+		# Set picking station contents
+		print('Setting picking station contents...')
+		self.SetPickingStationContents()
+		
 		print('Scene setup completed.')
 		
 		
+
+	def SetPickingStationContents(self):
+		"""Place items at picking stations based on sceneParameters.pickingStationContents"""
+		print('Placing items at picking stations...')
+		
+		for station_index in range(3):
+			item_type = self.sceneParameters.pickingStationContents[station_index]
+			
+			if item_type != -1 and 0 <= item_type <= 5:  # Valid item type
+				station_handle = self.pickingStationHandles[station_index]
+				
+				if station_handle is not None:
+					try:
+						# Get the position of the picking station
+						station_position = self.sim.getObjectPosition(station_handle, -1)
+						
+						# Place item slightly above the picking station surface
+						item_position = [station_position[0], station_position[1], station_position[2]]
+						
+						# Copy the item template to this position
+						item_names = ["BOWL", "MUG", "BOTTLE", "SOCCER_BALL", "RUBIKS_CUBE", "CEREAL_BOX"]
+						template_handle = self.itemTemplateHandles[item_type]
+						
+						if template_handle is not None:
+							# Copy the item from template
+							new_item_handle = self.sim.copyPasteObjects([template_handle], 0)[0]
+							
+							# Store the item handle for collection purposes
+							self.pickingStationItemHandles[station_index] = new_item_handle
+							
+							# Position the item at the picking station
+							self.sim.setObjectPosition(new_item_handle, -1, item_position)
+							
+							print(f'Placed {item_names[item_type]} at picking station {station_index + 1}')
+						else:
+							print(f'Warning: Template for {item_names[item_type]} not found')
+							
+					except Exception as e:
+						print(f'Error placing item at picking station {station_index + 1}: {e}')
+				else:
+					print(f'Warning: Picking station {station_index + 1} handle not found')
 
 	### CAMERA FUNCTIONS ###
 
@@ -1231,19 +1457,13 @@ class COPPELIA_WarehouseRobot(object):
 
 				itemDist = self.CollectorToItemDistance(itemPosition)
 
-				# DEPRACATED 
-				# # See if need to connect/disconnect item from robot
-				# if self.robotParameters.autoCollectItem == True and itemDist != None and itemDist < self.robotParameters.maxCollectDistance and self.itemConnectedToRobot == False:
-				# 	# make physical connection between item and robot to simulate collector
-				# 	coppelia.simxCallScriptFunction(self.clientID, 'Robot', coppelia.sim_scripttype_childscript, 'JoinRobotAndItem',[1],[self.robotParameters.maxCollectDistance],[],bytearray(),coppelia.simx_opmode_blocking)
-				# 	self.itemConnectedToRobot = True
 
 				if self.itemConnectedToRobot == True:
 					# random chance to disconnect
 					if np.random.rand() > self.robotParameters.collectorQuality:
 						# terminate connection between item and robot to simulate collector
 						try:
-							self.sim.callScriptFunction('RobotReleaseItem', 'Robot', [], [], [], "")
+							self.sim.callScriptFunction('RobotReleaseItem', self.scriptHandle, [], [], [], "")
 							self.itemConnectedToRobot = False
 						except Exception as e:
 							print(f"Error calling RobotReleaseItem script function: {e}")
@@ -1460,6 +1680,10 @@ class SceneParameters(object):
 
 		# Starting contents of the items [shelf,X,Y]. Set to -1 to leave the bay empty.
 		self.bayContents = -np.ones((6,4,3),dtype=np.int16)
+		
+		# Starting contents of picking stations [station]. Set to -1 to leave empty.
+		# Index 0 = picking station 1, Index 1 = picking station 2, Index 2 = picking station 3
+		self.pickingStationContents = -np.ones(3, dtype=np.int16)
 
 
 		# Obstacles Starting Positions - set to none if you do not want a specific obstacle in the scene
@@ -1486,9 +1710,9 @@ class RobotParameters(object):
 		# Drive/Wheel Parameters
 		self.driveType = 'differential'	# specifies the drive type ('differential' is the only type currently)
 		self.wheelBase = 0.150 # This parameter should not be changed
-		self.wheelRadius = 0.04 # This parameter should not  be changed
+		self.wheelRadius = 0.03 # This parameter should not  be changed
 		self.minimumLinearSpeed = 0.0 	# minimum speed at which your robot can move forward in m/s
-		self.maximumLinearSpeed = 0.25 	# maximum speed at which your robot can move forward in m/s
+		self.maximumLinearSpeed = 0.4 	# maximum speed at which your robot can move forward in m/s
 		self.driveSystemQuality = 1.0 # specifies how good your drive system is from 0 to 1 (with 1 being able to drive in a perfectly straight line when a told to do so)
 
 		# Camera Parameters

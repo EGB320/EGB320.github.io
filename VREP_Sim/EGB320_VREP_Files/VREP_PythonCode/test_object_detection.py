@@ -43,17 +43,17 @@ def test_object_detection():
                 warehouseObjects.shelves,
                 warehouseObjects.row_markers,
                 warehouseObjects.obstacles,
-                warehouseObjects.packingBay,
+                warehouseObjects.pickingStation,
             ])
             
-            itemsRB, packingBayRB, obstaclesRB, rowMarkerRB, shelfRB = objectsRB
+            itemsRB, packingStationRB, obstaclesRB, rowMarkerRB, shelfRB = objectsRB
             
             # Print detection results
             print("Detection Results:")
             print(f"  Items detected: {[i for i, item in enumerate(itemsRB) if item is not None]}")
             print(f"  Shelves detected: {[i for i, shelf in enumerate(shelfRB) if shelf is not None]}")
             print(f"  Obstacles detected: {'Yes' if obstaclesRB else 'No'}")
-            print(f"  Packing bay detected: {'Yes' if packingBayRB else 'No'}")
+            print(f"  Picking station detected: {'Yes' if packingStationRB else 'No'}")
             print(f"  Row markers detected: {[i for i, marker in enumerate(rowMarkerRB) if marker is not None]}")
             
             # Move robot slightly for testing

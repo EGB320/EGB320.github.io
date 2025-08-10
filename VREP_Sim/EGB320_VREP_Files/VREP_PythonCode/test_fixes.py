@@ -58,7 +58,7 @@ try:
     print("\n=== Testing Object Detection ===")
     try:
         items, packing_bay, obstacles, row_markers, shelves = robot.GetDetectedObjects(
-            [warehouseObjects.packingBay, warehouseObjects.obstacles]
+            [warehouseObjects.pickingStation, warehouseObjects.obstacles]
         )
         print(f"  Detection successful - Packing bay: {packing_bay}, Obstacles: {obstacles}")
     except Exception as e:

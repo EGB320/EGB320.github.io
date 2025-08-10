@@ -18,6 +18,12 @@ sceneParameters.bayContents[0,3,1] = warehouseObjects.bowl
 sceneParameters.bayContents[1,1,2] = warehouseObjects.mug
 sceneParameters.bayContents[2,3,1] = warehouseObjects.bottle
 
+# Starting contents of picking stations [station]. Set to -1 to leave empty.
+# Index 0 = picking station 1, Index 1 = picking station 2, Index 2 = picking station 3
+sceneParameters.pickingStationContents[0] = warehouseObjects.bowl    # Bowl at picking station 1
+sceneParameters.pickingStationContents[1] = warehouseObjects.mug     # Mug at picking station 2
+sceneParameters.pickingStationContents[2] = warehouseObjects.bottle  # Bottle at picking station 3
+
 # sceneParameters.obstacle0_StartingPosition = [-0.45, 0.5]  # starting position of obstacle 0 [x, y] (in metres), -1 if want to use current CoppeliaSim position, or none if not wanted in the scene
 sceneParameters.obstacle0_StartingPosition = None  # starting position of obstacle 0 [x, y] (in metres), -1 if want to use current CoppeliaSim position, or none if not wanted in the scene
 sceneParameters.obstacle1_StartingPosition = None   # starting position of obstacle 1 [x, y] (in metres), -1 if want to use current CoppeliaSim position, or none if not wanted in the scene
@@ -88,14 +94,15 @@ if __name__ == '__main__':
 		print("  S/↓ : Move backward") 
 		print("  A/← : Turn left")
 		print("  D/→ : Turn right")
-		print("  Space: Stop")
+		print("  Space: Pickup item")
+		print("  P: Stop/Pause movement")
 		print("Close pygame window or press Ctrl+C to exit\n")
 		
 		# Robot control variables
 		forward_speed = 0.0
 		turn_speed = 0.0
 		max_speed = 0.2
-		max_turn = 0.8
+		max_turn = 3.0
 		
 		clock = pygame.time.Clock()
 		
@@ -120,7 +127,7 @@ if __name__ == '__main__':
 				turn_speed = -max_turn
 				
 			# Stop command
-			if keys[pygame.K_SPACE]:
+			if keys[pygame.K_p]:
 				forward_speed = 0.0
 				turn_speed = 0.0
 			
@@ -153,8 +160,10 @@ if __name__ == '__main__':
 							font = pygame.font.Font(None, 24)
 							speed_text = font.render(f"Speed: {forward_speed:.2f} m/s", True, (255, 255, 255))
 							turn_text = font.render(f"Turn: {turn_speed:.2f} rad/s", True, (255, 255, 255))
+							controls_text = font.render("Space: Pickup | P: Stop", True, (255, 255, 0))
 							screen.blit(speed_text, (10, 10))
 							screen.blit(turn_text, (10, 35))
+							screen.blit(controls_text, (10, 60))
 							
 							pygame.display.update()
 						else:
@@ -177,6 +186,18 @@ if __name__ == '__main__':
 				elif event.type == pygame.KEYDOWN:
 					if event.key == pygame.K_ESCAPE:
 						done = True
+					elif event.key == pygame.K_SPACE:
+						# Pickup item functionality
+						try:
+							# Use the enhanced CollectItem function with closest_picking_station=True
+							# This will automatically find the closest item at picking stations and collect it if within range
+							result, station_num = warehouseBotSim.CollectItem(0, closest_picking_station=True)
+							
+							if not result:
+								print("❌ No items collected")
+								
+						except Exception as e:
+							print(f"Error during pickup attempt: {e}")
 
 			# Optional: Get detected objects for debugging (uncomment if needed)
 			# objectsRB = warehouseBotSim.GetDetectedObjects()

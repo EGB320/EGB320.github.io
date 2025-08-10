@@ -50,7 +50,7 @@ try:
     print("\n=== Testing Full Object Detection with Shelves ===")
     try:
         items, packing_bay, obstacles, row_markers, shelves = robot.GetDetectedObjects(
-            [warehouseObjects.shelves, warehouseObjects.packingBay, warehouseObjects.obstacles]
+            [warehouseObjects.shelves, warehouseObjects.pickingStation, warehouseObjects.obstacles]
         )
         
         print(f"  Shelves detected: {shelves}")

@@ -54,14 +54,11 @@ def print_timing_stats(loop_count):
 # SET SCENE PARAMETERS
 sceneParameters = SceneParameters()
 
-# Starting contents of the bays [shelf,X,Y]. Set to -1 to leave empty.
-sceneParameters.bayContents = np.random.random_integers(0,5,sceneParameters.bayContents.shape)
-sceneParameters.bayContents[0,3,1] = warehouseObjects.bowl
-sceneParameters.bayContents[1,1,2] = warehouseObjects.mug
-sceneParameters.bayContents[2,3,1] = warehouseObjects.bottle
-sceneParameters.bayContents[3,1,2] = warehouseObjects.soccer
-sceneParameters.bayContents[4,2,0] = warehouseObjects.rubiks
-sceneParameters.bayContents[5,0,1] = warehouseObjects.cereal
+# Starting contents of picking stations [station]. Set to -1 to leave empty.
+# Index 0 = picking station 1, Index 1 = picking station 2, Index 2 = picking station 3
+sceneParameters.pickingStationContents[0] = warehouseObjects.bowl    # Bowl at picking station 1
+sceneParameters.pickingStationContents[1] = warehouseObjects.mug     # Mug at picking station 2
+sceneParameters.pickingStationContents[2] = warehouseObjects.bottle  # Bottle at picking station 3
 
 
 sceneParameters.obstacle0_StartingPosition = -1  # starting position of obstacle 0 [x, y] (in metres), -1 if want to use current CoppeliaSim position, or none if not wanted in the scene
