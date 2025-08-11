@@ -9,6 +9,8 @@ from enum import IntEnum
 
 
 
+
+
 # This class wraps COPPELIA api functions to allow 
 # users to start testing Navigation/AI systems
 class warehouseObjects(IntEnum):
@@ -46,7 +48,7 @@ class warehouseObjects(IntEnum):
 	obstacles = 102
 	row_markers = 103
 	shelves = 104
-	pickingStations = 105  # All picking stations
+	PickingStationMarkers = 105  # All picking station markers (individual picking stations)
 	#pickingStation = 105 # There's only one so it is already defined.
 
 
@@ -188,43 +190,63 @@ class COPPELIA_WarehouseRobot(object):
 
 		# Note: ZMQ Remote API doesn't need to stop streaming modes like legacy API
 
+	def _is_object_detected(self, objectsDetected, obj_index):
+		"""Helper function to safely check detection array - expecting 1/0 values from Lua script"""
+		return (isinstance(objectsDetected, (list, tuple)) and 
+				len(objectsDetected) > obj_index and 
+				obj_index >= 0 and 
+				objectsDetected[obj_index] == 1)
+	
+	def _process_single_object_detection(self, position, detection_index, objectsDetected, max_detection_distance):
+		"""Helper function to process detection of a single object at a position"""
+		if position is not None and self._is_object_detected(objectsDetected, detection_index):
+			if self.PointInsideArena(position):
+				_valid, _range, _bearing = self.GetRBInCameraFOV(position)
+				if _valid and _range < max_detection_distance:
+					return [_range, _bearing]
+		return None
+	
+	def _process_multiple_object_detection(self, positions, start_index, objectsDetected, max_detection_distance):
+		"""Helper function to process detection of multiple objects with sequential indices"""
+		results = []
+		for index, position in enumerate(positions):
+			result = self._process_single_object_detection(position, start_index + index, objectsDetected, max_detection_distance)
+			results.append(result)
+		return results
+	
+	def _add_item_to_range_bearing(self, itemRangeBearing, item_type, range_bearing):
+		"""Helper function to add item detection to range bearing list"""
+		if itemRangeBearing[item_type] is None:
+			itemRangeBearing[item_type] = []
+		itemRangeBearing[item_type].append(range_bearing)
+
 	# Gets the Range and Bearing to All Detected Objects.
 	# returns:
 	#	itemRangeBearing - range and bearing to the items with respect to the camera, will return None if the object is not detected
-	#	packingStationRangeBearing - range and bearing to the picking station with respect to the camera, will return None if the object is not detected
+	#	packingStationRangeBearing - range and bearing to the main picking station with respect to the camera, will return None if the object is not detected
 	#	obstaclesRangeBearing - range and bearing to the obstacles with respect to the camera, will return None if the object is not detected
+	#	rowMarkerRangeBearing - range and bearing to the row markers with respect to the camera, will return None if the object is not detected
+	#	shelfRangeBearing - range and bearing to the shelves with respect to the camera, will return None if the object is not detected
+	#	pickingStationRangeBearing - range and bearing to individual picking stations 1,2,3 with respect to the camera, will return None if the object is not detected
 	def GetDetectedObjects(self,objects = None):
-		import time  # Import time for internal timing
-		timing_debug = hasattr(self, 'enable_timing_debug') and self.enable_timing_debug
-		
-		if timing_debug:
-			func_start_time = time.perf_counter()
-			print("🔍 [GetDetectedObjects] Starting object detection...")
-		
 		# Variables used to return range and bearing to the objects
 		itemRangeBearing = [None]*6
 		packingStationRangeBearing = None
 		obstaclesRangeBearing = None
 		rowMarkerRangeBearing = [None,None,None]
 		shelfRangeBearing = [None]*6
+		pickingStationRangeBearing = [None, None, None]  # Individual picking stations 1, 2, 3
 
 		# if objects variable is None, detect all objects.
-		objects= objects or [warehouseObjects.items,warehouseObjects.shelves,warehouseObjects.row_markers,warehouseObjects.obstacles,warehouseObjects.pickingStation]
+		objects= objects or [warehouseObjects.items,warehouseObjects.shelves,warehouseObjects.row_markers,warehouseObjects.obstacles,warehouseObjects.pickingStation,warehouseObjects.PickingStationMarkers]
 
 		# Make sure the camera's pose is not none
 		if self.cameraPose != None:
 
 			#check which objects are currently in FOV using object detection sensor within COPPELIA sim
 			try:
-				if timing_debug:
-					vision_start_time = time.perf_counter()
-				
 				# Use handleVisionSensor to get the packed detection data from Lua script
 				result, data, packets = self.sim.handleVisionSensor(self.objectDetectorHandle)
-				
-				if timing_debug:
-					vision_time = (time.perf_counter() - vision_start_time) * 1000
-					print(f"🔍    handleVisionSensor call: {vision_time:.1f}ms")
 				
 				if result == -1:
 					print("Object detector not ready or no detection")
@@ -232,7 +254,7 @@ class COPPELIA_WarehouseRobot(object):
 				else:
 					# The packets parameter contains our detection array from the Lua script!
 					if packets and len(packets) > 0:
-						objectsDetected = packets  # This is our 19-element detection array
+						objectsDetected = packets  # This is our 23-element detection array
 						# print(f"Detection array length: {len(objectsDetected)}")
 						# print(f"Detection values: {objectsDetected}")
 					else:
@@ -245,78 +267,65 @@ class COPPELIA_WarehouseRobot(object):
 				
 			if objectsDetected and len(objectsDetected) > 0:
 
-				# Helper function to safely check detection array - expecting 1/0 values from Lua script
-				def is_detected(obj_index):
-					"""Check if object is detected (should be 1 from Lua script)"""
-					return (isinstance(objectsDetected, (list, tuple)) and 
-							len(objectsDetected) > obj_index and 
-							obj_index >= 0 and 
-							objectsDetected[obj_index] == 1)
-
 				# Convert 1-based Lua indices to 0-based Python indices
-				# Lua array: [bowl, mug, bottle, soccer, rubiks, cereal, obs0, obs1, obs2, packing_bay, row1, row2, row3, shelf0-5]
-				# Python indices: 0-based, so subtract 1 from Lua positions
+				# Lua array: [bowl, mug, bottle, ball, rubiks, cereal, obstacle_0, obstacle_1, obstacle_2, packing_bay, row_marker1, row_marker2, row_marker3, shelf0-5, square_marker1-3, picking_station]
+				# New 23-element array indices:
+				# 0: bowl, 1: mug, 2: bottle, 3: ball, 4: rubiks, 5: cereal
+				# 6: obstacle_0, 7: obstacle_1, 8: obstacle_2
+				# 9: packing_bay
+				# 10: row_marker1, 11: row_marker2, 12: row_marker3  
+				# 13-18: shelf0-5
+				# 19-21: square_marker1-3 (picking stations 1-3)
+				# 22: picking_station
 				
 				# check to see if blue shelves are in field of view
 				if warehouseObjects.shelves in objects:
-					if timing_debug:
-						shelf_start_time = time.perf_counter()
-					
 					shelfRB = self.GetShelfRangeBearing()
-					
-					if timing_debug:
-						shelf_rb_time = (time.perf_counter() - shelf_start_time) * 1000
-						print(f"🔍    GetShelfRangeBearing call: {shelf_rb_time:.1f}ms")
-						shelf_process_start = time.perf_counter()
 					
 					for index,rb in enumerate(shelfRB):
 						# Shelves are at indices 13-18 in the 19-element array (0-based: indices 13-18)
 						shelf_index = 13 + index
-						if is_detected(shelf_index):
+						if self._is_object_detected(objectsDetected, shelf_index):
 							if rb and rb[0] < self.robotParameters.maxShelfDetectionDistance:
 								shelfRangeBearing[index] = rb
-					
-					if timing_debug:
-						shelf_process_time = (time.perf_counter() - shelf_process_start) * 1000
-						print(f"🔍    Shelf processing: {shelf_process_time:.1f}ms")
 
-				# check to see if item is in field of view
+				# check to see if items are in field of view
 				if warehouseObjects.items in objects:
-					if timing_debug:
-						item_start_time = time.perf_counter()
-					
-					for shelf in range(6):
-						if shelfRangeBearing[shelf] is None and warehouseObjects.shelves in objects:
-							continue
-						for x,y in [(x,y) for x in range(4) for y in range(3)]:
-							item_type = self.sceneParameters.bayContents[shelf,x,y]
-							if item_type == -1: 
-								continue
-							
-							itemPosition = self.itemPositions[shelf,x,y]
-							# Items are at indices 0-5 in the detection array (bowl, mug, bottle, soccer, rubiks, cereal)
-							if is_detected(item_type)\
-							and shelfRangeBearing[shelf] is not None\
-							and self.PointInsideArena(itemPosition):
-								_valid, _range, _bearing = self.GetRBInCameraFOV(itemPosition)
-														
-								# check range is not too far away
-								if _range < self.robotParameters.maxItemDetectionDistance \
-									and abs(_bearing) < self.robotParameters.cameraPerspectiveAngle/2:
-									# make itemRangeBearing into empty lists, if currently set to None
-									if itemRangeBearing[item_type] == None:
-										itemRangeBearing[item_type] = []
-									itemRangeBearing[item_type].append([_range, _bearing])
-					
-					if timing_debug:
-						item_time = (time.perf_counter() - item_start_time) * 1000
-						print(f"🔍    Item processing: {item_time:.1f}ms")
+					# Check each item type (0-5: bowl, mug, bottle, soccer, rubiks, cereal) in the scene
+					for item_type in range(6):
+						if self._is_object_detected(objectsDetected, item_type):
+							# Try to find item instances of this type in the simulation
+							try:
+								# Get all objects in the scene and filter for items of this type
+								# This is a simplified approach - in practice you might maintain
+								# a list of item handles or use a more efficient detection method
+								item_names = ["BOWL", "MUG", "BOTTLE", "SOCCER_BALL", "RUBIKS_CUBE", "CEREAL_BOX"]
+								item_name = item_names[item_type]
+								
+								# Try to get item handle (this may fail if item doesn't exist in scene)
+								try:
+									item_handle = self.sim.getObject(f'/{item_name}')
+									item_position = self.sim.getObjectPosition(item_handle, -1)
+									
+									# Use the helper function to process this item detection
+									result = self._process_single_object_detection(
+										item_position, item_type, objectsDetected, 
+										self.robotParameters.maxItemDetectionDistance)
+									
+									if result is not None:
+										self._add_item_to_range_bearing(itemRangeBearing, item_type, result)
+										
+								except Exception:
+									# Item of this type may not exist in the scene, or may be at picking stations
+									# Check picking stations for items of this type (handled separately)
+									pass
+									
+							except Exception as e:
+								# General error handling for item detection
+								print(f"Warning: Error processing item type {item_type}: {e}")
 				
 				# check to see if items at picking stations are in field of view
 				if warehouseObjects.items in objects:
-					if timing_debug:
-						picking_station_item_start_time = time.perf_counter()
-					
 					for station_index in range(3):
 						item_type = self.sceneParameters.pickingStationContents[station_index]
 						
@@ -327,92 +336,66 @@ class COPPELIA_WarehouseRobot(object):
 								try:
 									# Get the position of the picking station item
 									station_position = self.sim.getObjectPosition(station_handle, -1)
-									item_position = [station_position[0], station_position[1], station_position[2] + 0.1]
+									item_position = [station_position[0], station_position[1], station_position[2]]
 									
 									# Check if item is in camera field of view
-									if is_detected(item_type) and self.PointInsideArena(item_position):
+									if self._is_object_detected(objectsDetected, item_type) and self.PointInsideArena(item_position):
 										_valid, _range, _bearing = self.GetRBInCameraFOV(item_position)
 										
 										# check range is not too far away
 										if _range < self.robotParameters.maxItemDetectionDistance \
 											and abs(_bearing) < self.robotParameters.cameraPerspectiveAngle/2:
-											# make itemRangeBearing into empty lists, if currently set to None
-											if itemRangeBearing[item_type] == None:
-												itemRangeBearing[item_type] = []
-											itemRangeBearing[item_type].append([_range, _bearing])
+											# Use helper function to add item detection
+											self._add_item_to_range_bearing(itemRangeBearing, item_type, [_range, _bearing])
 								except Exception as e:
 									# Silently ignore errors for missing picking stations
 									pass
-					
-					if timing_debug:
-						picking_station_item_time = (time.perf_counter() - picking_station_item_start_time) * 1000
-						print(f"🔍    Picking station item processing: {picking_station_item_time:.1f}ms")
-					
+				
 				# check to see which obstacles are within the field of view
 				if warehouseObjects.obstacles in objects:
-					if timing_debug:
-						obstacle_start_time = time.perf_counter()
-					
 					for index, obstaclePosition in enumerate(self.obstaclePositions):
 						if obstaclePosition != None:
 							# Obstacles are at indices 6-8 in the detection array (obstacle_0, obstacle_1, obstacle_2)
-							if is_detected(6 + index) and self.PointInsideArena(obstaclePosition):
-								_valid, _range, _bearing = self.GetRBInCameraFOV(obstaclePosition)
-								if _valid:
-
-									# make obstaclesRangeBearing into empty lists, if currently set to None
-									if obstaclesRangeBearing == None:
-										obstaclesRangeBearing = []
-
-									if _range <  self.robotParameters.maxObstacleDetectionDistance:
-										obstaclesRangeBearing.append([_range, _bearing])
-					
-					if timing_debug:
-						obstacle_time = (time.perf_counter() - obstacle_start_time) * 1000
-						print(f"🔍    Obstacle processing: {obstacle_time:.1f}ms")
+							result = self._process_single_object_detection(obstaclePosition, 6 + index, objectsDetected, self.robotParameters.maxObstacleDetectionDistance)
+							if result is not None:
+								# make obstaclesRangeBearing into empty lists, if currently set to None
+								if obstaclesRangeBearing == None:
+									obstaclesRangeBearing = []
+								obstaclesRangeBearing.append(result)
 
 				# check to see if picking station is in field of view
 				if warehouseObjects.pickingStation in objects:
-					if timing_debug:
-						packing_start_time = time.perf_counter()
-					
 					if self.packingStationPosition != None:
 						# Picking station is at index 9 in the detection array
-						if is_detected(9):
-							_valid, _range, _bearing = self.GetRBInCameraFOV(self.packingStationPosition)
-							if _valid:
-								# check range is not to far away
-								if _range < self.robotParameters.maxPackingBayDetectionDistance:
-									packingStationRangeBearing = [_range, _bearing]
-					
-					if timing_debug:
-						packing_time = (time.perf_counter() - packing_start_time) * 1000
-						print(f"🔍    Packing bay processing: {packing_time:.1f}ms")
+						packingStationRangeBearing = self._process_single_object_detection(
+							self.packingStationPosition, 9, objectsDetected, self.robotParameters.maxPackingBayDetectionDistance)
 
 				# check to see if black row markers are in field of view
 				if warehouseObjects.row_markers in objects:
-					if timing_debug:
-						marker_start_time = time.perf_counter()
-					
-					for index, rowMarkerPosition in enumerate(self.rowMarkerPositions):
-						if rowMarkerPosition != None:
-							# Row markers are at indices 10-12 in the detection array (row_marker1, row_marker2, row_marker3)
-							if is_detected(10 + index):
-								_valid, _range, _bearing = self.GetRBInCameraFOV(rowMarkerPosition)
-								if _valid:
-									# check range is not to far away
-									if _range < self.robotParameters.maxRowMarkerDetectionDistance:
-										rowMarkerRangeBearing[index] = [_range, _bearing]
-					
-					if timing_debug:
-						marker_time = (time.perf_counter() - marker_start_time) * 1000
-						print(f"🔍    Row marker processing: {marker_time:.1f}ms")
+					# Row markers are at indices 10-12 in the detection array (row_marker1, row_marker2, row_marker3)
+					rowMarkerRangeBearing = self._process_multiple_object_detection(
+						self.rowMarkerPositions, 10, objectsDetected, self.robotParameters.maxRowMarkerDetectionDistance)
 
-		if timing_debug:
-			func_total_time = (time.perf_counter() - func_start_time) * 1000
-			print(f"🔍 [GetDetectedObjects] Total time: {func_total_time:.1f}ms")
+				# NEW: check to see if individual picking stations (square markers) are in field of view
+				if warehouseObjects.PickingStationMarkers in objects:
+					for station_index in range(3):
+						# Square markers are at indices 19-21 in the detection array (square_marker1-3 = picking stations 1-3)
+						if self._is_object_detected(objectsDetected, 19 + station_index):
+							# Get picking station position
+							station_handle = self.pickingStationHandles[station_index]
+							if station_handle is not None:
+								try:
+									station_position = self.sim.getObjectPosition(station_handle, -1)
+									result = self._process_single_object_detection(
+										station_position, 19 + station_index, objectsDetected, 
+										self.robotParameters.maxPackingBayDetectionDistance)
+									if result is not None:
+										pickingStationRangeBearing[station_index] = result
+								except Exception as e:
+									# Silently ignore errors for missing picking stations
+									pass
 
-		return itemRangeBearing, packingStationRangeBearing, obstaclesRangeBearing, rowMarkerRangeBearing, shelfRangeBearing
+		return itemRangeBearing, packingStationRangeBearing, obstaclesRangeBearing, rowMarkerRangeBearing, shelfRangeBearing, pickingStationRangeBearing
 
 
 	def GetCameraImage(self):
@@ -421,6 +404,7 @@ class COPPELIA_WarehouseRobot(object):
 			return None, None
 	
 		try:
+			detectionCount, packet1, packet2 = self.sim.handleVisionSensor(self.cameraHandle)
 			image, resolution = self.sim.getVisionSensorImg(self.cameraHandle)
 			# Unpack the image data from bytes to proper image array
 			if image is not None:
@@ -802,36 +786,11 @@ class COPPELIA_WarehouseRobot(object):
 	#		itemPosition - a 3 element array representing the item's position (x,y,z), or None if was not successfully updated from COPPELIA
 	#		obstaclePositions - a 3 element list, with each index in the list containing a 3 element array representing the item's position (x,y,z), or None if was not successfully updated from COPPELIA
 	def UpdateObjectPositions(self):
-		# Import time for internal timing
-		timing_debug = hasattr(self, 'enable_timing_debug') and self.enable_timing_debug
-		
-		if timing_debug:
-			func_start_time = time.perf_counter()
-			print("🔄 [UpdateObjectPositions] Starting update...")
-		
 		# attempt to get object positions from COPPELIA
-		if timing_debug:
-			get_pos_start = time.perf_counter()
-		
 		self.GetObjectPositions()
-		
-		if timing_debug:
-			get_pos_time = (time.perf_counter() - get_pos_start) * 1000
-			print("📍    GetObjectPositions call: %0.1fms" % get_pos_time)
 
 		# update item
-		if timing_debug:
-			update_item_start = time.perf_counter()
-		
 		self.UpdateItem()
-		
-		if timing_debug:
-			update_item_time = (time.perf_counter() - update_item_start) * 1000
-			print("🔧    UpdateItem call: %0.1fms" % update_item_time)
-
-		if timing_debug:
-			func_total_time = (time.perf_counter() - func_start_time) * 1000
-			print("🔄 [UpdateObjectPositions] Total time: %0.1fms" % func_total_time)
 
 		# return object positions		
 		return self.robotPose, self.itemPositions, self.obstaclePositions
@@ -1229,7 +1188,7 @@ class COPPELIA_WarehouseRobot(object):
 						station_position = self.sim.getObjectPosition(station_handle, -1)
 						
 						# Place item slightly above the picking station surface
-						item_position = [station_position[0], station_position[1], station_position[2]]
+						item_position = [station_position[0], station_position[1], station_position[2]+0.01]
 						
 						# Copy the item template to this position
 						item_names = ["BOWL", "MUG", "BOTTLE", "SOCCER_BALL", "RUBIKS_CUBE", "CEREAL_BOX"]
@@ -1370,13 +1329,6 @@ class COPPELIA_WarehouseRobot(object):
 	# Gets the pose/position in the global coordinate frame of all the objects in the scene.
 	# Stores them in class variables. Variables will be set to none if could not be updated
 	def GetObjectPositions(self):
-		import time  # Import time for internal timing
-		timing_debug = hasattr(self, 'enable_timing_debug') and self.enable_timing_debug
-		
-		if timing_debug:
-			func_start_time = time.perf_counter()
-			print("🎯 [GetObjectPositions] Starting position queries...")
-		
 		# Set camera pose and object position to None so can check in an error occurred
 		self.robotPose = None
 		self.cameraPose = None
@@ -1386,30 +1338,16 @@ class COPPELIA_WarehouseRobot(object):
 
 		# GET 2D ROBOT POSE
 		try:
-			if timing_debug:
-				robot_start_time = time.perf_counter()
-			
 			robotPosition = self.sim.getObjectPosition(self.robotHandle, -1)
 			robotOrientation = self.sim.getObjectOrientation(self.robotHandle, -1)
 			self.robotPose = [robotPosition[0], robotPosition[1], robotPosition[1], robotOrientation[0], robotOrientation[1], robotOrientation[2]]
-			
-			if timing_debug:
-				robot_time = (time.perf_counter() - robot_start_time) * 1000
-				print(f"🎯    Robot pose query: {robot_time:.1f}ms")
 		except Exception as e:
 			print(f"Error getting robot pose: {e}")
 
 		# GET 3D CAMERA POSE
 		try:
-			if timing_debug:
-				camera_start_time = time.perf_counter()
-			
 			cameraPosition = self.sim.getObjectPosition(self.cameraHandle, -1)
 			self.cameraPose = [cameraPosition[0], cameraPosition[1], cameraPosition[2], robotOrientation[0], robotOrientation[1], robotOrientation[2]]
-			
-			if timing_debug:
-				camera_time = (time.perf_counter() - camera_start_time) * 1000
-				print(f"🎯    Camera pose query: {camera_time:.1f}ms")
 		except Exception as e:
 			print(f"Error getting camera pose: {e}")
 		
@@ -1425,22 +1363,12 @@ class COPPELIA_WarehouseRobot(object):
 
 		# packingBay position
 		try:
-			if timing_debug:
-				packing_start_time = time.perf_counter()
-			
 			packingStationPosition = self.sim.getObjectPosition(self.packingStationHandle, -1)
 			self.packingStationPosition = packingStationPosition
-			
-			if timing_debug:
-				packing_time = (time.perf_counter() - packing_start_time) * 1000
-				print(f"🎯    Picking station position query: {packing_time:.1f}ms")
 		except Exception as e:
 			print(f"Error getting picking station position: {e}")
 
 		# obstacle positions
-		if timing_debug:
-			obstacle_start_time = time.perf_counter()
-		
 		obstaclePositions = [None, None, None]
 		for index, obs in enumerate(self.obstaclePositions):
 			try:
@@ -1448,15 +1376,8 @@ class COPPELIA_WarehouseRobot(object):
 				self.obstaclePositions[index] = obstaclePositions[index]
 			except Exception as e:
 				print(f"Error getting obstacle position {index}: {e}")
-		
-		if timing_debug:
-			obstacle_time = (time.perf_counter() - obstacle_start_time) * 1000
-			print(f"🎯    Obstacle positions query (3 objects): {obstacle_time:.1f}ms")
 
 		# row marker positions
-		if timing_debug:
-			marker_start_time = time.perf_counter()
-		
 		rowMarkerPositions = [None,None,None]
 		for index, rowMarker in enumerate(self.rowMarkerPositions):
 			try:
@@ -1464,12 +1385,6 @@ class COPPELIA_WarehouseRobot(object):
 				self.rowMarkerPositions[index] = rowMarkerPositions[index]
 			except Exception as e:
 				print(f"Error getting row marker position {index}: {e}")
-		
-		if timing_debug:
-			marker_time = (time.perf_counter() - marker_start_time) * 1000
-			print(f"🎯    Row marker positions query (3 objects): {marker_time:.1f}ms")
-			func_total_time = (time.perf_counter() - func_start_time) * 1000
-			print(f"🎯 [GetObjectPositions] Total time: {func_total_time:.1f}ms")
 
 	# Checks to see if an Object is within the field of view of the camera
 	def GetRBInCameraFOV(self, objectPosition):
@@ -1748,6 +1663,73 @@ class COPPELIA_WarehouseRobot(object):
 		return shelfRB
 
 
+def print_debug_range_bearing(object_type, range_bearing_data):
+	"""Debug function to print range and bearing information for detected objects
+	
+	Args:
+		object_type (str): Name/description of the object type being displayed
+		range_bearing_data: Range and bearing data (can be single [range, bearing] or list of such pairs)
+	"""
+	if range_bearing_data is None:
+		print(f"🔍 {object_type}: No objects detected")
+		return
+	
+	# Special handling for items array (6-element array with one element per item type)
+	if object_type == "Items" and isinstance(range_bearing_data, list) and len(range_bearing_data) == 6:
+		item_names = ["Bowls", "Mugs", "Bottles", "Soccer Balls", "Rubiks Cubes", "Cereal Boxes"]
+		any_items_found = False
+		
+		for item_type, detections in enumerate(range_bearing_data):
+			if detections is not None and len(detections) > 0:
+				any_items_found = True
+				for i, rb in enumerate(detections):
+					if rb is not None and len(rb) >= 2:
+						range_m = rb[0]
+						bearing_rad = rb[1]
+						bearing_deg = math.degrees(bearing_rad)
+						print(f"🔍 {item_names[item_type]}[{i}]: Range = {range_m:.3f}m, Bearing = {bearing_rad:.3f}rad ({bearing_deg:.1f}°)")
+		
+		if not any_items_found:
+			print(f"🔍 {object_type}: No items detected")
+		return
+	
+	if isinstance(range_bearing_data, list):
+		if len(range_bearing_data) == 0:
+			print(f"🔍 {object_type}: Empty list (no detections)")
+			return
+		
+		# Check if this is a single [range, bearing] pair or a list of pairs
+		if len(range_bearing_data) == 2 and isinstance(range_bearing_data[0], (int, float)) and isinstance(range_bearing_data[1], (int, float)):
+			# Single detection with range and bearing
+			range_m = range_bearing_data[0]
+			bearing_rad = range_bearing_data[1]
+			bearing_deg = math.degrees(bearing_rad)
+			print(f"🔍 {object_type}: Range = {range_m:.3f}m, Bearing = {bearing_rad:.3f}rad ({bearing_deg:.1f}°)")
+		else:
+			# List of multiple detections
+			for i, rb in enumerate(range_bearing_data):
+				if rb is not None and isinstance(rb, list) and len(rb) >= 2:
+					# Check if this is a nested list like [[range, bearing]]
+					if isinstance(rb[0], list) and len(rb[0]) >= 2:
+						# Handle nested structure [[range, bearing]]
+						inner_rb = rb[0]
+						range_m = inner_rb[0]
+						bearing_rad = inner_rb[1]
+						bearing_deg = math.degrees(bearing_rad)
+						print(f"🔍 {object_type}[{i}]: Range = {range_m:.3f}m, Bearing = {bearing_rad:.3f}rad ({bearing_deg:.1f}°)")
+					else:
+						# Normal [range, bearing] structure
+						range_m = rb[0]
+						bearing_rad = rb[1]
+						bearing_deg = math.degrees(bearing_rad)
+						print(f"🔍 {object_type}[{i}]: Range = {range_m:.3f}m, Bearing = {bearing_rad:.3f}rad ({bearing_deg:.1f}°)")
+				elif rb is None:
+					print(f"🔍 {object_type}[{i}]: None (not detected)")
+				else:
+					print(f"🔍 {object_type}[{i}]: Invalid data - {rb}")
+	else:
+		print(f"🔍 {object_type}: Invalid format - {range_bearing_data}")
+
 # Parameter classes for robot and scene configuration
 class RobotParameters(object):
 	"""Parameters for configuring the warehouse robot"""
@@ -1769,7 +1751,7 @@ class RobotParameters(object):
 		self.cameraTilt = 0.0                 # tilt angle in radians
 		self.cameraResolutionX = 640          # camera width in pixels
 		self.cameraResolutionY = 480          # camera height in pixels
-		self.cameraPerspectiveAngle = math.pi/4  # field of view angle in radians
+		self.cameraPerspectiveAngle = math.pi/3  # field of view angle in radians
 		
 		# Detection Parameters
 		self.maxItemDetectionDistance = 1.0      # max distance to detect items in m
@@ -1795,6 +1777,7 @@ class SceneParameters(object):
 		
 		# Bay contents [shelf][x][y]. Set to -1 for empty bays.
 		# shelf: 0-5, x: 0-3, y: 0-2 (height levels)
+		# Not used currently
 		self.bayContents = np.full((6, 4, 3), -1, dtype=int)
 		
 		# Obstacle starting positions [x, y] in metres

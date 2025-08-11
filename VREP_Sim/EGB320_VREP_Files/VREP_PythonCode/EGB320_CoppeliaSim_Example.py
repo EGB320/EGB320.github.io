@@ -4,6 +4,11 @@
 from warehousebot_lib import *
 
 #import any other required python modules
+import os
+
+def clear_screen():
+	"""Clear the terminal screen for cleaner debug output"""
+	os.system('cls' if os.name == 'nt' else 'clear')
 
 
 # SET SCENE PARAMETERS
@@ -16,7 +21,7 @@ sceneParameters.pickingStationContents[1] = warehouseObjects.mug     # Mug at pi
 sceneParameters.pickingStationContents[2] = warehouseObjects.bottle  # Bottle at picking station 3
 
 # Starting positions of obstacles [x, y] (in metres), -1 to use current CoppeliaSim position, None if not wanted in scene
-sceneParameters.obstacle0_StartingPosition = -1  # Use current position
+sceneParameters.obstacle0_StartingPosition = [-0.2, -0.25]  # Use current position
 sceneParameters.obstacle1_StartingPosition = -1  # Use current position
 sceneParameters.obstacle2_StartingPosition = -1  # Use current position
 
@@ -70,7 +75,7 @@ if __name__ == '__main__':
 		while True:
 			
 			# Set robot velocities (forward velocity, turn velocity)
-			warehouseBotSim.SetTargetVelocities(0.2, 1.0)
+			warehouseBotSim.SetTargetVelocities(0.0, 0.0)
 
 			# Get detected objects in the camera's field of view
 			# returns are Range and Bearing for each object type
@@ -80,10 +85,27 @@ if __name__ == '__main__':
 				warehouseObjects.row_markers,
 				warehouseObjects.obstacles,
 				warehouseObjects.pickingStation,
+				warehouseObjects.PickingStationMarkers,
 			])
 
-			# Unpack the detected objects
-			itemsRB, packingStationRB, obstaclesRB, rowMarkerRangeBearing, shelfRangeBearing = objectsRB
+			res, image = warehouseBotSim.GetCameraImage()
+
+			# Unpack the detected objects (now includes individual picking stations)
+			itemsRB, packingStationRB, obstaclesRB, rowMarkerRangeBearing, shelfRangeBearing, pickingStationRangeBearing = objectsRB
+
+			# Clear screen for clean debug output
+			clear_screen()
+			print("🤖 EGB320 Warehouse Robot - Real-time Object Detection")
+			print("Press Ctrl+C to stop\n")
+
+			# Debug: Print detected object information
+			print_debug_range_bearing("Items", itemsRB)
+			print_debug_range_bearing("Packing Station", packingStationRB)
+			print_debug_range_bearing("Obstacles", obstaclesRB)
+			print_debug_range_bearing("Row Markers", rowMarkerRangeBearing)
+			print_debug_range_bearing("Shelves", shelfRangeBearing)
+			print_debug_range_bearing("Picking Stations", pickingStationRangeBearing)
+			print("=" * 50)  # Separator line for clarity
 
 			# Read proximity sensor
 			#dist = warehouseBotSim.readProximity()
@@ -94,15 +116,9 @@ if __name__ == '__main__':
 			# Check for items in field of view and attempt to collect them
 			#warehouseBotSim.CollectItem()
 
-			# Check for close obstacles and alert
-			if obstaclesRB is not None:
-				for obstacle in obstaclesRB:
-					obstacleRange = obstacle[0]
-					obstacleBearing = obstacle[1]
-					
-					# Alert if obstacle is close (within 1 meter)
-					if obstacleRange < 1.0:
-						print(f"⚠️  Close obstacle! Range: {obstacleRange:.3f}m, Bearing: {obstacleBearing:.3f}rad")
+
+			#Once navigated to correct shelf, drop the item
+			#warehouseBotSim.DropItem()
 
 			# For synchronous mode (not currently implemented with ZMQ Remote API)
 			#if robotParameters.sync:

@@ -5,18 +5,13 @@
 from warehousebot_lib import *
 import cv2
 import pygame
+import math
 
 #import any other required python modules
 
 
 # SET SCENE PARAMETERS
 sceneParameters = SceneParameters()
-
-# Starting contents of the bays [shelf,X,Y]. Set to -1 to leave empty.
-sceneParameters.bayContents = np.random.random_integers(0,5,sceneParameters.bayContents.shape)
-sceneParameters.bayContents[0,3,1] = warehouseObjects.bowl
-sceneParameters.bayContents[1,1,2] = warehouseObjects.mug
-sceneParameters.bayContents[2,3,1] = warehouseObjects.bottle
 
 # Starting contents of picking stations [station]. Set to -1 to leave empty.
 # Index 0 = picking station 1, Index 1 = picking station 2, Index 2 = picking station 3
@@ -25,7 +20,7 @@ sceneParameters.pickingStationContents[1] = warehouseObjects.mug     # Mug at pi
 sceneParameters.pickingStationContents[2] = warehouseObjects.bottle  # Bottle at picking station 3
 
 # sceneParameters.obstacle0_StartingPosition = [-0.45, 0.5]  # starting position of obstacle 0 [x, y] (in metres), -1 if want to use current CoppeliaSim position, or none if not wanted in the scene
-sceneParameters.obstacle0_StartingPosition = None  # starting position of obstacle 0 [x, y] (in metres), -1 if want to use current CoppeliaSim position, or none if not wanted in the scene
+sceneParameters.obstacle0_StartingPosition = [-0.2, -0.25]  # starting position of obstacle 0 [x, y] (in metres), -1 if want to use current CoppeliaSim position, or none if not wanted in the scene
 sceneParameters.obstacle1_StartingPosition = None   # starting position of obstacle 1 [x, y] (in metres), -1 if want to use current CoppeliaSim position, or none if not wanted in the scene
 sceneParameters.obstacle2_StartingPosition = None   # starting position of obstacle 2 [x, y] (in metres), -1 if want to use current CoppeliaSim position, or none if not wanted in the scene
 
@@ -213,14 +208,74 @@ if __name__ == '__main__':
 						except Exception as e:
 							print("Error during drop attempt: %s" % str(e))
 
-			# Optional: Get detected objects for debugging (uncomment if needed)
-			# objectsRB = warehouseBotSim.GetDetectedObjects()
-			# itemsRB, packingStationRB, obstaclesRB, rowMarkerRangeBearing, shelfRangeBearing = objectsRB
+			# Get detected objects in the camera's field of view
+			# objectsRB = warehouseBotSim.GetDetectedObjects([
+			# 	warehouseObjects.items,
+			# 	warehouseObjects.shelves,
+			# 	warehouseObjects.row_markers,
+			# 	warehouseObjects.obstacles,
+			# 	warehouseObjects.pickingStation,
+			# 	warehouseObjects.PickingStationMarkers,
+			# ])
+
+			# itemsRB, shelfRB, rowMarkerRB, obstaclesRB, pickingStationRB, individualPickingStationRB = objectsRB
+
+			# Debug: Print range and bearing for detected objects
+
+
+			# if itemsRB:
+			# 	for idx, rb in enumerate(itemsRB):
+			# 		if rb and len(rb) >= 2:
+			# 			range_m = rb[0]
+			# 			bearing_rad = rb[1]
+			# 			bearing_deg = math.degrees(bearing_rad)
+			# 			print(f"Item {idx}: Range = {range_m:.2f} m, Bearing = {bearing_rad:.2f} rad ({bearing_deg:.1f}°)")
+			
+			# if shelfRB:
+			# 	for idx, rb in enumerate(shelfRB):
+			# 		if rb and len(rb) >= 2:
+			# 			range_m = rb[0]
+			# 			bearing_rad = rb[1]
+			# 			bearing_deg = math.degrees(bearing_rad)
+			# 			print(f"Shelf {idx}: Range = {range_m:.2f} m, Bearing = {bearing_rad:.2f} rad ({bearing_deg:.1f}°)")
+			
+			# if rowMarkerRB:
+			# 	for idx, rb in enumerate(rowMarkerRB):
+			# 		if rb and len(rb) >= 2:
+			# 			range_m = rb[0]
+			# 			bearing_rad = rb[1]
+			# 			bearing_deg = math.degrees(bearing_rad)
+			# 			print(f"Row Marker {idx}: Range = {range_m:.2f} m, Bearing = {bearing_rad:.2f} rad ({bearing_deg:.1f}°)")
+			
+			# if obstaclesRB:
+			# 	for idx, rb in enumerate(obstaclesRB):
+			# 		if rb and len(rb) >= 2:
+			# 			range_m = rb[0]
+			# 			bearing_rad = rb[1]
+			# 			bearing_deg = math.degrees(bearing_rad)
+			# 			print(f"Obstacle {idx}: Range = {range_m:.2f} m, Bearing = {bearing_rad:.2f} rad ({bearing_deg:.1f}°)")
+			
+			# if pickingStationRB:
+			# 	for idx, rb in enumerate(pickingStationRB):
+			# 		if rb and len(rb) >= 2:
+			# 			range_m = rb[0]
+			# 			bearing_rad = rb[1]
+			# 			bearing_deg = math.degrees(bearing_rad)
+			# 			print(f"Picking Station: Range = {range_m:.2f} m, Bearing = {bearing_rad:.2f} rad ({bearing_deg:.1f}°)")
+			
+			# if individualPickingStationRB:
+			# 	for idx, rb in enumerate(individualPickingStationRB):
+			# 		if rb and len(rb) >= 2:
+			# 			range_m = rb[0]
+			# 			bearing_rad = rb[1]
+			# 			bearing_deg = math.degrees(bearing_rad)
+			# 			print(f"Individual Picking Station {idx+1}: Range = {range_m:.2f} m, Bearing = {bearing_rad:.2f} rad ({bearing_deg:.1f}°)")
+
 
 			# Update object positions (less frequently for better performance)
 			# Only update every 10th frame to reduce ZMQ API overhead
-			if pygame.time.get_ticks() % 100 < 17:  # ~10 times per second
-				warehouseBotSim.UpdateObjectPositions()
+			# if pygame.time.get_ticks() % 100 < 17:  # ~10 times per second
+				# warehouseBotSim.UpdateObjectPositions()
 			
 			# Limit frame rate to 60 FPS
 			clock.tick(60)
