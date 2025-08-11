@@ -76,7 +76,7 @@ if __name__ == '__main__':
 
 		# Create CoppeliaSim WarehouseBot object - this will attempt to open a connection to CoppeliaSim using ZMQ Remote API
 		# Make sure CoppeliaSim is running with ZMQ Remote API enabled (default in modern versions)
-		warehouseBotSim = COPPELIA_WarehouseRobot('127.0.0.1', robotParameters, sceneParameters)
+		warehouseBotSim = COPPELIA_WarehouseRobot(robotParameters, sceneParameters, coppelia_server_ip='127.0.0.1', port=23000)
 		warehouseBotSim.StartSimulator()
 
 		print("Getting initial camera image...")
@@ -95,6 +95,7 @@ if __name__ == '__main__':
 		print("  A/← : Turn left")
 		print("  D/→ : Turn right")
 		print("  Space: Pickup item")
+		print("  R: Drop item in closest shelf bay")
 		print("  P: Stop/Pause movement")
 		print("Close pygame window or press Ctrl+C to exit\n")
 		
@@ -149,9 +150,8 @@ if __name__ == '__main__':
 							cv2_image = cv2_image.reshape([resolution[1], resolution[0], 3])
 
 							screen.fill([0, 0, 0])
-							# Fix color order (CoppeliaSim uses RGB, not BGR) and flip horizontally to correct mirroring
-							frame = cv2.flip(cv2_image, 1)  # Flip horizontally to correct left-right mirroring
-							# frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # Convert RGB to BGR for pygame
+							# Camera orientation corrected in sim, but still need to flip image for display
+							frame = cv2.flip(cv2_image, 0)  # Flip vertically (upside down) for correct display
 							frame = frame.swapaxes(0, 1)
 							frame = pygame.surfarray.make_surface(frame)
 							screen.blit(frame, (0, 0))
@@ -160,7 +160,7 @@ if __name__ == '__main__':
 							font = pygame.font.Font(None, 24)
 							speed_text = font.render(f"Speed: {forward_speed:.2f} m/s", True, (255, 255, 255))
 							turn_text = font.render(f"Turn: {turn_speed:.2f} rad/s", True, (255, 255, 255))
-							controls_text = font.render("Space: Pickup | P: Stop", True, (255, 255, 0))
+							controls_text = font.render("Space: Pickup | R: Drop | P: Stop", True, (255, 255, 0))
 							screen.blit(speed_text, (10, 10))
 							screen.blit(turn_text, (10, 35))
 							screen.blit(controls_text, (10, 60))
@@ -191,13 +191,27 @@ if __name__ == '__main__':
 						try:
 							# Use the enhanced CollectItem function with closest_picking_station=True
 							# This will automatically find the closest item at picking stations and collect it if within range
-							result, station_num = warehouseBotSim.CollectItem(0, closest_picking_station=True)
+							result, station_num = warehouseBotSim.CollectItem(closest_picking_station=True)
 							
 							if not result:
 								print("❌ No items collected")
 								
 						except Exception as e:
 							print(f"Error during pickup attempt: {e}")
+					elif event.key == pygame.K_r:
+						# Drop item functionality
+						try:
+							# Drop item in the closest shelf bay within 0.5m
+							result, shelf_info = warehouseBotSim.DropItemInClosestShelfBay(max_drop_distance=0.1)
+							
+							if result:
+								print("✅ Item dropped successfully at shelf %d, bay [%d,%d]" % (
+									shelf_info['shelf'], shelf_info['x'], shelf_info['y']))
+							else:
+								print("❌ Could not drop item - no suitable shelf bay found or not carrying item")
+								
+						except Exception as e:
+							print("Error during drop attempt: %s" % str(e))
 
 			# Optional: Get detected objects for debugging (uncomment if needed)
 			# objectsRB = warehouseBotSim.GetDetectedObjects()

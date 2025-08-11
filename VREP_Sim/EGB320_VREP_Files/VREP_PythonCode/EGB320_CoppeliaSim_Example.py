@@ -1,54 +1,9 @@
 #!/usr/bin/python
 
-
 # import the warehouse bot module - this will include math, time, numpy (as np) and CoppeliaSim ZMQ Remote API modules
 from warehousebot_lib import *
-import time
-from collections import defaultdict
+
 #import any other required python modules
-
-# Timing tracking variables
-timing_stats = defaultdict(list)
-benchmark_enabled = True
-
-def time_function(func_name):
-    """Decorator to time function calls"""
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            if benchmark_enabled:
-                start_time = time.perf_counter()
-                result = func(*args, **kwargs)
-                end_time = time.perf_counter()
-                timing_stats[func_name].append((end_time - start_time) * 1000)  # Convert to milliseconds
-                return result
-            else:
-                return func(*args, **kwargs)
-        return wrapper
-    return decorator
-
-def print_timing_stats(loop_count):
-    """Print timing statistics every N loops"""
-    if not timing_stats:
-        return
-        
-    print(f"\n📊 === Timing Statistics (after {loop_count} loops) ===")
-    total_time = 0
-    
-    for func_name, times in timing_stats.items():
-        if times:
-            avg_time = sum(times) / len(times)
-            min_time = min(times)
-            max_time = max(times)
-            total_time += avg_time
-            
-            print(f"  {func_name}:")
-            print(f"    Avg: {avg_time:.2f}ms, Min: {min_time:.2f}ms, Max: {max_time:.2f}ms, Calls: {len(times)}")
-    
-    print(f"  Total average loop time: {total_time:.2f}ms ({1000/total_time:.1f} FPS)")
-    print(f"  Most expensive operation: {max(timing_stats.keys(), key=lambda k: sum(timing_stats[k])/len(timing_stats[k]) if timing_stats[k] else 0)}")
-    
-    # Clear stats for next period
-    timing_stats.clear()
 
 
 # SET SCENE PARAMETERS
@@ -60,11 +15,10 @@ sceneParameters.pickingStationContents[0] = warehouseObjects.bowl    # Bowl at p
 sceneParameters.pickingStationContents[1] = warehouseObjects.mug     # Mug at picking station 2
 sceneParameters.pickingStationContents[2] = warehouseObjects.bottle  # Bottle at picking station 3
 
-
-sceneParameters.obstacle0_StartingPosition = -1  # starting position of obstacle 0 [x, y] (in metres), -1 if want to use current CoppeliaSim position, or none if not wanted in the scene
-# sceneParameters.obstacle0_StartingPosition = None  # starting position of obstacle 0 [x, y] (in metres), -1 if want to use current CoppeliaSim position, or none if not wanted in the scene
-sceneParameters.obstacle1_StartingPosition = -1   # starting position of obstacle 1 [x, y] (in metres), -1 if want to use current CoppeliaSim position, or none if not wanted in the scene
-sceneParameters.obstacle2_StartingPosition = -1   # starting position of obstacle 2 [x, y] (in metres), -1 if want to use current CoppeliaSim position, or none if not wanted in the scene
+# Starting positions of obstacles [x, y] (in metres), -1 to use current CoppeliaSim position, None if not wanted in scene
+sceneParameters.obstacle0_StartingPosition = -1  # Use current position
+sceneParameters.obstacle1_StartingPosition = -1  # Use current position
+sceneParameters.obstacle2_StartingPosition = -1  # Use current position
 
 
 # SET ROBOT PARAMETERS
@@ -101,147 +55,61 @@ if __name__ == '__main__':
 	# Wrap everything in a try except case that catches KeyboardInterrupts. 
 	# In the exception catch code attempt to Stop CoppeliaSim so you don't have to Stop it manually when pressing CTRL+C
 	try:
-
 		print("🤖 Starting EGB320 CoppeliaSim Warehouse Robot Example")
-		print("📊 Debug info and timing benchmarks enabled")
-		print("🔍 Item detection and close obstacle alerts enabled")
-		print("⏱️  Performance statistics will be displayed every 100 loops")
 		print("Press Ctrl+C to stop the simulation\n")
 
 		# Create CoppeliaSim WarehouseBot object - this will attempt to open a connection to CoppeliaSim using ZMQ Remote API. 
 		# Make sure CoppeliaSim is running with ZMQ Remote API enabled (default in modern versions).
-		warehouseBotSim = COPPELIA_WarehouseRobot('127.0.0.1', robotParameters, sceneParameters)
-		# warehouseBotSim.SetScene()
-		
-		# Enable detailed timing debug inside functions
-		warehouseBotSim.enable_timing_debug = True
-		
+		# Check the port number in the CoppeliaSim settings if you have issues connecting to ZMQ Remote API
+		warehouseBotSim = COPPELIA_WarehouseRobot(robotParameters, sceneParameters, coppelia_server_ip='127.0.0.1', port=23000)
 		warehouseBotSim.StartSimulator()
 
-		#We recommend changing this to a controlled rate loop (fixed frequency) to get more reliable control behaviour
-		loop_count = 0
-
+		# Main control loop
+		# Consider changing this to a rate control loop using time.sleep() to avoid busy waiting
+		# for example, you could use time.sleep(0.1) to run at 10Hz
 		while True:
-			loop_count += 1
-			loop_start_time = time.perf_counter()
 			
-			# Time the motor velocity command
-			start_time = time.perf_counter()
-			warehouseBotSim.SetTargetVelocities(0.00, 0.3)
-			timing_stats["SetTargetVelocities"].append((time.perf_counter() - start_time) * 1000)
+			# Set robot velocities (forward velocity, turn velocity)
+			warehouseBotSim.SetTargetVelocities(0.2, 1.0)
 
-			# Time the object detection
-			start_time = time.perf_counter()
-			objectsRB = warehouseBotSim.GetDetectedObjects(
-				[
-					warehouseObjects.items,
-     				warehouseObjects.shelves,
-					warehouseObjects.row_markers,
-					warehouseObjects.obstacles,
-					warehouseObjects.pickingStation,
-				]
-			)
-			timing_stats["GetDetectedObjects"].append((time.perf_counter() - start_time) * 1000)
+			# Get detected objects in the camera's field of view
+			# returns are Range and Bearing for each object type
+			objectsRB = warehouseBotSim.GetDetectedObjects([
+				warehouseObjects.items,
+				warehouseObjects.shelves,
+				warehouseObjects.row_markers,
+				warehouseObjects.obstacles,
+				warehouseObjects.pickingStation,
+			])
+
+			# Unpack the detected objects
 			itemsRB, packingStationRB, obstaclesRB, rowMarkerRangeBearing, shelfRangeBearing = objectsRB
 
-			# Time the proximity sensor reading
-			start_time = time.perf_counter()
-			dist = warehouseBotSim.readProximity()
-			timing_stats["readProximity"].append((time.perf_counter() - start_time) * 1000)
+			# Read proximity sensor
+			#dist = warehouseBotSim.readProximity()
 			
-			# Time the UpdateObjectPositions call
-			start_time = time.perf_counter()
+			# Update object positions (required for accurate range and bearing calculations)
 			warehouseBotSim.UpdateObjectPositions()
-			timing_stats["UpdateObjectPositions"].append((time.perf_counter() - start_time) * 1000)
 			
-			loop_total_time = (time.perf_counter() - loop_start_time) * 1000
-			timing_stats["Total Loop Time"].append(loop_total_time)
-			
-			# Debug info - show every 50 loops, timing stats every 100 loops
-			if loop_count % 50 == 0:
-				print(f"\n=== Debug Info (Loop {loop_count}) ===")
-				print(f"Proximity sensor: {dist:.3f}m")
-				
-				# Count detected objects
-				item_count = sum(1 for item_class in itemsRB if item_class is not None for item in item_class)
-				obstacle_count = len(obstaclesRB) if obstaclesRB is not None else 0
-				shelf_count = sum(1 for shelf in shelfRangeBearing if shelf is not None)
-				row_marker_count = sum(1 for marker in rowMarkerRangeBearing if marker is not None)
-				
-				print(f"Objects detected:")
-				print(f"  - Items: {item_count}")
-				print(f"  - Picking station: {'Yes' if packingStationRB is not None else 'No'}")
-				print(f"  - Obstacles: {obstacle_count}")
-				print(f"  - Shelves: {shelf_count}/6")
-				print(f"  - Row markers: {row_marker_count}/3")
-				
-				# Show picking station details if detected
-				if packingStationRB is not None:
-					print(f"  - Picking station range: {packingStationRB[0]:.3f}m, bearing: {packingStationRB[1]:.3f}rad")
-				
-				# Show closest obstacle if any
-				if obstaclesRB is not None and len(obstaclesRB) > 0:
-					closest_obstacle = min(obstaclesRB, key=lambda x: x[0])
-					print(f"  - Closest obstacle: {closest_obstacle[0]:.3f}m, bearing: {closest_obstacle[1]:.3f}rad")
-				
-				# Show row marker details if detected
-				for i, marker in enumerate(rowMarkerRangeBearing):
-					if marker is not None:
-						print(f"  - Row marker {i+1}: {marker[0]:.3f}m, bearing: {marker[1]:.3f}rad")
-				
-				# Show current loop performance
-				if timing_stats["Total Loop Time"]:
-					recent_avg = sum(timing_stats["Total Loop Time"][-10:]) / min(10, len(timing_stats["Total Loop Time"]))
-					print(f"  - Current loop time: {recent_avg:.1f}ms ({1000/recent_avg:.1f} FPS)")
-			
-			# Print detailed timing statistics every 100 loops
-			if loop_count % 100 == 0:
-				print_timing_stats(loop_count)
+			# Check for items in field of view and attempt to collect them
+			#warehouseBotSim.CollectItem()
 
-			#Check to see if an item is within the camera's FOV
-			for itemClass in itemsRB:
-				if itemClass != None:
-					# loop through each item detected using Pythonian way
-					for itemRB in itemClass:
-						itemRange = itemRB[0]
-						itemBearing = itemRB[1]
-						
-						print(f"Item detected! Range: {itemRange:.3f}m, Bearing: {itemBearing:.3f}rad")
-						
-						# Time the collect item operation
-						start_time = time.perf_counter()
-						warehouseBotSim.CollectItem(1)
-						timing_stats["CollectItem"].append((time.perf_counter() - start_time) * 1000)
-
-			# warehouseBotSim.Dropitem()
-
-			# Check to see if any obstacles are within the camera's FOV
-			if obstaclesRB != None:
-				# loop through each obstacle detected using Pythonian way
+			# Check for close obstacles and alert
+			if obstaclesRB is not None:
 				for obstacle in obstaclesRB:
 					obstacleRange = obstacle[0]
 					obstacleBearing = obstacle[1]
 					
 					# Alert if obstacle is close (within 1 meter)
 					if obstacleRange < 1.0:
-						print(f"⚠️  Obstacle detected! Range: {obstacleRange:.3f}m, Bearing: {obstacleBearing:.3f}rad")
+						print(f"⚠️  Close obstacle! Range: {obstacleRange:.3f}m, Bearing: {obstacleBearing:.3f}rad")
 
-			if robotParameters.sync:
-				warehouseBotSim.stepSim()  # Note: stepSim() is deprecated with ZMQ Remote API
+			# For synchronous mode (not currently implemented with ZMQ Remote API)
+			#if robotParameters.sync:
+			#	warehouseBotSim.stepSim()
 
-
-	except KeyboardInterrupt as e:
+	except KeyboardInterrupt:
 		print("\n🛑 Keyboard interrupt detected - stopping simulation...")
-		
-		# Print final timing statistics
-		if timing_stats:
-			print("\n📊 === Final Performance Summary ===")
-			for func_name, times in timing_stats.items():
-				if times:
-					avg_time = sum(times) / len(times)
-					print(f"  {func_name}: {avg_time:.2f}ms average ({len(times)} calls)")
-		
-		# attempt to stop simulator so it restarts and you don't have to manually press the Stop button in CoppeliaSim 
 		warehouseBotSim.StopSimulator()
 		print("✅ Simulation stopped successfully")
 

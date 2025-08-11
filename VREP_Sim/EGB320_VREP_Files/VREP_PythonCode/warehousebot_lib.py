@@ -62,7 +62,7 @@ class COPPELIA_WarehouseRobot(object):
 	#### COPPELIA WAREHOUSE BOT INIT ###
 	####################################
 
-	def __init__(self, coppelia_server_ip, robotParameters, sceneParameters):
+	def __init__(self, robotParameters, sceneParameters, coppelia_server_ip='127.0.0.1', port=23000):
 		# Robot Parameters
 		self.robotParameters = robotParameters
 		self.leftWheelBias = 0
@@ -70,6 +70,9 @@ class COPPELIA_WarehouseRobot(object):
 
 		# Scene Paramaters
 		self.sceneParameters = sceneParameters
+		
+		# Store port number for ZMQ connection
+		self.port = port
 
 		# COPPELIA Simulator Client ID
 		self.clientID = None
@@ -79,6 +82,7 @@ class COPPELIA_WarehouseRobot(object):
 		self.scriptHandle = None  # Handle for the script attached to the Robot object
 		self.cameraHandle = None
 		self.objectDetectorHandle = None
+		self.collectorForceSensorHandle = None  # Handle for the CollectorForceSensor
 		self.leftMotorHandle = None 		# left and right used for differential drive
 		self.rightMotorHandle = None
 		self.v60MotorHandle = None 			# 60, 180, 300 used for omni drive
@@ -92,6 +96,7 @@ class COPPELIA_WarehouseRobot(object):
 		self.pickingStationItemHandles = [None, None, None]  # Handles for items at picking stations 1, 2, 3
 		self.rowMarkerHandles = [None,None,None]
 		self.shelfHandles = [None]*6
+		self.bayHandles = np.full((6,4,3), None, dtype=object)  # Handles for bay dummies [shelf][x][y]
 
 		
 
@@ -117,9 +122,12 @@ class COPPELIA_WarehouseRobot(object):
 
 		# Variable to hold whether the item has been joined to the robot
 		self.itemConnectedToRobot = False
+		
+		# Handle of the currently held item (for direct API release)
+		self.heldItemHandle = None
 
 		# Attempt to Open Connection to ZMQ Remote API Server
-		self.OpenConnectionToZMQ(coppelia_server_ip)
+		self.OpenConnectionToZMQ(coppelia_server_ip, self.port)
 
 		# Attempt To Get COPPELIA Object Handles
 		self.GetCOPPELIAObjectHandles()
@@ -484,16 +492,6 @@ class COPPELIA_WarehouseRobot(object):
 			leftWheelSpeed = min(leftWheelSpeed, maxWheelSpeed)
 			rightWheelSpeed = min(rightWheelSpeed, maxWheelSpeed)
 
-			# set wheel speeds to 0 if less than the minimum wheel speed
-			if abs(leftWheelSpeed) < minWheelSpeed:
-				leftWheelSpeed = 0
-			if abs(rightWheelSpeed) < minWheelSpeed:
-				rightWheelSpeed = 0
-
-			# Convert to float to ensure scalar values for ZMQ API
-			leftWheelSpeed = float(leftWheelSpeed)
-			rightWheelSpeed = float(rightWheelSpeed)
-
 			# set motor speeds
 			try:
 				self.sim.setJointTargetVelocity(self.leftMotorHandle, leftWheelSpeed)
@@ -518,10 +516,48 @@ class COPPELIA_WarehouseRobot(object):
 	def Dropitem(self):
 		if self.itemConnectedToRobot:
 			try:
-				self.sim.callScriptFunction('RobotReleaseItem', self.scriptHandle, [], [], [], "")
-				self.itemConnectedToRobot = False
+				# Instead of calling script function, use ZMQ API directly
+				# This replicates the RobotReleaseItem Lua script functionality
+				
+				# For now, we'll track the held item handle when we collect it
+				# This is a simplified version - in the full implementation you'd track multiple items
+				if hasattr(self, 'heldItemHandle') and self.heldItemHandle is not None:
+					objectHandle = self.heldItemHandle
+					
+					# Check if handle is valid
+					if objectHandle != -1:
+						try:
+							# Verify handle is still valid
+							self.sim.getObjectPosition(objectHandle, -1)
+							
+							# Unparent the item from the robot (equivalent to sim.setObjectParent(objectHandle, -1, true))
+							self.sim.setObjectParent(objectHandle, -1, True)
+							
+							# Make object respondable (collidable) - equivalent to sim.setObjectInt32Param(objectHandle, 3004, 1)
+							# self.sim.setObjectInt32Param(objectHandle, 3004, 1)
+							
+							# Make object non-static (dynamic) - equivalent to sim.setObjectInt32Param(objectHandle, sim.shapeintparam_static, 0)
+							# self.sim.setObjectInt32Param(objectHandle, self.sim.shapeintparam_static, 0)
+							
+							print("Released item with handle: %d" % objectHandle)
+							self.heldItemHandle = None
+							self.itemConnectedToRobot = False
+							
+						except Exception as e:
+							print("Error: Invalid item handle during release: %s" % str(e))
+							self.heldItemHandle = None
+							self.itemConnectedToRobot = False
+					else:
+						print("Error: Invalid item handle (-1) during release")
+						self.heldItemHandle = None
+						self.itemConnectedToRobot = False
+				else:
+					print("Warning: No items to release")
+					self.itemConnectedToRobot = False
+					
 			except Exception as e:
-				print(f"Error calling RobotReleaseItem script function: {e}")
+				print("Error during item release: %s" % str(e))
+				self.itemConnectedToRobot = False
 
 	# Replicate the JoinRobotAndItem functionality using direct sim calls
 	def JoinRobotAndItem(self, item_handle):
@@ -545,7 +581,7 @@ class COPPELIA_WarehouseRobot(object):
 			try:
 				self.sim.getObjectPosition(item_handle, -1)
 			except Exception:
-				print(f"Warning: Invalid object handle: {item_handle}")
+				print("Warning: Invalid object handle: %s" % str(item_handle))
 				return False
 			
 			# Set object position relative to robot (equivalent to __setObjectPosition__ in Lua)
@@ -555,20 +591,22 @@ class COPPELIA_WarehouseRobot(object):
 			# Parent the item to the robot (equivalent to sim.setObjectParent in Lua)
 			self.sim.setObjectParent(item_handle, self.robotHandle, True)
 			
-			print(f"Grabbed item with handle: {item_handle}")
+			# Store the item handle for later release
+			self.heldItemHandle = item_handle
+			
+			print("Grabbed item with handle: %d" % item_handle)
 			return True
 			
 		except Exception as e:
-			print(f"Error in JoinRobotAndItem: {e}")
+			print("Error in JoinRobotAndItem: %s" % str(e))
 			return False
 
 	# Use this to force a physical connection between item and rover
-	# Ideally use this if no collector has been added to your robot model
-	# if two items are within the distance it will attempt to collect both
+	# Collects items from picking stations only
 	# Outputs:
 	#		Success - returns True if a item was collected or false if not
 	#		closest_station - returns the station number (1-3) if closest_picking_station=True and item collected from picking station
-	def CollectItem(self, shelf_height, closest_picking_station=False):
+	def CollectItem(self, closest_picking_station=False):
 
 		# If closest_picking_station is True, find the closest item at picking stations
 		if closest_picking_station:
@@ -582,11 +620,10 @@ class COPPELIA_WarehouseRobot(object):
 				if item_handle is not None:
 					try:
 						# Get current position of the picking station item
-						item_position = self.sim.getObjectPosition(item_handle, -1)
-						
-						# Calculate distance from robot collector to this item
-						distance = self.CollectorToItemDistance(item_position)
-						
+						item_position = self.sim.getObjectPosition(item_handle, self.collectorForceSensorHandle)
+
+						distance = math.sqrt(math.pow(item_position[0], 2) + math.pow(item_position[1], 2) + math.pow(item_position[2], 2))
+
 						if distance is not None and distance < closest_distance:
 							closest_distance = distance
 							closest_station = station_index
@@ -619,47 +656,30 @@ class COPPELIA_WarehouseRobot(object):
 				print("⚠️ No items found at any picking stations")
 				return False, None
 
-		# Original collection logic for shelf bays
-		for shelf,x,y in [(s,x,y) for s in range(6) for x in range(4) for y in range(3)]:
-			handle = self.itemHandles[shelf,x,y]
-			itemPosition = self.itemPositions[shelf,x,y]
-
-			itemDist = self.CollectorToItemDistance(itemPosition)
-
-			if itemDist != None and itemDist < self.robotParameters.maxCollectDistance and self.itemConnectedToRobot == False and self.GetItemBayHeight(itemPosition) == shelf_height:
-				# make physical connection between item and robot to simulate collector
-				if self.JoinRobotAndItem(handle):
-					self.itemConnectedToRobot = True
-					return True, None
-				else:
-					print(f"Error joining item from shelf bay")
-					return False, None
-		
-		# Check items at picking stations (items at picking stations are at ground level, so shelf_height should be 0)
-		if shelf_height == 0:
-			for station_index in range(3):
-				item_handle = self.pickingStationItemHandles[station_index]
-				
-				if item_handle is not None:
-					try:
-						# Get current position of the picking station item
-						item_position = self.sim.getObjectPosition(item_handle, -1)
-						itemDist = self.CollectorToItemDistance(item_position)
-						
-						if itemDist != None and itemDist < self.robotParameters.maxCollectDistance and self.itemConnectedToRobot == False:
-							# make physical connection between item and robot to simulate collector
-							if self.JoinRobotAndItem(item_handle):
-								self.itemConnectedToRobot = True
-								# Clear the item handle since it's been collected
-								self.pickingStationItemHandles[station_index] = None
-								print(f"Collected item from picking station {station_index + 1}")
-								return True, station_index + 1
-							else:
-								print(f"Error joining item from picking station {station_index + 1}")
-								return False, None
-					except Exception as e:
-						# Item may have been removed or doesn't exist anymore
-						self.pickingStationItemHandles[station_index] = None
+		# Default behavior: try to collect from any picking station within reach
+		for station_index in range(3):
+			item_handle = self.pickingStationItemHandles[station_index]
+			
+			if item_handle is not None:
+				try:
+					# Get current position of the picking station item
+					item_position = self.sim.getObjectPosition(item_handle, self.collectorForceSensorHandle)
+					distance = math.sqrt(math.pow(item_position[0], 2) + math.pow(item_position[1], 2) + math.pow(item_position[2], 2))
+					
+					if distance is not None and distance < self.robotParameters.maxCollectDistance and self.itemConnectedToRobot == False:
+						# make physical connection between item and robot to simulate collector
+						if self.JoinRobotAndItem(item_handle):
+							self.itemConnectedToRobot = True
+							# Clear the item handle since it's been collected
+							self.pickingStationItemHandles[station_index] = None
+							print(f"✅ Collected item from picking station {station_index + 1}! (Distance: {distance:.3f}m)")
+							return True, station_index + 1
+						else:
+							print(f"Error joining item from picking station {station_index + 1}")
+							return False, None
+				except Exception as e:
+					# Item may have been removed or doesn't exist anymore
+					self.pickingStationItemHandles[station_index] = None
 		
 		return False, None
 
@@ -671,8 +691,107 @@ class COPPELIA_WarehouseRobot(object):
 		else:
 			return 2
 
-	
+	def DropItemInClosestShelfBay(self, max_drop_distance=0.5):
+		"""
+		Drops an item in the closest shelf bay that is within the threshold distance.
+		Uses sim.checkDistance with bay handles to find the closest empty bay.
+		
+		Args:
+			max_drop_distance (float): Maximum distance to consider a shelf bay for dropping (in meters)
+			
+		Returns:
+			tuple: (success, shelf_info) where:
+				- success (bool): True if item was dropped successfully, False otherwise
+				- shelf_info (dict): Information about the shelf where item was dropped, or None if failed
+					Contains: {'shelf': shelf_index, 'x': x_coord, 'y': y_coord, 'distance': distance_to_bay}
+		"""
+		if not self.itemConnectedToRobot:
+			print("❌ No item to drop - robot is not carrying anything")
+			return False, None
+			
+		if self.robotPose is None:
+			print("❌ Cannot drop item - robot position unknown")
+			return False, None
+			
+		closest_bay = None
+		min_distance = float('inf')
+		
+		# Check all shelf bays to find the closest empty one using bay handles
+		for shelf in range(6):  # 6 shelves (0-5)
+			for x in range(4):  # 4 positions along x-axis
+				for y in range(3):  # 3 height levels
+					# Check if this bay is empty (no item currently there)
+					if np.isnan(self.itemPositions[shelf, x, y]).any():
+						# Get the bay handle
+						bay_handle = self.bayHandles[shelf, x, y]
+						
+						if bay_handle is not None:
+							try:
+								# Use sim.checkDistance to get distance from robot to this bay
+								# Returns: result, distanceData, objectHandlePair
+								# distanceData format: [obj1X, obj1Y, obj1Z, obj2X, obj2Y, obj2Z, dist]
+								result, distance_data, object_pair = self.sim.checkDistance(self.collectorForceSensorHandle, bay_handle, max_drop_distance)
 
+								# If distance check succeeded (result == 1 means distance < threshold)
+								if result == 1 and distance_data is not None:
+									# Extract actual distance from distance_data (7th element)
+									if isinstance(distance_data, (list, tuple)) and len(distance_data) >= 7:
+										actual_distance = distance_data[6]  # Distance is the 7th element (index 6)
+									else:
+										# Fallback: if data format is unexpected, skip this bay
+										print("Warning: Unexpected distance_data format from sim.checkDistance")
+										continue
+									
+									# Check if this bay is closer than previous candidates
+									if actual_distance < min_distance:
+										min_distance = actual_distance
+										# Get bay position for info
+										bay_position = self.sim.getObjectPosition(bay_handle, -1)
+										# Debug: Get the actual bay name to verify coordinates
+										bay_name = '/Shelf%d/Bay%d%d' % (shelf, x, y)
+										closest_bay = {
+											'shelf': shelf,
+											'x': x, 
+											'y': y,
+											'distance': actual_distance,
+											'world_x': bay_position[0],
+											'world_y': bay_position[1],
+											'world_z': bay_position[2],
+											'handle': bay_handle,
+											'bay_name': bay_name  # Add for debugging
+										}
+							except Exception as e:
+								# Bay handle might be invalid or other error
+								print("Warning: Error checking distance to bay %d,%d,%d: %s" % (shelf, x, y, str(e)))
+								continue
+		
+		if closest_bay is None:
+			print("❌ No empty shelf bay found within %0.1fm of robot" % max_drop_distance)
+			return False, None
+			
+		# Attempt to drop the item
+		try:
+			print("📦 Dropping item at shelf %d, bay [%d,%d] (%s) (distance: %0.2fm)" % (
+				closest_bay['shelf'], closest_bay['x'], closest_bay['y'], closest_bay['bay_name'], closest_bay['distance']))
+			
+			# Call the existing drop function
+			self.Dropitem()
+			
+			# Update the item position in our tracking array to mark this bay as occupied
+			# Note: In a real implementation, you might want to track what specific item was dropped
+			self.itemPositions[closest_bay['shelf'], closest_bay['x'], closest_bay['y']] = [
+				closest_bay['world_x'], 
+				closest_bay['world_y'], 
+				closest_bay['world_z']
+			]
+			
+			print("✅ Successfully dropped item in shelf %d, bay [%d,%d] (%s)" % (
+				closest_bay['shelf'], closest_bay['x'], closest_bay['y'], closest_bay['bay_name']))
+			return True, closest_bay
+			
+		except Exception as e:
+			print("❌ Error dropping item: %s" % str(e))
+			return False, None
 
 	# Update Object Positions - call this in every loop of your navigation code (or at the frequency your vision system runs at). 
 	# This is required to get correct range and bearings to objects.
@@ -683,60 +802,39 @@ class COPPELIA_WarehouseRobot(object):
 	#		itemPosition - a 3 element array representing the item's position (x,y,z), or None if was not successfully updated from COPPELIA
 	#		obstaclePositions - a 3 element list, with each index in the list containing a 3 element array representing the item's position (x,y,z), or None if was not successfully updated from COPPELIA
 	def UpdateObjectPositions(self):
-		import time  # Import time for internal timing
+		# Import time for internal timing
 		timing_debug = hasattr(self, 'enable_timing_debug') and self.enable_timing_debug
 		
 		if timing_debug:
 			func_start_time = time.perf_counter()
-			print("📍 [UpdateObjectPositions] Starting position updates...")
+			print("🔄 [UpdateObjectPositions] Starting update...")
 		
 		# attempt to get object positions from COPPELIA
 		if timing_debug:
-			get_pos_start_time = time.perf_counter()
+			get_pos_start = time.perf_counter()
 		
 		self.GetObjectPositions()
 		
 		if timing_debug:
-			get_pos_time = (time.perf_counter() - get_pos_start_time) * 1000
-			print(f"📍    GetObjectPositions call: {get_pos_time:.1f}ms")
+			get_pos_time = (time.perf_counter() - get_pos_start) * 1000
+			print("📍    GetObjectPositions call: %0.1fms" % get_pos_time)
 
 		# update item
 		if timing_debug:
-			update_item_start_time = time.perf_counter()
+			update_item_start = time.perf_counter()
 		
 		self.UpdateItem()
 		
 		if timing_debug:
-			update_item_time = (time.perf_counter() - update_item_start_time) * 1000
-			print(f"📍    UpdateItem call: {update_item_time:.1f}ms")
+			update_item_time = (time.perf_counter() - update_item_start) * 1000
+			print("🔧    UpdateItem call: %0.1fms" % update_item_time)
+
+		if timing_debug:
 			func_total_time = (time.perf_counter() - func_start_time) * 1000
-			print(f"📍 [UpdateObjectPositions] Total time: {func_total_time:.1f}ms")
+			print("🔄 [UpdateObjectPositions] Total time: %0.1fms" % func_total_time)
 
 		# return object positions		
 		return self.robotPose, self.itemPositions, self.obstaclePositions
-
-
-	def readProximity(self):
-		try:
-			# ZMQ Remote API might return different number of values
-			result = self.sim.readProximitySensor(self.proximityHandle)
-			
-			# Handle different return formats
-			if isinstance(result, tuple) and len(result) >= 2:
-				objectDetected = result[0]
-				detected_point = result[1]
-				if objectDetected and detected_point:
-					return np.linalg.norm(detected_point)
-				else:
-					return float('inf')
-			else:
-				# If result format is unexpected, return infinite distance
-				return float('inf')
-				
-		except Exception as e:
-			print(f"Failed to read proximity sensor: {e}")
-			return float('inf')  # Return infinite distance if sensor read fails
-
 	#########################################
 	####### COPPELIA API SERVER FUNCTIONS #######
 	#########################################
@@ -744,12 +842,12 @@ class COPPELIA_WarehouseRobot(object):
 
 	# Open connection to COPPELIA API Server
 	# Open connection to ZMQ Remote API
-	def OpenConnectionToZMQ(self, coppelia_server_ip):
+	def OpenConnectionToZMQ(self, coppelia_server_ip, port=23000):
 		print('Attempting connection to CoppeliaSim ZMQ Remote API Server.')
 		try:
 			# Set a reasonable timeout to prevent hanging
-			print(f'Connecting to {coppelia_server_ip}:23001...')
-			self.client = RemoteAPIClient(host=coppelia_server_ip, port=23001)
+			print(f'Connecting to {coppelia_server_ip}:{port}...')
+			self.client = RemoteAPIClient(host=coppelia_server_ip, port=port)
 			self.sim = self.client.require('sim')
 			print('Connected to CoppeliaSim ZMQ Remote API Server.')
 			
@@ -825,6 +923,11 @@ class COPPELIA_WarehouseRobot(object):
 			print('Failed to get Object Detector handle. Terminating Program. Error Code %d'%(errorCode))
 			sys.exit(-1)
 
+		errorCode = self.GetCollectorForceSensorHandle()
+		if errorCode != 0:
+			print('Failed to get CollectorForceSensor handle. Terminating Program. Error Code %d'%(errorCode))
+			sys.exit(-1)
+
 		errorCode1, errorCode2, errorCode3,errorCode4 = self.GetMotorHandles()
 		if errorCode1 != 0 or errorCode2 != 0:
 			print('Failed to get Motor object handles. Terminating Program. Error Codes %d, %d, %d'%(errorCode1, errorCode2, errorCode3))
@@ -847,12 +950,11 @@ class COPPELIA_WarehouseRobot(object):
 		if errorCode1 != 0 or errorCode2 != 0 or errorCode3 != 0:
 			print('Failed to get Row Marker object handles. Terminating Program. Error Codes %d, %d, %d'%(errorCode1, errorCode2, errorCode3))
 			sys.exit(-1)
-
 		errorCodes = self.GetItemTemplateHandles()
 		if any([code != 0 for code in errorCodes]):
 			print(f'Failed to get Item object handles. Terminating Program. Error Codes {errorCodes}')
 			sys.exit(-1)
-
+			
 		errorCodes = self.getShelfHandles()
 		if any([code != 0 for code in errorCodes]):
 			print(f'Failed to get Shelf object handles. Terminating Program. Error Codes {errorCodes}')
@@ -862,6 +964,11 @@ class COPPELIA_WarehouseRobot(object):
 		if errorCode != 0:
 			print(f'Failed to get Proximity sensor handle. Terminating Program. Error Codes {errorCodes}')
 			sys.exit(-1) 
+		
+		errorCodes = self.getBayHandles()
+		if any([code != 0 for code in errorCodes]):
+			print('Failed to get Bay object handles. Terminating Program. Error Codes %s' % str(errorCodes))
+			sys.exit(-1)
 	
 	############################################
 	####### COPPELIA OBJECT HANDLE FUNCTIONS #######
@@ -903,6 +1010,15 @@ class COPPELIA_WarehouseRobot(object):
 			return 0
 		except Exception as e:
 			print(f"Error getting object detector handle: {e}")
+			return -1
+
+	# Get ZMQ CollectorForceSensor Handle
+	def GetCollectorForceSensorHandle(self):
+		try:
+			self.collectorForceSensorHandle = self.sim.getObject('/Robot/CollectorForceSensor')
+			return 0
+		except Exception as e:
+			print(f"Error getting collector force sensor handle: {e}")
 			return -1
 
 			
@@ -1018,75 +1134,23 @@ class COPPELIA_WarehouseRobot(object):
 			print(f"Error getting proximity sensor handle: {e}")
 			return -1
 
-
-	def GetShelfRangeBearing(self):
-		try:
-			# Use sim.checkDistance directly instead of calling script function
-			results = []
-			all_distance_data = []
-			
-			for i, shelf_handle in enumerate(self.shelfHandles):
-				threshold = self.robotParameters.maxShelfDetectionDistance
-				
-				# Call sim.checkDistance directly - handle variable return values
-				distance_result = self.sim.checkDistance(self.robotHandle, shelf_handle, threshold)
-				
-				# Handle different return formats from sim.checkDistance
-				if isinstance(distance_result, tuple):
-					if len(distance_result) >= 2:
-						result = distance_result[0]
-						distance_data = distance_result[1]
-					else:
-						result = distance_result[0] if len(distance_result) > 0 else False
-						distance_data = None
-				else:
-					result = distance_result
-					distance_data = None
-				
-				# Convert result to consistent error code format (0 = success)
-				if result:
-					results.append(0)  # Success
-				else:
-					results.append(1)  # Failure
-				
-				# Flatten distance data if it exists
-				if distance_data:
-					if isinstance(distance_data, (list, tuple)):
-						for data_point in distance_data:
-							all_distance_data.append(data_point)
-					else:
-						all_distance_data.append(distance_data)
-				
-		except Exception as e:
-			print(f"Error calling sim.checkDistance: {e}")
-			return [None] * 6
-		
-		rb = [None] * 6
-		if all_distance_data:
-			# Reshape distance data similar to the original implementation
-			# Each shelf should have 6 data points (pA: 3 points, pB: 3 points)
-			data_points_per_shelf = 6
-			data_array = np.array(all_distance_data)
-			
-			try:
-				# Reshape data to handle multiple shelves
-				if len(data_array) >= len(self.shelfHandles) * data_points_per_shelf:
-					data = data_array.reshape(len(self.shelfHandles), -1)
-					for i, vec in enumerate(data):
-						if i < len(results) and results[i] == 0:  # Success
-							if len(vec) >= 6:
-								pA = vec[:3]
-								pB = vec[3:6]
-								_, range_val, bearing = self.GetRBInCameraFOV(pB)
-								rb[i] = (range_val, bearing)
-				else:
-					# If we don't have enough data points, try to process what we have
-					print(f"Warning: Expected {len(self.shelfHandles) * data_points_per_shelf} data points, got {len(data_array)}")
-					
-			except Exception as reshape_error:
-				print(f"Error processing distance data: {reshape_error}")
-				
-		return rb
+	# Get ZMQ bay handles for each shelf
+	def getBayHandles(self):
+		error_codes = []
+		for shelf in range(6):  # 6 shelves (0-5)
+			for x in range(4):  # 4 x positions (0-3)
+				for y in range(3):  # 3 y positions/heights (0-2)
+					try:
+						# Bay naming convention: /Shelf{shelf}/Bay{x}{y}
+						bay_name = '/Shelf%d/Bay%d%d' % (shelf, x, y)
+						self.bayHandles[shelf, x, y] = self.sim.getObject(bay_name)
+						error_codes.append(0)
+					except Exception as e:
+						print("Warning: Could not get handle for %s: %s" % (bay_name, str(e)))
+						self.bayHandles[shelf, x, y] = None
+						error_codes.append(-1)
+		return error_codes
+	
 	###############################################
 	####### ROBOT AND SCENE SETUP FUNCTIONS #######
 	###############################################
@@ -1216,7 +1280,8 @@ class COPPELIA_WarehouseRobot(object):
 		# set camera pose
 		try:
 			self.sim.setObjectPosition(self.cameraHandle, self.robotHandle, [x, 0, z])
-			self.sim.setObjectOrientation(self.cameraHandle, self.robotHandle, [math.pi, pitch, math.pi/2.0])
+			# Flip the camera horizontally by changing yaw from math.pi/2.0 to -math.pi/2.0
+			self.sim.setObjectOrientation(self.cameraHandle, self.robotHandle, [math.pi, pitch, -math.pi/2.0])
 		except Exception as e:
 			print(f"Error setting camera pose: {e}")
 
@@ -1644,98 +1709,101 @@ class COPPELIA_WarehouseRobot(object):
 
 		return _range, _bearing
 
+	# Gets the range and bearing to all shelves from the camera position
+	def GetShelfRangeBearing(self):
+		"""
+		Calculate range and bearing to all shelves from the camera position.
+		
+		Returns:
+			list: A list of [range, bearing] pairs for each shelf (6 shelves total).
+				  Returns None for shelves that cannot be detected or don't exist.
+		"""
+		shelfRB = [None] * 6  # Initialize list for 6 shelves
+		
+		if self.cameraPose is None:
+			return shelfRB
+			
+		cameraPose2D = [self.cameraPose[0], self.cameraPose[1], self.cameraPose[5]]
+		
+		for shelf_index in range(6):
+			shelf_handle = self.shelfHandles[shelf_index]
+			
+			if shelf_handle is not None:
+				try:
+					# Get the shelf position
+					shelf_position = self.sim.getObjectPosition(shelf_handle, -1)
+					
+					# Calculate range and bearing from camera to shelf
+					_range, _bearing = self.GetRangeAndBearingFromPoseAndPoint(cameraPose2D, shelf_position)
+					
+					# Check if shelf is within detection range and field of view
+					if _range < self.robotParameters.maxShelfDetectionDistance:
+						# Check if the shelf is within the camera's field of view
+						if abs(_bearing) < self.robotParameters.cameraPerspectiveAngle / 2:
+							shelfRB[shelf_index] = [_range, _bearing]
+				except Exception as e:
+					# If we can't get the shelf position, leave it as None
+					continue
+		
+		return shelfRB
 
-	# Gets the orthogonal distance (in metres) from the collector to the item. 
-	# Assuming the the item's centroid is within 70 degrees of the collector's centroid
-	def CollectorToItemDistance(self, itemPosition):
-		# get the position of the item relative to the collector motor
-		if self.robotPose != None and np.all(np.isnan(itemPosition)) == False:
-			# get the pose of the collector in the x-y plane using the robot's pose with some offsets
-			collectorPose = [self.robotPose[0]+0.1*math.cos(self.robotPose[5]), self.robotPose[1]+0.1*math.sin(self.robotPose[5]), self.robotPose[5]]
 
-			# get range and bearing from collector to item position
-			_range, _bearing = self.GetRangeAndBearingFromPoseAndPoint(collectorPose, itemPosition)
+# Parameter classes for robot and scene configuration
+class RobotParameters(object):
+	"""Parameters for configuring the warehouse robot"""
+	def __init__(self):
+		# Drive Parameters
+		self.driveType = 'differential'  # currently only 'differential' implemented
+		self.minimumLinearSpeed = 0.0   # minimum speed in m/s
+		self.maximumLinearSpeed = 0.25  # maximum speed in m/s
+		self.driveSystemQuality = 1.0   # quality from 0 to 1 (1 = perfect)
+		
+		# Wheel Parameters (set automatically for differential drive)
+		self.wheelBase = 0.15           # distance between wheels in m
+		self.wheelRadius = 0.03         # wheel radius in m
+		
+		# Camera Parameters
+		self.cameraOrientation = 'landscape'  # 'landscape' or 'portrait'
+		self.cameraDistanceFromRobotCenter = 0.1  # distance from robot center in m
+		self.cameraHeightFromFloor = 0.15     # height from floor in m
+		self.cameraTilt = 0.0                 # tilt angle in radians
+		self.cameraResolutionX = 640          # camera width in pixels
+		self.cameraResolutionY = 480          # camera height in pixels
+		self.cameraPerspectiveAngle = math.pi/4  # field of view angle in radians
+		
+		# Detection Parameters
+		self.maxItemDetectionDistance = 1.0      # max distance to detect items in m
+		self.maxPackingBayDetectionDistance = 2.5  # max distance to detect packing bay in m
+		self.maxObstacleDetectionDistance = 1.5  # max distance to detect obstacles in m
+		self.maxRowMarkerDetectionDistance = 2.5  # max distance to detect row markers in m
+		self.maxShelfDetectionDistance = 2.0     # max distance to detect shelves in m
+		
+		# Collector Parameters
+		self.collectorQuality = 1.0      # collector quality from 0 to 1
+		self.maxCollectDistance = 0.15   # max distance for collection in m
+		
+		# Simulation Parameters
+		self.sync = False  # synchronous mode (deprecated with ZMQ Remote API)
 
-			# check to see if the bearing to the item is larger than 70 degrees. If so return None
-			if abs(_bearing) > math.radians(70):
-				return None
-
-			# return distance to item from collector orthogonal to collector's rotational axis
-			return abs(_range * math.cos(_bearing))
-
-		return None
-
-
-####################################
-###### SCENE PARAMETERS CLASS ######
-####################################
-
-# This class is a helper class to simply 
-# group COPPELIA scene parameters together
 
 class SceneParameters(object):
-	"""docstring for SceneParameters"""
+	"""Parameters for configuring the warehouse scene"""
 	def __init__(self):
-		# item Starting Position
-
-		# Starting contents of the items [shelf,X,Y]. Set to -1 to leave the bay empty.
-		self.bayContents = -np.ones((6,4,3),dtype=np.int16)
-		
-		# Starting contents of picking stations [station]. Set to -1 to leave empty.
+		# Picking station contents [station]. Set to -1 to leave empty.
 		# Index 0 = picking station 1, Index 1 = picking station 2, Index 2 = picking station 3
-		self.pickingStationContents = -np.ones(3, dtype=np.int16)
-
-
-		# Obstacles Starting Positions - set to none if you do not want a specific obstacle in the scene
-		self.obstacle0_StartingPosition = [-0.45, 0.5]  # starting position of obstacle 0 [x, y] (in metres), -1 if want to use current coppelia position, or none if not wanted in the scene
-		self.obstacle1_StartingPosition = [-0.25,-0.675]   # starting position of obstacle 1 [x, y] (in metres), -1 if want to use current coppelia position, or none if not wanted in the scene
-		self.obstacle2_StartingPosition = None   # starting position of obstacle 2 [x, y] (in metres), -1 if want to use current coppelia position, or none if not wanted in the scene
-
-
-
-####################################
-###### ROBOT PARAMETERS CLASS ######
-####################################
-
-# This class is a helper class to simply 
-# group robot parameters together
-
-class RobotParameters(object):
-	"""docstring for RobotParameters"""
-	def __init__(self):
-
-		# Body Paramaters
-		self.robotSize = 0.15 # This parameter cannot be changed
+		self.pickingStationContents = [-1, -1, -1]
 		
-		# Drive/Wheel Parameters
-		self.driveType = 'differential'	# specifies the drive type ('differential' is the only type currently)
-		self.wheelBase = 0.150 # This parameter should not be changed
-		self.wheelRadius = 0.03 # This parameter should not  be changed
-		self.minimumLinearSpeed = 0.0 	# minimum speed at which your robot can move forward in m/s
-		self.maximumLinearSpeed = 0.4 	# maximum speed at which your robot can move forward in m/s
-		self.driveSystemQuality = 1.0 # specifies how good your drive system is from 0 to 1 (with 1 being able to drive in a perfectly straight line when a told to do so)
-
-		# Camera Parameters
-		self.cameraOrientation = 'landscape' # specifies the orientation of the camera, either landscape or portrait
-		self.cameraDistanceFromRobotCenter = 0.1 # distance between the camera and the center of the robot in the direction of the front of the robot
-		self.cameraHeightFromFloor = 0.1 # height of the camera relative to the floor in metres
-		self.cameraTilt = 0.0 # tilt of the camera in radians
-		self.cameraPerspectiveAngle = math.radians(60) # do not change this parameter
-		self.cameraResolutionX = 640 # camera resolution width in pixels
-		self.cameraResolutionY = 480 # camera resolution height in pixels
-
-		# Vision Processing Parameters
-		self.maxItemDetectionDistance = 1 # the maximum distance away that you can detect the item in metres
-		self.maxPackingBayDetectionDistance = 2.5 # the maximum distance away that you can detect the packingBay in metres
-		self.maxObstacleDetectionDistance = 1.5 # the maximum distance away that you can detect the obstacles in metres
-		self.maxRowMarkerDetectionDistance = 2.5 # the maximum distance away that you can detect the obstacles in metres.
-		self.maxShelfDetectionDistance = 2.5 # the maximum distance away that you can detect the shelves in metres.
-		self.minWallDetectionDistance = 0.1 # the minimum distance away from a wall that you have to be to be able to detect it
-
-		# collector Parameters
-		self.collectorQuality = 1.0 # specifies how good your item collector is from 0 to 1.0 (with 1.0 being awesome and 0 being non-existent)
-		self.autoCollectItem = True #specifies whether the simulator automatically collects items if near the collector 
-		self.maxCollectDistance = 0.03 #specificies the operating distance of the automatic collector function. Item needs to be less than this distance to the collector
-
-		self.sync = False
+		# Bay contents [shelf][x][y]. Set to -1 for empty bays.
+		# shelf: 0-5, x: 0-3, y: 0-2 (height levels)
+		self.bayContents = np.full((6, 4, 3), -1, dtype=int)
+		
+		# Obstacle starting positions [x, y] in metres
+		# Set to -1 to use current CoppeliaSim position, None if not wanted in scene
+		self.obstacle0_StartingPosition = None
+		self.obstacle1_StartingPosition = None  
+		self.obstacle2_StartingPosition = None
+		
+		# Robot starting position [x, y, theta] in metres and radians
+		# Set to None to use current CoppeliaSim position
+		self.robotStartingPosition = None
 
